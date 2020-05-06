@@ -11,7 +11,7 @@ Introductie
 -----------
 
 Steeds meer burgers, bedrijven en overheden meten de luchtkwaliteit met
-sensoren. Het (Samen Meten programma)\[samenmeten.nl\] van het
+sensoren. Het [Samen Meten programma](samenmeten.nl) van het
 [RIVM](www.rivm.nl) Rijksinstituut voor Volksgezondheid en Milieu
 ondersteunt deze ontwikkeling. Zo onderzoeken we de werking en
 toepassing van deze sensoren, laten we de data zien in een
