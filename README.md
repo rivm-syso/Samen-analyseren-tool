@@ -141,22 +141,25 @@ De app bestaat uit 4 hoofdgedeeltes:
 ### Input data
 
 De data die in deze tool gebruikt wordt, is een dataframe met de
-volgende kolommen: | kolomnaam | beschrijving | gebruikt in huidige tool | 
-| --- | --- | --- |  
-| "date" | de datum en het begin-uur van het uurgemiddelde | 
-(Etc/GMT-1) | x "kit\_id" | de naam van de sensor | x "lat" | de
-latitude van de sensorlocatie | x "lon" | de longitude van de
-sensorlocatie | x "pm10" | de sensorwaarde voor PM10 | x "pm10\_kal" |
-de gekalibreerde sensorwaarde voor PM10 | x "pm25" | de sensorwaarde
-voor PM2.5 | x "pm25\_kal" | de gekalibreerde sensorwaarde voor PM2.5 |
-x "wd" | de windrichting volgens het KNMI (missing data: -999, windstil
-= 0, veranderlijk = 990) | x "ws" | windsenelheid volgens het KNMI | x
-"rh" | de relatieve luchtvochtigheid | "temp" | de temperatuur |
-"pm25\_lml" | de (ongevalideerde) waarde voor PM2.5 gemeten op het
-dichtstbijzijnde station van luchtmeetnet | x "pm10\_lml" | de
-(ongevalideerde) waarde voor PM10 gemeten op het dichtstbijzijnde
-station van luchtmeetnet | x "knmi\_id" | het nummer van het
-dichtstbijzijnde KNMI station, waarvan de weergegevens zijn meegegeven |
+volgende kolommen: 
+
+kolomnaam | beschrijving | gebruikt in huidige tool  
+--- | --- | ---  
+"date" | de datum en het begin-uur van het uurgemiddelde (Etc/GMT-1) | x 
+"kit\_id" | de naam van de sensor | x 
+"lat" | de latitude van de sensorlocatie | x 
+"lon" | de longitude van de sensorlocatie | x 
+"pm10" | de sensorwaarde voor PM10 | x 
+"pm10\_kal" | de gekalibreerde sensorwaarde voor PM10 | x 
+"pm25" | de sensorwaarde voor PM2.5 | x 
+"pm25\_kal" | de gekalibreerde sensorwaarde voor PM2.5 | x 
+"wd" | de windrichting volgens het KNMI (missing data: -999, windstil = 0, veranderlijk = 990) | x 
+"ws" | windsenelheid volgens het KNMI | x
+"rh" | de relatieve luchtvochtigheid | 
+"temp" | de temperatuur |
+"pm25\_lml" | de (ongevalideerde) waarde voor PM2.5 gemeten op het dichtstbijzijnde station van luchtmeetnet | x 
+"pm10\_lml" | de (ongevalideerde) waarde voor PM10 gemeten op het dichtstbijzijnde station van luchtmeetnet | x 
+"knmi\_id" | het nummer van het dichtstbijzijnde KNMI station, waarvan de weergegevens zijn meegegeven |
 "lml\_id" | het nummer van het dichtstbijzijnde luchtmeetnetstation |
 
 ### global.R
@@ -181,8 +184,9 @@ in een boekenkast van de bibliotheek labels staan van de schrijvers, op
 de bovenste plank de schrijvers beginnende met ‘A-B’, daaronder ‘C-D’
 etc. Een voorbeeld in de tool:
 
-> In de ui.R staat -&gt; plotOutput(**"timeplot"**) In de server.R staat
-> -&gt; output$**timeplot** &lt;- renderPlot({..})
+> In de ui.R staat -&gt; plotOutput(**"timeplot"**) 
+
+> In de server.R staat -&gt; output$**timeplot** &lt;- renderPlot({..})
 
 ### ui.R
 
