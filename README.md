@@ -160,7 +160,8 @@ kolomnaam | beschrijving | gebruikt in huidige tool
 "pm25\_lml" | de (ongevalideerde) waarde voor PM2.5 gemeten op het dichtstbijzijnde station van luchtmeetnet | x 
 "pm10\_lml" | de (ongevalideerde) waarde voor PM10 gemeten op het dichtstbijzijnde station van luchtmeetnet | x 
 "knmi\_id" | het nummer van het dichtstbijzijnde KNMI station, waarvan de weergegevens zijn meegegeven |
-"lml\_id" | het nummer van het dichtstbijzijnde luchtmeetnetstation |
+"lml\_id" | het nummer van het dichtstbijzijnde luchtmeetnetstation waar PM10 gemeten wordt |
+"lml\_id\_pm25" | het nummer van het dichtstbijzijnde luchtmeetnetstation waar PM2.5 gemeten wordt|
 
 ### global.R
 
@@ -297,7 +298,7 @@ dataframe** gezet.
 
 De volledige **kolomnamen** zijn: "date", "kit\_id", "lat", "lon",
 "pm10", "pm10\_kal", "pm25", "pm25\_kal", "wd", "ws", "rh", "temp",
-"pm25\_lml", "pm10\_lml", "knmi\_id", "lml\_id"
+"pm25\_lml", "pm10\_lml", "knmi\_id", "lml\_id",  "lml\_id\_pm25"
 
 Daarnaast zijn er later in de tool nog een aantal eigenschappen per
 sensor toegevoegd.
