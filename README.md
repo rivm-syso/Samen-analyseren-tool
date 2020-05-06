@@ -11,7 +11,7 @@ Introductie
 -----------
 
 Steeds meer burgers, bedrijven en overheden meten de luchtkwaliteit met
-sensoren. Het (Samen Meten programma)\[samenmeten.nl\] van het
+sensoren. Het [Samen Meten programma](samenmeten.nl) van het
 [RIVM](www.rivm.nl) Rijksinstituut voor Volksgezondheid en Milieu
 ondersteunt deze ontwikkeling. Zo onderzoeken we de werking en
 toepassing van deze sensoren, laten we de data zien in een
@@ -141,22 +141,27 @@ De app bestaat uit 4 hoofdgedeeltes:
 ### Input data
 
 De data die in deze tool gebruikt wordt, is een dataframe met de
-volgende kolommen: kolomnaam | beschrijving | gebruikt in huidige tool
---- | --- | --- "date" | de datum en het begin-uur van het uurgemiddelde
-(Etc/GMT-1) | x "kit\_id" | de naam van de sensor | x "lat" | de
-latitude van de sensorlocatie | x "lon" | de longitude van de
-sensorlocatie | x "pm10" | de sensorwaarde voor PM10 | x "pm10\_kal" |
-de gekalibreerde sensorwaarde voor PM10 | x "pm25" | de sensorwaarde
-voor PM2.5 | x "pm25\_kal" | de gekalibreerde sensorwaarde voor PM2.5 |
-x "wd" | de windrichting volgens het KNMI (missing data: -999, windstil
-= 0, veranderlijk = 990) | x "ws" | windsenelheid volgens het KNMI | x
-"rh" | de relatieve luchtvochtigheid | "temp" | de temperatuur |
-"pm25\_lml" | de (ongevalideerde) waarde voor PM2.5 gemeten op het
-dichtstbijzijnde station van luchtmeetnet | x "pm10\_lml" | de
-(ongevalideerde) waarde voor PM10 gemeten op het dichtstbijzijnde
-station van luchtmeetnet | x "knmi\_id" | het nummer van het
-dichtstbijzijnde KNMI station, waarvan de weergegevens zijn meegegeven |
-"lml\_id" | het nummer van het dichtstbijzijnde luchtmeetnetstation |
+volgende kolommen: 
+
+kolomnaam | beschrijving | gebruikt in huidige tool  
+--- | --- | ---  
+"date" | de datum en het begin-uur van het uurgemiddelde (Etc/GMT-1) | x 
+"kit\_id" | de naam van de sensor | x 
+"lat" | de latitude van de sensorlocatie | x 
+"lon" | de longitude van de sensorlocatie | x 
+"pm10" | de sensorwaarde voor PM10 | x 
+"pm10\_kal" | de gekalibreerde sensorwaarde voor PM10 | x 
+"pm25" | de sensorwaarde voor PM2.5 | x 
+"pm25\_kal" | de gekalibreerde sensorwaarde voor PM2.5 | x 
+"wd" | de windrichting volgens het KNMI (missing data: -999, windstil = 0, veranderlijk = 990) | x 
+"ws" | windsenelheid volgens het KNMI | x
+"rh" | de relatieve luchtvochtigheid | 
+"temp" | de temperatuur |
+"pm25\_lml" | de (ongevalideerde) waarde voor PM2.5 gemeten op het dichtstbijzijnde station van luchtmeetnet | x 
+"pm10\_lml" | de (ongevalideerde) waarde voor PM10 gemeten op het dichtstbijzijnde station van luchtmeetnet | x 
+"knmi\_id" | het nummer van het dichtstbijzijnde KNMI station, waarvan de weergegevens zijn meegegeven |
+"lml\_id" | het nummer van het dichtstbijzijnde luchtmeetnetstation waar PM10 gemeten wordt |
+"lml\_id\_pm25" | het nummer van het dichtstbijzijnde luchtmeetnetstation waar PM2.5 gemeten wordt|
 
 ### global.R
 
@@ -180,8 +185,9 @@ in een boekenkast van de bibliotheek labels staan van de schrijvers, op
 de bovenste plank de schrijvers beginnende met ‘A-B’, daaronder ‘C-D’
 etc. Een voorbeeld in de tool:
 
-> In de ui.R staat -&gt; plotOutput(**"timeplot"**) In de server.R staat
-> -&gt; output$**timeplot** &lt;- renderPlot({..})
+> In de ui.R staat -&gt; plotOutput(**"timeplot"**) 
+
+> In de server.R staat -&gt; output$**timeplot** &lt;- renderPlot({..})
 
 ### ui.R
 
@@ -292,7 +298,7 @@ dataframe** gezet.
 
 De volledige **kolomnamen** zijn: "date", "kit\_id", "lat", "lon",
 "pm10", "pm10\_kal", "pm25", "pm25\_kal", "wd", "ws", "rh", "temp",
-"pm25\_lml", "pm10\_lml", "knmi\_id", "lml\_id"
+"pm25\_lml", "pm10\_lml", "knmi\_id", "lml\_id",  "lml\_id\_pm25"
 
 Daarnaast zijn er later in de tool nog een aantal eigenschappen per
 sensor toegevoegd.
