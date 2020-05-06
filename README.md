@@ -141,8 +141,9 @@ De app bestaat uit 4 hoofdgedeeltes:
 ### Input data
 
 De data die in deze tool gebruikt wordt, is een dataframe met de
-volgende kolommen: kolomnaam | beschrijving | gebruikt in huidige tool
---- | --- | --- "date" | de datum en het begin-uur van het uurgemiddelde
+volgende kolommen: | kolomnaam | beschrijving | gebruikt in huidige tool | 
+| --- | --- | --- |  
+| "date" | de datum en het begin-uur van het uurgemiddelde | 
 (Etc/GMT-1) | x "kit\_id" | de naam van de sensor | x "lat" | de
 latitude van de sensorlocatie | x "lon" | de longitude van de
 sensorlocatie | x "pm10" | de sensorwaarde voor PM10 | x "pm10\_kal" |
