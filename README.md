@@ -285,7 +285,7 @@ grafieken gaan via hetzelfde structuur:
     **groepsgemiddelde**
 -   Maak de grafiek via de **functie van openair**
 
-#### Het opzetten van een interactive dataframe
+#### Het opzetten van een interactief dataframe
 
 Het dataframe is niet een normaal dataframe, maar een interactief
 dataframe. Dat houdt in dat je **interactief aanpassingen** kunt maken
