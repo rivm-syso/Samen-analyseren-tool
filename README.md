@@ -89,7 +89,7 @@ De Samen analyseren tool is gemaakt in de programmeertaal
 interface ([hier](https://rivm.shinyapps.io/samenanalyserentool))
 is geen verstand van R nodig. Maar gezien je al hier bent, wil je
 waarschijnlijk zelf aan de slag. Meer informatie over programmeren in R
-en het downloaden van R-studio kan je op de [website van RStudio](https://rstudio.com/) vinden.
+en het downloaden van RStudio kan je op de [website van RStudio](https://rstudio.com/) vinden.
 
 Het is een interactieve tool, de interactie wordt gegenereerd via Shiny.
 [Shiny](https://shiny.rstudio.com/) is een package in R die interactieve
@@ -116,9 +116,9 @@ Run de tool
 -----------
 
 Laten we eerst de huidige tool op je eigen pc draaien! Start daarvoor
-R-studio, maak een nieuw project aan en zet daar alle bestanden van
+RStudio, maak een nieuw project aan en zet daar alle bestanden van
 deze GitHub in. Dat kan je doen door de bestanden te downloaden (zie
-groene 'Clone or download'-knop. Als je al ervaring hebt met Git, kan 
+groene 'Clone or download'-knop). Als je al ervaring hebt met Git, kan 
 je ook  een clone maken. 
 
 Voor deze tool heb je ook een aantal packages nodig, waaronder
