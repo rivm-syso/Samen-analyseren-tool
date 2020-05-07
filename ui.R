@@ -9,8 +9,20 @@
 ## Het eerste gedeelte bevat de opmaak/styling
 ## ---------------------------------------------------------
 
+## Load folder voor de huisstijl ----
+
+# Hier worden de bestanden opgehaald voor de huissijl. Deze staan ook op github en zullen
+# ook ge-update worden, dus verwijder zo nu en dan je www folder.
+# Let op: zorg ervoor dat je niet zelf ook een folder 'www' hebt, anders worden de bestanden niet
+# opgehaald. 
+if (!dir.exists('www')){
+  download.file('https://github.com/rivm-syso/RIVM-huisstijl-shiny/archive/master.zip', destfile = "wwwdest.zip")
+  unzip('wwwdest.zip', exdir='.')
+  file.rename('RIVM-huisstijl-shiny-master', 'www')
+}
+
 # HTML template voor de opmaak/styling
-htmlTemplate("template.wide.html",
+htmlTemplate("./www/template.wide.html",
              pageTitle=paste("Prototype Samen Analyseren tool: project ", projectnaam),
              
              aboutSite=div(h3("Verantwoording"),
