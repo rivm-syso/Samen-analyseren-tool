@@ -20,7 +20,7 @@ elkaar te brengen. We werken zo toe naar een meetnet waaraan iedereen
 kan bijdragen.
 
 Op het Samen Meten dataportaal kun je de gemeten sensorwaarden
-gemakkelijk terugvinden. Hier zie je ook hoe de luchtkwaliteit varieerde
+gemakkelijk terugvinden. Naast een actueel beeld van alle sensoren zie je hier ook hoe de luchtkwaliteit varieerde
 over de afgelopen zeven dagen. Maar vaak wil je meer weten dan alleen
 hoe de luchtkwaliteit verliep over de afgelopen dagen. Je wilt misschien
 weten of de luchtkwaliteit doordeweeks slechter is dan in het weekend,
@@ -31,8 +31,8 @@ er geen ondersteuning geboden kan worden bij deze analyse. De “Samen
 Analyseren” tool is hiervoor ontwikkeld: een interactieve tool voor
 eenvoudige datavisualisatie. Het gaat hierbij dus niet alleen over de
 real-time waardes, maar ook over de samenhang en de interpretatie. Zo
-zijn groepsgemiddelden bijvoorbeeld betrouwbaarder dan individuele
-sensoren, en daarom is het ook mogelijk om groepsgemiddelden gemakkelijk
+zijn groepsgemiddelden bijvoorbeeld betrouwbaarder dan de waarden van individuele
+sensoren, en daarom is het in de tool ook mogelijk om groepsgemiddelden gemakkelijk
 te bepalen. De huidige tool is een prototype, er wordt nog volop aan
 gewerkt. De tool is uitgeprobeerd in het project [Hollandse
 Luchten](https://hollandseluchten.waag.org/), waar het enthousiast is
@@ -41,7 +41,7 @@ ontvangen.
 Samen analyseren tool opensource
 --------------------------------
 
-We maken de samen analyseren tool opensource, zodat ook de analyse voor
+We maken de samen analyseren tool opensource, zodat ook de analysemethode voor
 iedereen beschikbaar is. Iedereen is welkom om de tool te gebruiken en
 aan te passen (volgens de licentie GPL v3). Hieronder volgt een
 beschrijving van de hoofdelementen van de tool. Algemene vragen en
