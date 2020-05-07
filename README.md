@@ -43,7 +43,7 @@ Samen analyseren tool opensource
 
 We maken de samen analyseren tool opensource, zodat ook de analysemethode voor
 iedereen beschikbaar is. Iedereen is welkom om de tool te gebruiken en
-aan te passen (volgens de licentie GPL v3). Hieronder volgt een
+aan te passen (volgens de [GPL v3](https://www.gnu.org/licenses/gpl-3.0.en.html) licentie). Hieronder volgt een
 beschrijving van de hoofdelementen van de tool. Algemene vragen en
 opmerkingen kan je stellen via
 [samenmeten](https://www.samenmetenaanluchtkwaliteit.nl/contact).
