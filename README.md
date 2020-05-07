@@ -48,7 +48,7 @@ beschrijving van de hoofdelementen van de tool. Algemene vragen en
 opmerkingen kan je stellen via
 [samenmeten](https://www.samenmetenaanluchtkwaliteit.nl/contact).
 Meldingen van errors of opmerkingen over de code graag via een *Issue*
-op github zelf.
+op GitHub zelf, je moet daarvoor wel inloggen op GitHub.
 
 Documentatie Samen Analyseren Tool
 ==================================
@@ -66,30 +66,30 @@ Inhoudsopgave
 -   [server.R](#server.r)
     -   [Het maken van de kaart](#het-maken-van-de-kaart)
     -   [Het maken van de grafieken](#het-maken-van-de-grafieken)
-    -   [Het opzetten van een interactief
-        dataframe](#het-opzetten-van-een-interactief-dataframe)
+    -   [Het opzetten van een interactief dataframe](#het-opzetten-van-een-interactief-dataframe)
     -   [Overzicht van de functies](#overzicht-van-de-functies)
-    -   [Overzicht van de
-        ObserveEvents](#overzicht-van-de-observeevents)
+    -   [Overzicht van de ObserveEvents](#overzicht-van-de-observeevents)
 -   [Nawoord](#nawoord)
 
 Kennis vooraf
 -------------
 
-De scripts staan hier op Github.
-[Github](https://guides.github.com/activities/hello-world/) is een zeer
+De scripts staan hier op GitHub.
+[GitHub](https://guides.github.com/activities/hello-world/) is een zeer
 geschikt platform om software te delen en met verschillende partijen te
 ontwikkelen. Als je een account hebt kun je ook bijdragen aan deze tool.
-Gebruik hiervoor ‘fork’ en ‘Pull request’. Mocht je bugs tegenkomen,
-meldt deze dan via een ‘Issue’. Als je geen account hebt, kun je de
-bestanden downloaden en op je eigen pc aanpassingen maken.
+Gebruik hiervoor ‘fork’ en ‘Pull request’, meer info vind je in de
+[handleiding](https://help.github.com/en/github/getting-started-with-github/fork-a-repo)
+van GitHub. Met een account kan je ook bugs of verbeteringen melden via
+de 'Issues'.  Als je geen account hebt, kun je de bestanden downloaden
+en op je eigen pc aanpassingen maken.
 
-De Samen analyseren tool is gemaakt in de programmeertaal R. Voor het
-gebruik van de tool via de interface
-([hier](https://rivm.shinyapps.io/samenanalyserentool)) is geen verstand
-van R nodig. Maar gezien je al hier bent, wil je waarschijnlijk zelf aan
-de slag. Meer informatie over programmeren in R en het downloaden van
-R-studio kan je op de [website](https://rstudio.com/) vinden.
+De Samen analyseren tool is gemaakt in de programmeertaal
+[R](https://www.r-project.org/). Voor het gebruik van de tool via de
+interface ([hier](https://rivm.shinyapps.io/samenanalyserentool))
+is geen verstand van R nodig. Maar gezien je al hier bent, wil je
+waarschijnlijk zelf aan de slag. Meer informatie over programmeren in R
+en het downloaden van R-studio kan je op de [website van RStudio](https://rstudio.com/) vinden.
 
 Het is een interactieve tool, de interactie wordt gegenereerd via Shiny.
 [Shiny](https://shiny.rstudio.com/) is een package in R die interactieve
@@ -116,9 +116,24 @@ Run de tool
 -----------
 
 Laten we eerst de huidige tool op je eigen pc draaien! Start daarvoor
-R-studio, maak een nieuwe repository aan en zet daar alle bestanden van
-deze github in. Als je een account hebt, gebruik om de bestanden op te
-halen ‘fork’. Als je geen account hebt, kun je de bestanden downloaden.
+R-studio, maak een nieuw project aan en zet daar alle bestanden van
+deze GitHub in. Dat kan je doen door de bestanden te downloaden (zie
+groene 'Clone or download'-knop. Als je al ervaring hebt met Git, kan 
+je ook  een clone maken. 
+
+Voor deze tool heb je ook een aantal packages nodig, waaronder
+openair, leaflet, leaflet.extras, dplyr, shinythemes, shinyWidgets,
+purrr, sp en devtools.  Deze packages kan je installeren via
+de package manager van RStudio of via het `install.packages`
+commando. Naast deze packages heb je ook het geoshaper package nodig,
+deze moet je vanaf GitHub installeren.  Je kan dit pakket vinden in de
+[RedOakStrategic/geoshaper](https://github.com/RedOakStrategic/geoshaper)
+repository. Installeren doe je met de volgende R commando's:
+
+```
+library(devtools)
+install_github("RedOakStrategic/geoshaper")
+```
 
 Open het script global.R. Rechtsboven bevindt zich een groen driekhoekje
 met de tekst ‘Run app’. Klik hierop en tool die wordt geopend. Mooi zo,
@@ -368,5 +383,5 @@ Ik hoop dat je hiermee voldoende rondleiding hebt gehad, dat je de
 scripts zelf kunt bekijken en uitrbeiden. We horen graag je feedback
 via: [samenmeten](https://www.samenmetenaanluchtkwaliteit.nl/contact).
 Meldingen van errors of opmerkingen over de code graag via een *Issue*
-op github zelf.
+op GitHub zelf, je hebt dan wel een account nodig.
 >>>>>>> upstream/master
