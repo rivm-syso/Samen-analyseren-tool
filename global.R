@@ -25,8 +25,6 @@ library(sp)
 library(devtools)
 library(geoshaper)
 
-
-
 ## Load Functions ----
 
 # Functies voor het genereren van de input opties voor openair call
