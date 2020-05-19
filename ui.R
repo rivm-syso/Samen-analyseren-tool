@@ -34,7 +34,10 @@ htmlTemplate("./www/template.wide.html",
                              
                              p("Het huidige dashboard is een prototype en nog volop in ontwikkeling. 
                                Het wordt gebruikt om verschillende analyses en visualisaties te testen.
-                               In 2020 zullen we de broncode openbaar maken, zodat we samen met jullie het dashboard verder kunnen ontwikkelen."),
+                               De broncode van de tool is te vinden via",
+                              a("GitHub",
+                                href = "https://github.com/rivm-syso/Samen-analyseren-tool", target = "_blank"),
+                                ", zodat we samen met jullie het dashboard verder kunnen ontwikkelen."),
                              
                              h4("Data"),
                              p("De getoonde sensordata zijn afkomstig uit de", 
