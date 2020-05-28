@@ -35,6 +35,7 @@ source("tabPanels.R", local = TRUE)
 ## Initialise ----
 projectnaam <- "Hollandse Luchten"
 file <- "HLL_voorbeeld_data.RDS" 
+file_kwal <- "kwalindex_HLL.RDS"
 
 choices <- c( "PM10 - gekalibreerd", "PM2.5 - gekalibreerd","PM10", "PM2.5") #set up choices for shiny app
 kleur_cat <- list('#42145f','#ffb612','#a90061','#777c00','#007bc7','#673327','#e17000','#39870c', '#94710a','#01689b','#f9e11e','#76d2b6','#d52b1e','#8fcae7','#ca005d','#275937','#f092cd')
@@ -48,9 +49,12 @@ icons_stations <- iconList(
 
 ## Inlezen van de data ----
 input_df <- readRDS(file)
+kwal_df <- readRDS(file_kwal)
+
 
 ## Default locatie, kleur en label opzetten ----
 input_df$kit_id <- gsub('HLL_hl_', '', input_df$kit_id) #remove HLL-string from input_df for shorter label
+kwal_df$kit_id <- gsub('HLL_hl_', '', kwal_df$kit_id)
 
 # Voor de sensormarkers: locatie, label en kleur etc. Per sensor één unieke locatie
 sensor_unique <- aggregate(input_df[,c('lat','lon')], list(input_df$kit_id), FUN = mean) # gemiddelde om per sensor een latlon te krijgen
@@ -59,6 +63,10 @@ sensor_unique$selected <-FALSE
 sensor_unique$groep <- geen_groep
 sensor_unique$kleur <- kleur_marker_sensor
 sensor_labels <- as.list(sensor_unique$kit_id) # labels to use for hoover info
+
+# toevoegen van de kwalindex aan de sensordata
+sensor_unique <- merge(sensor_unique, kwal_df[,c('ndata', 'nok', 'kit_id')], all.x=T)
+sensor_unique$kwalindicat <- round(sensor_unique$nok/sensor_unique$ndata * 100,0)
 
 # Voor de multiselect tool: omzetten lat/lon naar spatialpoints
 ms_coordinates <- SpatialPointsDataFrame(sensor_unique[,c('lon','lat')],sensor_unique)
