@@ -37,7 +37,7 @@ function(input, output, session){
   })
   
   # Zet reactive dataframe op ----
-  values <- reactiveValues(df = sensor_unique, groepsnaam = geen_groep, actiegroep = FALSE, df_gem = data.frame()) 
+  values <- reactiveValues(df = sensor_unique, groepsnaam = geen_groep, actiegroep = FALSE, hoeveelmet = 0, kwalindicat = 0, df_gem = data.frame()) 
   overzicht_shapes <- reactiveValues(add = 0, delete = 0) # nodig om selectie ongedaan te maken
   
   ## FUNCTIES ----
@@ -45,8 +45,8 @@ function(input, output, session){
   # Functie: Set the sensor as deselect and change color to base color ----
   set_sensor_deselect <- function(id_select){
     values$df[values$df$kit_id == id_select, "selected"] <- FALSE 
-    values$df[values$df$kit_id == id_select, "kleur"] <- kleur_marker_sensor
     values$df[values$df$kit_id == id_select, "groep"] <- geen_groep
+    values$df[values$df$kit_id == id_select, "kleur"] <- kleur_marker_sensor
   }
   
   # Functie: Set sensor as select and specify color ----
@@ -116,8 +116,55 @@ function(input, output, session){
     values$df_gem <- gemiddeld_all
   }
   
+  # Functie om de sensoren niet beschikbaar/clickable te zetten
+  set_not_click <- function(){
+    # Alle tresholds interfereren met elkaar
+    # de data die clickable/beschikbaar is, moet aan alle tresholds voldoen!
+    
+    # Bepaal welke sensoren daaraan niet voldoen
+    ind_not_click <- which((values$df[,'ndata'] < values[['hoeveelmet']]) | 
+                             (values$df[,'kwalindicat'] < values[['kwalindicat']]))
+
+    # zet deze de click op false, zodat ze niet meer geselecteerd kunnen worden
+    values$df[ind_not_click,'click'] <- FALSE
+    # Zet deze met een andere kleur
+    values$df[ind_not_click,'kleur'] <- '#FFFFFF'
+    # Zet deze uit de selectie
+    values$df[ind_not_click,'selected'] <- FALSE
+    # Zet deze uit de groep
+    values$df[ind_not_click, "groep"] <- geen_groep
+    
+    # Voor de sensoren die niet (meer) aan het treshold voldoen
+    # Zet deze weer terug naar de basis stand (clickable en basis kleur)
+    # LET op: degene die geselecteerd zijn, daaraan verandert niks!
+    values$df[which(((values$df[,'ndata'] >= values[['hoeveelmet']]) & 
+                      (values$df[,'kwalindicat'] >= values[['kwalindicat']])) & 
+                      (values$df$selected==FALSE)),'kleur'] <- kleur_marker_sensor
+    values$df[which((values$df[,'ndata'] >= values[['hoeveelmet']]) & 
+                      (values$df[,'kwalindicat'] >= values[['kwalindicat']])),'click'] <- TRUE
+  }
   
   ## OBSERVE EVENTS ----
+  
+  # Observe of er een minimum aantal metingen wordt ingegeven ----
+  observeEvent({input$hoeveel},{
+    # Schrijf de treshold waarde in de interactive values
+    values$hoeveelmet <- input$hoeveel
+    # Voer de functie uit die de sensoren niet meer beschikbaar/clickable maakt
+    set_not_click()
+    # Laad de sensoren op de kaart zien
+    add_sensors_map()
+  })
+  
+  # Observe of er een kwalitietsindicatie wordt gesteld ----
+  observeEvent({input$kwal_indicat},{
+    # Schrijf de treshold waarde in de interactive values
+    values$kwalindicat <- input$kwal_indicat
+    # Voer de functie uit die de sensoren niet meer beschikbaar/clickable maakt
+    set_not_click()
+    # Laad de sensoren op de kaart zien
+    add_sensors_map()
+  })
   
   # Observe of er een groep gaat worden gebruikt ----
   observeEvent({input$A_groep},{
@@ -147,7 +194,8 @@ function(input, output, session){
   observeEvent({input$map_marker_click$id}, {
     id_select <- input$map_marker_click$id
     # Wanneer er op een Luchtmeetnet of KNMI station marker geklikt wordt, gebeurt er niks
-    if (is_empty(grep("^knmi|^NL", id_select)) ){
+    # En de sensor moet clickable zijn (click==T)
+    if (is_empty(grep("^knmi|^NL", id_select)) & values$df[which(values$df$kit_id == id_select),'click']){
       # Check if sensor id already selected -> unselect sensor
       if((values$df$selected[which(values$df$kit_id == id_select)][1])){
         set_sensor_deselect(id_select)
@@ -166,8 +214,9 @@ function(input, output, session){
   # De values selected worden weer FALSE en de markers kleur_sensor_marker gekleurd, groepen verwijderd
   observeEvent(input$reset, {
     values$df[, "selected"] <- FALSE 
-    values$df[, "kleur"] <- kleur_marker_sensor
     values$df[, "groep"] <- geen_groep
+    # Als de sensor besckibaar/clickable is, zet dan de standaard kleur neer
+    values$df[which(values$df$click), "kleur"] <- kleur_marker_sensor
     # Laad de sensoren op de kaart zien
     add_sensors_map()
   })
@@ -185,7 +234,8 @@ function(input, output, session){
     # Ga elke sensor af en voeg deze bij de selectie
     for(id_select in found_in_bounds){
       # Wanneer er op een LML of KNMI station marker geklikt wordt, gebeurt er niks
-      if (is_empty(grep("^knmi|^NL", id_select)) ){
+      # Ook als de sensor niet clickable is, gebeurt daar niks mee
+      if (is_empty(grep("^knmi|^NL", id_select)) & values$df[which(values$df$kit_id == id_select),'click'] ){
         # Check if sensor id already selected -> unselect sensor
         if((values$df$selected[which(values$df$kit_id == id_select)][1])){
           set_sensor_deselect(id_select)
@@ -213,7 +263,8 @@ function(input, output, session){
     # Dus ook degene die individueel zijn geklikt
     if(overzicht_shapes$delete == overzicht_shapes$add){
       values$df[, "selected"] <- FALSE 
-      values$df[, "kleur"] <- kleur_marker_sensor
+      # Als de sensor besckibaar/clickable is, zet dan de standaard kleur neer
+      values$df[which(values$df$click), "kleur"] <- kleur_marker_sensor
       values$df[, "groep"] <- geen_groep
     }
     else{
@@ -222,7 +273,8 @@ function(input, output, session){
         bounded_layer_ids <- findLocations(shape = feature, location_coordinates = ms_coordinates, location_id_colname = "kit_id")
         for(id_select in bounded_layer_ids){
           # Wanneer er op een LML of KNMI station marker geklikt wordt, gebeurt er niks
-          if (is_empty(grep("^knmi|^NL", id_select)) ){
+          # Of wanneer de sensor niet clickable is
+          if (is_empty(grep("^knmi|^NL", id_select)) & values$df[which(values$df$kit_id == id_select),'click'] ){
             # Check if sensor id already selected -> unselect sensor
             if((values$df$selected[which(values$df$kit_id == id_select)][1])){
               set_sensor_deselect(id_select)
