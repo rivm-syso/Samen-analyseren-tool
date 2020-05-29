@@ -67,6 +67,7 @@ sensor_labels <- as.list(sensor_unique$kit_id) # labels to use for hoover info
 # toevoegen van de kwalindex aan de sensordata
 sensor_unique <- merge(sensor_unique, kwal_df[,c('ndata', 'nok', 'kit_id')], all.x=T)
 sensor_unique$kwalindicat <- round(sensor_unique$nok/sensor_unique$ndata * 100,0)
+sensor_unique$click <- TRUE
 
 # Voor de multiselect tool: omzetten lat/lon naar spatialpoints
 ms_coordinates <- SpatialPointsDataFrame(sensor_unique[,c('lon','lat')],sensor_unique)
