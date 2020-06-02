@@ -37,7 +37,7 @@ function(input, output, session){
   })
   
   # Zet reactive dataframe op ----
-  values <- reactiveValues(df = sensor_unique, groepsnaam = geen_groep, actiegroep = FALSE, df_gem = data.frame()) 
+  values <- reactiveValues(df = sensor_unique, groepsnaam = geen_groep, df_gem = data.frame()) 
   overzicht_shapes <- reactiveValues(add = 0, delete = 0) # nodig om selectie ongedaan te maken
   
   ## FUNCTIES ----
@@ -45,13 +45,15 @@ function(input, output, session){
   # Functie: Set the sensor as deselect and change color to base color ----
   set_sensor_deselect <- function(id_select){
     values$df[values$df$kit_id == id_select, "selected"] <- FALSE 
+    values$df[values$df$kit_id == id_select, "huidig"] <- FALSE 
     values$df[values$df$kit_id == id_select, "kleur"] <- kleur_marker_sensor
     values$df[values$df$kit_id == id_select, "groep"] <- geen_groep
   }
   
   # Functie: Set sensor as select and specify color ----
   set_sensor_select <- function(id_select){
-    values$df[values$df$kit_id == id_select, "selected"] <- TRUE 
+    values$df[values$df$kit_id == id_select, "selected"] <- TRUE
+    values$df[values$df$kit_id == id_select, "huidig"] <- TRUE
     # Selecteen kleur en geef dit mee aan de sensor
     # Kies de eerste kleur in de lijst kleur_cat die aanwezig is
     count  <- 1
@@ -69,16 +71,6 @@ function(input, output, session){
     # Als alle kleuren gebruikt zijn: kies zwart
     if (count == length(kleur_cat)){
       kleur_sensor <- "black"
-    }
-    
-    # Bekijk of een sensor moet worden toegevoegd aan de groep
-    if (values$actiegroep){
-      # Als de groep al bestaat, zoek die kleur op
-      if(values$groepsnaam %in% values$df$groep){
-        kleur_sensor <- values$df[which(values$df$groep == values$groepsnaam),'kleur'][1]
-      }
-      # Geef aan dat de sensor bij die groep hoort. LET op: kan pas na opzoeken van de kleur van de groep
-      values$df[values$df$kit_id == id_select, "groep"] <- values$groepsnaam
     }
     
     # Geef kleur aan de sensor
@@ -119,28 +111,16 @@ function(input, output, session){
   
   ## OBSERVE EVENTS ----
   
-  # Observe of er een groep gaat worden gebruikt ----
-  observeEvent({input$A_groep},{
-    if(input$A_groep){
-      # Selectie van een groep. Sensoren krijgen groepsnaam en zelfde kleur
-      values$groepsnaam <- input$Text_groep
-      values$actiegroep <- TRUE
-    }
-    else{
-      # Geen groep: dan losse selectie weer mogelijk
-      values$groepsnaam <- geen_groep
-      values$actiegroep <- FALSE
-    }
-  })     
-  
-  # Observe of de tekst wordt aangepast, terwijl actiegroep==True (de checkbox is dan aangeklikt). ----
+  # Observe of de tekst wordt aangepast ----
   # Dan wil je dat er een nieuwe groep wordt aangemaakt
   # Bijvoorbeeld: je hebt een groep "Wijk aan Zee" aangemaakt, en je begint een nieuwe naam te typen "IJmuiden". 
   # Deze groep moet dan nieuw aangemaakt worden "IJmuiden".
   observeEvent({input$Text_groep},{
-    if(values$actiegroep){
       values$groepsnaam <- input$Text_groep
-    }
+    })
+  
+  observeEvent({input$bestaande_groep},{
+    values$groepsnaam <- input$bestaande_groep
   })
   
   # Observe if user selects a sensor ----
@@ -166,13 +146,42 @@ function(input, output, session){
   # De values selected worden weer FALSE en de markers kleur_sensor_marker gekleurd, groepen verwijderd
   observeEvent(input$reset, {
     values$df[, "selected"] <- FALSE 
+    values$df[, "huidig"] <- FALSE 
     values$df[, "kleur"] <- kleur_marker_sensor
     values$df[, "groep"] <- geen_groep
     # Laad de sensoren op de kaart zien
     add_sensors_map()
   })
   
-  # Observe voor multiselect ----
+  # Observe of de selectie moet worden toegevoegd aan de groep ----
+  # De values selected worden weer FALSE en de markers kleur_sensor_marker gekleurd, groepen verwijderd
+  observeEvent(input$groeperen, {
+    # Check of een groep gekozen is, anders geen groepering
+    if (values$groepsnaam == geen_groep){
+      values$df[values$df$huidig, "huidig"] <- FALSE
+    }else{
+    # Als de groep al bestaat, zoek die kleur op
+    if(values$groepsnaam %in% values$df$groep){
+      kleur_sensor <- values$df[which(values$df$groep == values$groepsnaam),'kleur'][1]
+    } else{
+      kleur_sensor <- values$df[which(values$df$huidig),'kleur'][1]
+    }
+
+    # Geef aan dat de sensor bij die groep hoort.
+    values$df[values$df$huidig, "groep"] <- values$groepsnaam
+    values$df[values$df$huidig, "kleur"] <- kleur_sensor
+    values$df[values$df$huidig, "huidig"] <- FALSE
+    
+    # Laad de sensoren op de kaart zien
+    add_sensors_map()}
+  })
+  
+  # Voor de bestaande groepen: maak de input-ui ----
+  output$bestaande_groep <- renderUI({
+    selectizeInput('bestaande_groep', 'Kies bestaande groep: ', choices = c("select" = "", levels(as.factor(values$df$groep))))
+  })
+  
+  # Observe voor multiselect ---- 
   observeEvent(input$map_draw_new_feature,{
     
     # Houd bij hoeveel features er zijn. Later nodig bij verwijderen, i.v.m. reset ook de losse selectie.
@@ -239,6 +248,11 @@ function(input, output, session){
   
   
   ## Genereer plots -----
+  
+  # Create tabel huidige selectie ----
+  output$huidig <- renderTable({
+  huidig_df <- data.frame('Selectie' =values$df[which(values$df$huidig),'kit_id'])
+  })
   
   # Create time plot vanuit openair ----
   output$timeplot <- renderPlot({

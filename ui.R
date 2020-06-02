@@ -79,30 +79,13 @@ htmlTemplate("./www/template.wide.html",
       
       #Output: Leaflet map voor sensorselectie
       leafletOutput("map", height = "300px"),
-      br(),
       
-      fluidRow(
-        column(7,# Input: Selecteer de component uit de choices lijst
-               selectInput(inputId = "Var", label = "Kies component", choices = choices, selected = NULL, multiple = FALSE,
-                           selectize = TRUE, width = NULL, size = NULL)
-        ),
-        column(5, # Button om de selectie van sensoren te resetten
-               actionButton("reset", "Reset selectie")
-        )
-        
-        
-      ),
+      # Button om de selectie van sensoren te resetten
+      actionButton("reset", "Reset selectie"),
       
-      fluidRow(
-        column(7,# Input: Tekst voor de groepselectie
-               textInput(inputId = "Text_groep",'Vul groepsnaam in', value = 'groep1')
-        )
-        ,
-        column(5, # Input: Checkbox om aan te vinken om de sensoren in een groep te plaatsen
-               checkboxInput('A_groep','Voeg selectie toe aan groep')
-        )
-      )
-      ,
+      # Input: Selecteer de component uit de choices lijst
+      selectInput(inputId = "Var", label = "Kies component:", choices = choices, selected = NULL, multiple = FALSE,
+                selectize = TRUE, width = NULL, size = NULL),
       # Input: Slider voor het genereren van de tijdreeks
       sliderInput("TimeRange", label = "Selecteer tijdreeks",
                   min = min(input_df$date),
@@ -110,12 +93,21 @@ htmlTemplate("./www/template.wide.html",
                   step=60*60*24,
                   value = c(min(input_df$date),
                             max(input_df$date)
-                            
                   ),
                   width = '100%'
-      )
-    ),
-    
+        ),
+      br(),
+
+      # Input: Tekst voor de groepselectie
+      textInput(inputId = "Text_groep",'Maak nieuwe groep:', value = ''),
+      # Input: kies groep uit lijst bestaande groepen (gaat via een selectInput)
+      uiOutput("bestaande_groep"),
+      # Button: knop om de selectie aan de groep toe te voegen
+      actionButton("groeperen", "Groepeer selectie"),
+      
+      # Output: tabel met de geslecteerde kitids, voor toekenning aan groep
+      tableOutput("huidig")
+      ),
     
     # Main panel voor outputs
     mainPanel(
@@ -128,6 +120,7 @@ htmlTemplate("./www/template.wide.html",
                   tpPollutionRose(),
                   tpWindRose()
       )
+      
     ) 
     ),
   )

@@ -58,6 +58,7 @@ input_df$kit_id <- gsub('HLL_hl_', '', input_df$kit_id) #remove HLL-string from 
 sensor_unique <- aggregate(input_df[,c('lat','lon')], list(input_df$kit_id), FUN = mean) # gemiddelde om per sensor een latlon te krijgen
 names(sensor_unique)[names(sensor_unique)=='Group.1'] <-'kit_id'
 sensor_unique$selected <-FALSE
+sensor_unique$huidig <- FALSE
 sensor_unique$groep <- geen_groep
 sensor_unique$kleur <- kleur_marker_sensor
 sensor_labels <- as.list(sensor_unique$kit_id) # labels to use for hoover info
