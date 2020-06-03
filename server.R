@@ -174,7 +174,10 @@ function(input, output, session){
     
     # Laad de sensoren op de kaart zien
     add_sensors_map()}
+    # Set textinput op geen groep
+    updateTextInput(session,"Text_groep",'Maak nieuwe groep:', value = geen_groep)
   })
+
   
   # Voor de bestaande groepen: maak de input-ui ----
   output$bestaande_groep <- renderUI({
