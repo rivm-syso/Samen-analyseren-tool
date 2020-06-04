@@ -43,7 +43,12 @@ Samen analyseren tool opensource
 
 We maken de samen analyseren tool opensource, zodat ook de analysemethode voor
 iedereen beschikbaar is. Iedereen is welkom om de tool te gebruiken en
-aan te passen (volgens de [GPL v3](https://www.gnu.org/licenses/gpl-3.0.en.html) licentie). Hieronder volgt een
+aan te passen (volgens de [GPL v3](https://www.gnu.org/licenses/gpl-3.0.en.html) licentie). 
+NB. De Samen Analyseren Tool maakt gebruik van de RIVM huisstijl. 
+Gebruikers die de tool aanpassen en op een andere plaats publiceren, 
+verzoeken wij om de RIVM huisstijl niet te gebruiken.
+
+Hieronder volgt een
 beschrijving van de hoofdelementen van de tool. Algemene vragen en
 opmerkingen kan je stellen via
 [samenmeten](https://www.samenmetenaanluchtkwaliteit.nl/contact).
