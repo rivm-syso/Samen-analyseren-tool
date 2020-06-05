@@ -102,6 +102,17 @@ htmlTemplate("./www/template.wide.html",
       ),
 
       fluidRow(
+        column(6,# Input: Selecteer de index i0
+               numericInput("kwal_ind_i0", "Minimum aantal metingen:", 0, min = 0, step = 20)
+        ),
+        column(6, # Input: Selecteer de index i1
+               numericInput("kwal_ind_i1", "Percentage indicatie:", 0, min = 0, max = 100, step = 5)
+        )
+        
+        
+      ),
+      
+      fluidRow(
         column(7,# Input: Tekst voor de groepselectie
                textInput(inputId = "Text_groep",'Vul groepsnaam in', value = 'groep1')
         )

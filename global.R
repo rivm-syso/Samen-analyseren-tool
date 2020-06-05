@@ -51,7 +51,6 @@ icons_stations <- iconList(
 input_df <- readRDS(file)
 kwal_df <- readRDS(file_kwal)
 
-
 ## Default locatie, kleur en label opzetten ----
 input_df$kit_id <- gsub('HLL_hl_', '', input_df$kit_id) #remove HLL-string from input_df for shorter label
 kwal_df$kit_id <- gsub('HLL_hl_', '', kwal_df$kit_id)
@@ -65,7 +64,7 @@ sensor_unique$kleur <- kleur_marker_sensor
 sensor_labels <- as.list(sensor_unique$kit_id) # labels to use for hoover info
 
 # toevoegen van de kwalindex aan de sensordata
-sensor_unique <- merge(sensor_unique, kwal_df[,c('ndata', 'nok', 'kit_id')], all.x=T)
+sensor_unique <- merge(sensor_unique, kwal_df[,c('ndata', 'nok', 'i0','i1','i2','i3','i4','i5','kit_id')], all.x=T)
 sensor_unique$kwalindicat <- round(sensor_unique$nok/sensor_unique$ndata * 100,0)
 sensor_unique$click <- TRUE
 

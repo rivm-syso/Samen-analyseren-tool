@@ -6,7 +6,8 @@
 ## Contact: info@samenmeten.nl 
 ## ---------------------------------------------------------
 ## Opmerkingen: 
-## 
+## TODO: Je wilt nu eigenlijk iets maken waardoor je op de individuele
+## index dingen kan selecteren, dus zien hoe die tot elkaar verhouden
 ## ---------------------------------------------------------
 
 
