@@ -75,10 +75,7 @@ htmlTemplate("./www/template.wide.html",
   # Sidebar layout met input en output definities
   sidebarLayout(
     # Sidebar panel voor leaflet map om sensoren te selecteren
-    sidebarPanel(
-      
-      #Output: Leaflet map voor sensorselectie
-      leafletOutput("map", height = "300px"),
+    sidebarPanel(width=3,
       
       # Button om de selectie van sensoren te resetten
       actionButton("reset", "Reset selectie"),
@@ -110,7 +107,9 @@ htmlTemplate("./www/template.wide.html",
       ),
     
     # Main panel voor outputs
-    mainPanel(
+    mainPanel(width=9,
+      #Output: Leaflet map voor sensorselectie
+      leafletOutput("map", height = "300px"),
       # Output: Tabset voor openair plots, zie voor de inhoud het script: tabPanels.R
       tabsetPanel(type = "tabs",
                   tpTimeplot(),
