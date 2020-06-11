@@ -142,13 +142,24 @@ function(input, output, session){
     }
   })
   
-  # Observe of de selectie moet worden gereset ----
+  # Observe of de huidige selectie moet worden gereset ----
   # De values selected worden weer FALSE en de markers kleur_sensor_marker gekleurd, groepen verwijderd
-  observeEvent(input$reset, {
+  observeEvent(input$reset_huidig, {
+    values$df[which(values$df$huidig == TRUE), "selected"] <- FALSE 
+    values$df[which(values$df$huidig == TRUE), "kleur"] <- kleur_marker_sensor
+    values$df[which(values$df$huidig == TRUE), "groep"] <- geen_groep
+    values$df[which(values$df$huidig == TRUE), "huidig"] <- FALSE 
+    # Laad de sensoren op de kaart zien
+    add_sensors_map()
+  })
+  
+  # Observe of de alle geselecteerde sensoren moet worden gereset ----
+  # De values selected worden weer FALSE en de markers kleur_sensor_marker gekleurd, groepen verwijderd
+  observeEvent(input$reset_all, {
     values$df[, "selected"] <- FALSE 
-    values$df[, "huidig"] <- FALSE 
     values$df[, "kleur"] <- kleur_marker_sensor
     values$df[, "groep"] <- geen_groep
+    values$df[, "huidig"] <- FALSE 
     # Laad de sensoren op de kaart zien
     add_sensors_map()
   })

@@ -77,8 +77,8 @@ htmlTemplate("./www/template.wide.html",
     # Sidebar panel voor leaflet map om sensoren te selecteren
     sidebarPanel(width=3,
       
-      # Button om de selectie van sensoren te resetten
-      actionButton("reset", "Reset selectie"),
+      # Button om de alles wat geselecteerd is te resetten
+      actionButton("reset_all", "Reset allen"),
       
       # Input: Selecteer de component uit de choices lijst
       selectInput(inputId = "Var", label = "Kies component:", choices = choices, selected = NULL, multiple = FALSE,
@@ -101,6 +101,9 @@ htmlTemplate("./www/template.wide.html",
       uiOutput("bestaande_groep"),
       # Button: knop om de selectie aan de groep toe te voegen
       actionButton("groeperen", "Groepeer selectie"),
+      
+      # Button om de huidige selectie van sensoren te resetten
+      actionButton("reset_huidig", "Reset selectie"),
       
       # Output: tabel met de geslecteerde kitids, voor toekenning aan groep
       tableOutput("huidig")
