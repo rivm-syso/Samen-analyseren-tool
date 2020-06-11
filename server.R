@@ -37,7 +37,7 @@ function(input, output, session){
   })
   
   # Zet reactive dataframe op ----
-  values <- reactiveValues(df = sensor_unique, groepsnaam = geen_groep, df_gem = data.frame()) 
+  values <- reactiveValues(df = sensor_unique, groepsnaam = geen_groep, df_gem = data.frame(), startdatum = 0, einddatum=0) 
   overzicht_shapes <- reactiveValues(add = 0, delete = 0) # nodig om selectie ongedaan te maken
   
   ## FUNCTIES ----
@@ -122,6 +122,16 @@ function(input, output, session){
   observeEvent({input$bestaande_groep},{
     values$groepsnaam <- input$bestaande_groep
   })
+  
+  # Observe of de datum wordt aangepast
+  observeEvent({input$DateStart},{
+    values$startdatum <- input$DateStart
+  })
+  
+  observeEvent({input$DateEind},{
+    values$einddatum <- input$DateEind
+  })
+  
   
   # Observe if user selects a sensor ----
   observeEvent({input$map_marker_click$id}, {
@@ -272,7 +282,6 @@ function(input, output, session){
   output$timeplot <- renderPlot({
     
     comp <- selectReactiveComponent(input)
-    dates <- selectReactiveDates(input)
     selected_id <- values$df[which(values$df$selected & values$df$groep == geen_groep),'kit_id']
     show_input <-input_df[which(input_df$kit_id %in% selected_id),]
     
@@ -283,12 +292,12 @@ function(input, output, session){
     
     # if / else statement om correctie lml data toe te voegen ----
     if(comp == "pm10" || comp == "pm10_kal"){
-      try(timePlot(selectByDate(mydata = show_input,start = dates()$start, end = dates()$end),
+      try(timePlot(selectByDate(mydata = show_input,start = values$startdatum, end = values$einddatum),
                    pollutant = c(comp, "pm10_lml"), wd = "wd", type = "kit_id", local.tz="Europe/Amsterdam"))
       # Call in try() zodat er geen foutmelding wordt getoond als er geen enkele sensor is aangeklikt 
     }
     else {
-      try(timePlot(selectByDate(mydata = show_input,start = dates()$start, end = dates()$end),
+      try(timePlot(selectByDate(mydata = show_input,start = values$startdatum, end = values$einddatum),
                    pollutant = c(comp, "pm25_lml"), wd = "wd", type = "kit_id", local.tz="Europe/Amsterdam"))
       # Call in try() zodat er geen foutmelding wordt getoond als er geen enkele sensor is aangeklikt 
     }
@@ -298,7 +307,6 @@ function(input, output, session){
   output$calendar <- renderPlot({
     
     comp <- selectReactiveComponent(input)
-    dates <- selectReactiveDates(input)
     selected_id <- values$df[which(values$df$selected & values$df$groep == geen_groep),'kit_id']
     show_input <-input_df[which(input_df$kit_id %in% selected_id),]
     
@@ -307,7 +315,7 @@ function(input, output, session){
       calc_groep_mean() # berekent groepsgemiddeldes
       show_input <- merge(show_input,values$df_gem, all = T) }
     
-    try(calendarPlot(selectByDate(mydata = show_input, start = dates()$start, end = dates()$end),
+    try(calendarPlot(selectByDate(mydata = show_input, start = values$startdatum, end = values$einddatum),
                      pollutant = comp, limits= c(0,150), cols = 'Purples', local.tz="Europe/Amsterdam")) 
     # Call in try() zodat er geen foutmelding wordt getoond als er geen enkele sensor is aangeklikt 
   })
@@ -316,7 +324,6 @@ function(input, output, session){
   output$timevariation <- renderPlot({
     
     comp <- selectReactiveComponent(input)
-    dates <- selectReactiveDates(input)
     selected_id <- values$df[which(values$df$selected & values$df$groep == geen_groep),'kit_id']
     show_input <-input_df[which(input_df$kit_id %in% selected_id),]
     
@@ -340,7 +347,7 @@ function(input, output, session){
     # create colour array
     kleur_array <- kit_kleur_sort$kleur
     
-    try(timeVariation(selectByDate(mydata = show_input, start = dates()$start, end = dates()$end),
+    try(timeVariation(selectByDate(mydata = show_input, start = values$startdatum, end = values$einddatum),
                       pollutant = comp, normalise = FALSE, group = "kit_id",
                       alpha = 0.1, cols = kleur_array, local.tz="Europe/Amsterdam",
                       ylim = c(0,NA))) 
@@ -352,7 +359,6 @@ function(input, output, session){
   output$pollutionplot <- renderPlot({
     
     comp <- selectReactiveComponent(input)
-    dates <- selectReactiveDates(input)
     selected_id <- values$df[which(values$df$selected & values$df$groep == geen_groep),'kit_id']
     show_input <-input_df[which(input_df$kit_id %in% selected_id),]    
     
@@ -362,7 +368,7 @@ function(input, output, session){
       show_input <- merge(show_input,values$df_gem, all = T) }
     
     
-    try(pollutionRose(selectByDate(mydata = show_input,start = dates()$start, end = dates()$end),
+    try(pollutionRose(selectByDate(mydata = show_input,start = values$startdatum, end = values$einddatum),
                       pollutant = comp, wd = 'wd', ws = 'ws', type = 'kit_id' , local.tz="Europe/Amsterdam", cols = "Purples", statistic = 'prop.mean',breaks=c(0,20,60,100))) 
     
   })
@@ -372,7 +378,6 @@ function(input, output, session){
   output$windplot <- renderPlot({
     
     comp <- selectReactiveComponent(input)
-    dates <- selectReactiveDates(input)
     selected_id <- values$df[which(values$df$selected & values$df$groep == geen_groep),'kit_id']
     show_input <-input_df[which(input_df$kit_id %in% selected_id),]    
     
@@ -382,7 +387,7 @@ function(input, output, session){
       show_input <- merge(show_input,values$df_gem, all = T) }
     
     
-    try(windRose(selectByDate(mydata = show_input,start = dates()$start, end = dates()$end),
+    try(windRose(selectByDate(mydata = show_input,start = values$startdatum, end = values$einddatum),
                  wd = 'wd', ws = 'ws', type = 'kit_id' , local.tz="Europe/Amsterdam", cols = "Purples")) 
     # Call in try() zodat er geen foutmelding wordt getoond als er geen enkele sensor is aangeklikt 
     
@@ -392,7 +397,6 @@ function(input, output, session){
   output$percentileplot <- renderPlot({
     
     comp <- selectReactiveComponent(input)
-    dates <- selectReactiveDates(input)
     selected_id <- values$df[which(values$df$selected & values$df$groep == geen_groep),'kit_id']
     show_input <-input_df[which(input_df$kit_id %in% selected_id),]    
     
@@ -401,7 +405,7 @@ function(input, output, session){
       calc_groep_mean() # berekent groepsgemiddeldes
       show_input <- merge(show_input,values$df_gem, all = T) }
     
-    try(percentileRose(selectByDate(mydata = show_input,start = dates()$start, end = dates()$end),
+    try(percentileRose(selectByDate(mydata = show_input,start = values$startdatum, end = values$einddatum),
                        pollutant = comp, wd = 'wd', type = 'kit_id', local.tz="Europe/Amsterdam", percentile = NA)) 
     
   })  

@@ -78,21 +78,18 @@ htmlTemplate("./www/template.wide.html",
     sidebarPanel(width=3,
       
       # Button om de alles wat geselecteerd is te resetten
-      actionButton("reset_all", "Reset allen"),
-      
+      actionButton("reset_all", "Reset alle sensoren"),
+      br(),
       # Input: Selecteer de component uit de choices lijst
       selectInput(inputId = "Var", label = "Kies component:", choices = choices, selected = NULL, multiple = FALSE,
                 selectize = TRUE, width = NULL, size = NULL),
-      # Input: Slider voor het genereren van de tijdreeks
-      sliderInput("TimeRange", label = "Selecteer tijdreeks",
-                  min = min(input_df$date),
-                  max = max(input_df$date),
-                  step=60*60*24,
-                  value = c(min(input_df$date),
-                            max(input_df$date)
-                  ),
-                  width = '100%'
-        ),
+      
+      # Input: Blokjes voor de datum
+      dateInput("DateStart", label="Selecteer begin tijdreeks:", format='dd-mm-yyyy',value = min(input_df$date), 
+                min = min(input_df$date), max = max(input_df$date)),
+      dateInput("DateEind", label="Selecteer einde tijdreeks:", format='dd-mm-yyyy', value = max(input_df$date), 
+                min = min(input_df$date), max = max(input_df$date)),
+      
       br(),
 
       # Input: Tekst voor de groepselectie
