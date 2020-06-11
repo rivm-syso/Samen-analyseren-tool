@@ -22,7 +22,7 @@ if (!dir.exists('www')){
 }
 
 # HTML template voor de opmaak/styling
-htmlTemplate("./www/template.wide.html",
+htmlTemplate("./www/template_samenmeten.wide.html",
              pageTitle=paste("Prototype Samen Analyseren tool: project ", projectnaam),
              
              aboutSite=div(h3("Verantwoording"),
