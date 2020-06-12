@@ -9,20 +9,8 @@
 ## Het eerste gedeelte bevat de opmaak/styling
 ## ---------------------------------------------------------
 
-## Load folder voor de huisstijl ----
-
-# Hier worden de bestanden opgehaald voor de huissijl. Deze staan ook op github en zullen
-# ook ge-update worden, dus verwijder zo nu en dan je www folder.
-# Let op: zorg ervoor dat je niet zelf ook een folder 'www' hebt, anders worden de bestanden niet
-# opgehaald. 
-if (!dir.exists('www')){
-  download.file('https://github.com/rivm-syso/RIVM-huisstijl-shiny/archive/master.zip', destfile = "wwwdest.zip")
-  unzip('wwwdest.zip', exdir='.')
-  file.rename('RIVM-huisstijl-shiny-master', 'www')
-}
-
 # HTML template voor de opmaak/styling
-htmlTemplate("./www/template.wide.html",
+htmlTemplate("./www/template_samenmeten.wide.html",
              pageTitle=paste("Prototype Samen Analyseren tool: project ", projectnaam),
              
              aboutSite=div(h3("Verantwoording"),
@@ -65,7 +53,13 @@ htmlTemplate("./www/template.wide.html",
         Maar het kan ook gaan om sensoren die altijd of vaak afwijken van de patronen die andere sensoren laten zien.  
         Het is op dit moment nog niet mogelijk om de meetwaarden van deze uren of sensoren uit de gegevens te filteren. Daar werken we wel aan.
         "
-                             ))),
+                             )),
+                           h3("Nieuw in deze tool"),
+                           p("De tool is nog in ontwikkeling. Hieronder vindt u de laatste aanpassingen (sinds 12 juni 2020):"),
+                            tags$ul(tags$li("Layout: grotere kaart beschikbaar"),
+                           tags$li("Tijdreeksselectie: makkelijker vanaf een specifieke dag te filteren"),
+                           tags$li("Groepsselectie: makkelijker de sensoren te clusteren in een groep zodat groepsgemiddeldes kunnen worden vergeleken"))
+                           ),
              
   # Vanaf hier begint de tool zelf
   fluidPage=fluidPage(
@@ -75,50 +69,41 @@ htmlTemplate("./www/template.wide.html",
   # Sidebar layout met input en output definities
   sidebarLayout(
     # Sidebar panel voor leaflet map om sensoren te selecteren
-    sidebarPanel(
+    sidebarPanel(width=3,
       
-      #Output: Leaflet map voor sensorselectie
-      leafletOutput("map", height = "300px"),
+      # Button om de alles wat geselecteerd is te resetten
+      actionButton("reset_all", "Reset alle sensoren"),
       br(),
+      # Input: Selecteer de component uit de choices lijst
+      selectInput(inputId = "Var", label = "Kies component:", choices = choices, selected = NULL, multiple = FALSE,
+                selectize = TRUE, width = NULL, size = NULL),
       
-      fluidRow(
-        column(7,# Input: Selecteer de component uit de choices lijst
-               selectInput(inputId = "Var", label = "Kies component", choices = choices, selected = NULL, multiple = FALSE,
-                           selectize = TRUE, width = NULL, size = NULL)
-        ),
-        column(5, # Button om de selectie van sensoren te resetten
-               actionButton("reset", "Reset selectie")
-        )
-        
-        
+      # Input: Blokjes voor de datum
+      dateInput("DateStart", label="Selecteer begin tijdreeks:", format='dd-mm-yyyy',value = min(input_df$date), 
+                min = min(input_df$date), max = max(input_df$date)),
+      dateInput("DateEind", label="Selecteer einde tijdreeks:", format='dd-mm-yyyy', value = max(input_df$date), 
+                min = min(input_df$date), max = max(input_df$date)),
+      
+      br(),
+
+      # Input: Tekst voor de groepselectie
+      textInput(inputId = "Text_groep",'Maak nieuwe groep:', value = ''),
+      # Input: kies groep uit lijst bestaande groepen (gaat via een selectInput)
+      uiOutput("bestaande_groep"),
+      # Button: knop om de selectie aan de groep toe te voegen
+      actionButton("groeperen", "Groepeer selectie"),
+      
+      # Button om de huidige selectie van sensoren te resetten
+      actionButton("reset_huidig", "Reset selectie"),
+      
+      # Output: tabel met de geslecteerde kitids, voor toekenning aan groep
+      tableOutput("huidig")
       ),
-      
-      fluidRow(
-        column(7,# Input: Tekst voor de groepselectie
-               textInput(inputId = "Text_groep",'Vul groepsnaam in', value = 'groep1')
-        )
-        ,
-        column(5, # Input: Checkbox om aan te vinken om de sensoren in een groep te plaatsen
-               checkboxInput('A_groep','Voeg selectie toe aan groep')
-        )
-      )
-      ,
-      # Input: Slider voor het genereren van de tijdreeks
-      sliderInput("TimeRange", label = "Selecteer tijdreeks",
-                  min = min(input_df$date),
-                  max = max(input_df$date),
-                  step=60*60*24,
-                  value = c(min(input_df$date),
-                            max(input_df$date)
-                            
-                  ),
-                  width = '100%'
-      )
-    ),
-    
     
     # Main panel voor outputs
-    mainPanel(
+    mainPanel(width=9,
+      #Output: Leaflet map voor sensorselectie
+      leafletOutput("map", height = "300px"),
       # Output: Tabset voor openair plots, zie voor de inhoud het script: tabPanels.R
       tabsetPanel(type = "tabs",
                   tpTimeplot(),
@@ -128,6 +113,7 @@ htmlTemplate("./www/template.wide.html",
                   tpPollutionRose(),
                   tpWindRose()
       )
+      
     ) 
     ),
   )

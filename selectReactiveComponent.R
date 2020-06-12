@@ -6,8 +6,8 @@
 ## Contact: info@samenmeten.nl 
 ## ---------------------------------------------------------
 ## Opmerkingen: 
-## In dit script worden 2 functies gemaakt die het interactieve gedeelte
-## van de componentkeuze en de slider maken.
+## In dit script worden 1 functie gemaakt die het interactieve gedeelte
+## van de componentkeuze maken.
 ## ---------------------------------------------------------
 
 selectReactiveComponent <- function(input){ 
@@ -20,17 +20,3 @@ comp <- switch(input$Var,
 
   return(comp)
 } 
-
-
-selectReactiveDates <- function(input){ 
-  
-  dates_reactive <- reactive({
-    start <-   format(as.POSIXct(input$TimeRange[1],format='%Y-%m-%d %H:%M:%S'),format='%d/%m/%Y')
-    end <- format(as.POSIXct(input$TimeRange[2],format='%Y-%m-%d %H:%M:%S'),format='%d/%m/%Y')
-    
-    combo <- list(start = start, end = end)
-    combo
-  })
-  
-} 
-  
