@@ -53,7 +53,13 @@ htmlTemplate("./www/template_samenmeten.wide.html",
         Maar het kan ook gaan om sensoren die altijd of vaak afwijken van de patronen die andere sensoren laten zien.  
         Het is op dit moment nog niet mogelijk om de meetwaarden van deze uren of sensoren uit de gegevens te filteren. Daar werken we wel aan.
         "
-                             ))),
+                             )),
+                           h3("Nieuw in deze tool"),
+                           p("De tool is nog in ontwikkeling. Hieronder vindt u de laatste aanpassingen (sinds 12 juni 2020):"),
+                            tags$ul(tags$li("Layout: grotere kaart beschikbaar"),
+                           tags$li("Tijdreeksselectie: makkelijker vanaf een specifieke dag te filteren"),
+                           tags$li("Groepsselectie: makkelijker de sensoren te clusteren in een groep zodat groepsgemiddeldes kunnen worden vergeleken"))
+                           ),
              
   # Vanaf hier begint de tool zelf
   fluidPage=fluidPage(
