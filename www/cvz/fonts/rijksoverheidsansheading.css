@@ -1,0 +1,21 @@
+@font-face{
+font-family:"RijksOverheidSans";
+src:url(fonts/rijksoverheidsansheading-bold_2_0.eot);
+src:url(fonts/rijksoverheidsansheading-bold_2_0.eot?#iefix) format("embedded-opentype"),
+url(fonts/rijksoverheidsansheading-bold_2_0.woff) format("woff"),
+url(fonts/rijksoverheidsansheading-bold_2_0.ttf) format("truetype"),
+url(fonts/rijksoverheidsansheading-bold_2_0.svg#RijksOverheidSansBold) format("svg");
+font-weight:bold;
+font-style:normal;
+}
+
+@font-face{
+font-family:"RijksOverheidSans";
+src:url(fonts/rijksoverheidsansheading-regular_2_0.eot);
+src:url(fonts/rijksoverheidsansheading-regular_2_0.eot?#iefix) format("embedded-opentype"),
+url(fonts/rijksoverheidsansheading-regular_2_0.woff) format("woff"),
+url(fonts/rijksoverheidsansheading-regular_2_0.ttf) format("truetype"),
+url(fonts/rijksoverheidsansheading-regular_2_0.svg#RijksOverheidSansRegular) format("svg");
+font-weight:normal;
+font-style:normal;
+}

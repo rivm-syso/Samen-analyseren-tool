@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<HTML>
+<HEAD>
+  <TITLE> {{pageTitle}} </TITLE>
+    <meta charset="utf-8"> 
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+ {{ headContent() }}
+ {{ bootstrapLib() }}
+<link href='http://fonts.googleapis.com/css?family=Source+Sans+Pro:400' rel='stylesheet' type='text/css'>
+<link href='http://fonts.googleapis.com/css?family=Source+Sans+Pro:700' rel='stylesheet' type='text/css'>
+<link rel="stylesheet" href="cvz/theme.css">
+<script>$( document ).ready(function() {
+  var RIVMAbout=$("#RIVMAbout").html();
+  
+    if(RIVMAbout<10)
+    {
+      
+      $("#RIVMAboutLink").hide();
+    }
+    $("#RIVMAboutLink").click(function() {
+      $( "#RIVMPage" ).addClass("hidden");
+      $( "#RIVMAbout" ).removeClass("hidden");
+    });
+    $("#RIVMHomeLink").click(function() {
+      $( "#RIVMPage" ).removeClass("hidden");
+      $( "#RIVMAbout" ).addClass("hidden");
+    });
+   
+});</script>
+</HEAD>
+
+<BODY>
+<div id="page">
+	<div class="header" style="text-align: center;">
+		<img src="cvz/images/Banner_2018.png" width="610" />
+	</div>
+
+	<nav class="navbar navbar-default" role="navigation">
+	<div class="container">
+	<div class="navbar-header">
+           <span class ="navbar-brand"><a href="https://www.samenmetenaanluchtkwaliteit.nl/" style="color:black" >SamenMeten</a></span> 
+    </div>
+	<ul class="nav navbar-nav">
+        <li><a href="#" id="RIVMHomeLink">Home</a></li>
+        <li><a href="#" id="RIVMAboutLink">Over deze App</a></li>
+	</ul>
+	
+	</div>
+	</nav>
+	
+	<div class="content">
+	
+
+	<h1>{{pageTitle}}</h1>
+<div id="RIVMPage">
+{{fluidPage}}
+</div>
+<div id="RIVMAbout" class="hidden">
+{{aboutSite}}
+</div>
+		
+
+	</div>
+
+
+</div>
+
+
+</BODY>
+</HTML>
