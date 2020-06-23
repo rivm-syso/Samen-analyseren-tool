@@ -56,7 +56,7 @@ tpTimevariation <- function(){
                         De bovenste grafiek laat de gemiddelde uurwaarde, uitgesplitst naar weekdag, zien.
                         Onder zie je de gemiddelde concentratie op elk uur van de dag (links), in het midden zie je de gemiddelde concentratie per maand en
                         rechts zie je de gemiddelde concentratie per dag van de week.
-                        ")
+                        ", style = "font-size:12px")
                   )
   
   return(tp)
@@ -74,7 +74,7 @@ tpWindRose<- function(){
                         grafiek in hoeveel procent van de tijd de wind vanuit die richting waaide.  
                         De gekleurde blokken geven de windsnelheid aan. Bijvoorbeeld: wanneer de wind voornamelijk uit het zuidwesten komt, 
                         zie je de langste blokken linksonder (tussen zuid en west in). Als je wilt weten hoe hard de wind waaide, 
-                        bekijk je de kleur van de blokken. Hoe donkerder de kleur, hoe harder de wind.")
+                        bekijk je de kleur van de blokken. Hoe donkerder de kleur, hoe harder de wind.", style = "font-size:12px")
                   )
   
   return(tp)
@@ -90,7 +90,8 @@ tpPercentileRose<- function(){
                       plotOutput("percentileplot"),
                       h4("Toelichting"),
                       p("Als je een sensor aanklikt, wordt een pollutieroos getoond. 
-                                   Deze toont per windsector het gemiddelde van de sensormetingen wanneer de wind uit die richting waaide."
+                                   Deze toont per windsector het gemiddelde van de sensormetingen wanneer de wind uit die richting waaide.",
+                        style = "font-size:12px"
                       )
                   )
   
@@ -108,7 +109,8 @@ tpPollutionRose<- function(){
                       p("Als je een sensor aanklikt, wordt een gewogen pollutieroos getoond. 
                                    Deze berekent per windsector het aandeel (in %) van deze sector in de totale gemiddelde concentratie.
                                    De gemiddelde concentratie per sector wordt hiervoor gewogen naar hoe vaak deze windrichting voorkomt.
-                                   ")
+                                   ",
+                        style = "font-size:12px")
                   )
   
   return(tp)
