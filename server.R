@@ -37,7 +37,8 @@ function(input, output, session){
   })
   
   # Zet reactive dataframe op ----
-  values <- reactiveValues(df = sensor_unique, groepsnaam = geen_groep, df_gem = data.frame(), startdatum = 0, einddatum=0) 
+  values <- reactiveValues(df = sensor_unique, groepsnaam = geen_groep, df_gem = data.frame(), startdatum = 0, einddatum=0,
+                           kwal_1 = F,kwal_2 = F,kwal_10 = F, kwal_100 = F, kwal_1000 = F) 
   overzicht_shapes <- reactiveValues(add = 0, delete = 0) # nodig om selectie ongedaan te maken
   
   ## FUNCTIES ----
@@ -108,6 +109,39 @@ function(input, output, session){
     values$df_gem <- gemiddeld_all
   }
   
+  # Kwaliteitsindex: maak selectie in meetpunten
+  Select_kwal_eisen <- function(dataset){
+    # Bepaal ahv checkbox welke kwaliteitseisen zijn gesteld
+    indices_1 <- NULL
+    indices_100 <- NULL
+    indices_1000 <- NULL
+    indices_2 <- NULL
+    indices_10 <- NULL
+
+    if (values$kwal_1){
+      indices_1 <- which(dataset$kwalindex_pm25 %in% c(1,11,101,111,1001,1101,1111))
+    }
+    if (values$kwal_2){
+      indices_2 <- which(dataset$kwalindex_pm25 %in% c(2,12,102,112,1002,1102,1112))
+    }
+    if (values$kwal_10){
+      indices_10 <- which(dataset$kwalindex_pm25 %in% c(10,11,12,110,111,112,1010,1011,1012,1110,1111,1112))
+    }
+    if (values$kwal_100){
+      indices_100 <- which((dataset$kwalindex_pm25 < 1000 & dataset$kwalindex_pm25 >= 100) |
+                             dataset$kwalindex_pm25 == 1100)
+    }
+    if (values$kwal_1000){
+      indices_1000 <- which(dataset$kwalindex_pm25 >= 1000)
+    }
+    # Voeg de indices toe die niet moeten worden meegenomen
+    indices_eisen <- c(indices_1, indices_2, indices_10, indices_100, indices_1000)
+    
+    return(indices_eisen)
+    
+    
+  }
+
   
   ## OBSERVE EVENTS ----
   
@@ -132,7 +166,52 @@ function(input, output, session){
     values$einddatum <- input$DateEind
   })
   
+  # Observe of er een kwaliteitscheck is
+  # Check voor de kwaliteitsindex bevattend een 1
+  observeEvent({input$kwal_1},{
+    if(input$kwal_1){
+      values$kwal_1 = T
+    }else{
+      values$kwal_1 = F
+    }
+  })
   
+  # Check voor de kwaliteitsindex bevattend een 2 
+  observeEvent({input$kwal_2},{
+    if(input$kwal_2){
+      values$kwal_2 = T
+    }else{
+      values$kwal_2 = F
+    }
+  })
+  
+  # Check voor de kwaliteitsindex bevattend een 10
+  observeEvent({input$kwal_10},{
+    if(input$kwal_10){
+      values$kwal_10 = T
+    }else{
+      values$kwal_10 = F
+    }
+  })
+
+  # Check voor de kwaliteitsindex bevattend een 100
+  observeEvent({input$kwal_100},{
+    if(input$kwal_100){
+      values$kwal_100 = T
+    }else{
+      values$kwal_100 = F
+    }
+  })
+  
+  # Check voor de kwaliteitsindex bevattend een 1000
+  observeEvent({input$kwal_1000},{
+    if(input$kwal_1000){
+      values$kwal_1000 = T
+    }else{
+      values$kwal_1000 = F
+    }
+  })
+
   # Observe if user selects a sensor ----
   observeEvent({input$map_marker_click$id}, {
     id_select <- input$map_marker_click$id
@@ -278,10 +357,9 @@ function(input, output, session){
   huidig_df <- data.frame('Selectie' =values$df[which(values$df$huidig),'kit_id'])
   })
   
-  # Create time plot vanuit openair ----
-  output$timeplot <- renderPlot({
+  # Create tijdreeks kwalindex plot  ----
+  output$kwalindex <- renderPlot({
     
-    comp <- selectReactiveComponent(input)
     selected_id <- values$df[which(values$df$selected & values$df$groep == geen_groep),'kit_id']
     show_input <-input_df[which(input_df$kit_id %in% selected_id),]
     
@@ -289,18 +367,95 @@ function(input, output, session){
     if (length(unique(values$df$groep))>1){
       calc_groep_mean() # berekent groepsgemiddeldes
       show_input <- merge(show_input,values$df_gem, all = T) }
+
+    # Haal de kwaliteitseisen op. 
+    ind_kwal_eisen <- Select_kwal_eisen(show_input)
+    # Als er eisen zijn, verwijder dan de metingen die niet aan de eisen voldoen
+    if (!is_empty(ind_kwal_eisen)){
+      show_input <- show_input[-ind_kwal_eisen,]
+    }
+
+    ## Create array for the colours
+    # get the unique kit_id and the color
+    kit_kleur <- unique(values$df[which(values$df$selected),c('kit_id','kleur','groep')])
     
-    # if / else statement om correctie lml data toe te voegen ----
-    if(comp == "pm10" || comp == "pm10_kal"){
-      try(timePlot(selectByDate(mydata = show_input,start = values$startdatum, end = values$einddatum),
-                   pollutant = c(comp, "pm10_lml"), wd = "wd", type = "kit_id", local.tz="Europe/Amsterdam"))
-      # Call in try() zodat er geen foutmelding wordt getoond als er geen enkele sensor is aangeklikt 
+    # Als er een groep is, zorg voor 1 rij van de groep, zodat er maar 1 kleur is
+    if (length(unique(kit_kleur$groep)>1)){
+      kit_kleur[which(kit_kleur$groep != geen_groep),'kit_id'] <- kit_kleur[which(kit_kleur$groep != geen_groep),'groep']
+      kit_kleur <- unique(kit_kleur)
     }
-    else {
-      try(timePlot(selectByDate(mydata = show_input,start = values$startdatum, end = values$einddatum),
-                   pollutant = c(comp, "pm25_lml"), wd = "wd", type = "kit_id", local.tz="Europe/Amsterdam"))
-      # Call in try() zodat er geen foutmelding wordt getoond als er geen enkele sensor is aangeklikt 
+    
+    # Sort by kit_id
+    kit_kleur_sort <- kit_kleur[order(kit_kleur$kit_id),]
+    # create colour array
+    kleur_array <- kit_kleur_sort$kleur
+    
+    # Maken van de plot
+    ggplot(data = show_input, aes(x = date, y = kwalindex_pm25, colour = kit_id)) +
+      geom_point() +
+      scale_y_continuous(breaks=c(0,1,2,10,100,1000,1112), labels=c(0,1,2,10,100,1000,1112)) + 
+      scale_color_manual(values = kleur_array) +
+      labs(x = "Tijd", y = 'Kwaliteitsindex') +
+      theme_bw()
+  })
+  
+  # Create time plot vanuit openair ----
+  output$timeplot <- renderPlot({
+    
+    comp <- selectReactiveComponent(input)
+    selected_id <- values$df[which(values$df$selected & values$df$groep == geen_groep),'kit_id']
+    show_input <-input_df[which(input_df$kit_id %in% selected_id),]
+    
+    # Haal de kwaliteitseisen op
+    ind_kwal_eisen <- Select_kwal_eisen(show_input)
+    # Als er eisen zijn, verwijder dan de metingen die niet aan de eisen voldoen
+    if (!is_empty(ind_kwal_eisen)){
+      show_input <- show_input[-ind_kwal_eisen,]
     }
+    
+    # # Als er groepen zijn geselecteerd, bereken dan het gemiddelde
+    # if (length(unique(values$df$groep))>1){
+    #   calc_groep_mean() # berekent groepsgemiddeldes
+    #   show_input <- merge(show_input,values$df_gem, all = T) }
+    
+    # # if / else statement om correctie lml data toe te voegen ----
+    # if(comp == "pm10" || comp == "pm10_kal"){
+    #   try(timePlot(selectByDate(mydata = show_input,start = values$startdatum, end = values$einddatum),
+    #                pollutant = c(comp, "pm10_lml"), wd = "wd", type = "kit_id", local.tz="Europe/Amsterdam"))
+    #   # Call in try() zodat er geen foutmelding wordt getoond als er geen enkele sensor is aangeklikt 
+    # }
+    # else {
+    #   try(timePlot(selectByDate(mydata = show_input,start = values$startdatum, end = values$einddatum),
+    #                pollutant = c(comp, "pm25_lml"), wd = "wd", type = "kit_id", local.tz="Europe/Amsterdam"))
+    #   # Call in try() zodat er geen foutmelding wordt getoond als er geen enkele sensor is aangeklikt 
+    # }
+    # 
+    
+    # Selecteer de juiste tijdreeks als aangegeven bij de slider
+    show_input <- selectByDate(mydata = show_input, start = values$startdatum, end = values$einddatum)
+    
+    ## Create array for the colours
+    # get the unique kit_id and the color
+    kit_kleur <- unique(values$df[which(values$df$selected),c('kit_id','kleur','groep')])
+    
+    # Als er een groep is, zorg voor 1 rij van de groep, zodat er maar 1 kleur is
+    if (length(unique(kit_kleur$groep)>1)){
+      kit_kleur[which(kit_kleur$groep != geen_groep),'kit_id'] <- kit_kleur[which(kit_kleur$groep != geen_groep),'groep']
+      kit_kleur <- unique(kit_kleur)
+    }
+    
+    # Sort by kit_id
+    kit_kleur_sort <- kit_kleur[order(kit_kleur$kit_id),]
+    # create colour array
+    kleur_array <- kit_kleur_sort$kleur
+    
+    # Maken van de plot
+    ggplot(data = show_input, aes_string(x = "date", y = comp, colour = "kit_id")) +
+      geom_point() +
+     
+      scale_color_manual(values = kleur_array) +
+      labs(x = "Tijd", y = 'concentratie (ug/m3)') +
+      theme_bw()
   })
   
   # Create kalender plot vanuit openair ----
@@ -309,6 +464,13 @@ function(input, output, session){
     comp <- selectReactiveComponent(input)
     selected_id <- values$df[which(values$df$selected & values$df$groep == geen_groep),'kit_id']
     show_input <-input_df[which(input_df$kit_id %in% selected_id),]
+    
+    # Haal de kwaliteitseisen op. 
+    ind_kwal_eisen <- Select_kwal_eisen(show_input)
+    # Als er eisen zijn, verwijder dan de metingen die niet aan de eisen voldoen
+    if (!is_empty(ind_kwal_eisen)){
+      show_input <- show_input[-ind_kwal_eisen,]
+    }
     
     # Als er groepen zijn geselecteerd, bereken dan het gemiddelde
     if (length(unique(values$df$groep))>1){
@@ -326,6 +488,13 @@ function(input, output, session){
     comp <- selectReactiveComponent(input)
     selected_id <- values$df[which(values$df$selected & values$df$groep == geen_groep),'kit_id']
     show_input <-input_df[which(input_df$kit_id %in% selected_id),]
+    
+    # Haal de kwaliteitseisen op. 
+    ind_kwal_eisen <- Select_kwal_eisen(show_input)
+    # Als er eisen zijn, verwijder dan de metingen die niet aan de eisen voldoen
+    if (!is_empty(ind_kwal_eisen)){
+      show_input <- show_input[-ind_kwal_eisen,]
+    }
     
     # Als er groepen zijn geselecteerd, bereken dan het gemiddelde
     if (length(unique(values$df$groep))>1){
@@ -362,6 +531,13 @@ function(input, output, session){
     selected_id <- values$df[which(values$df$selected & values$df$groep == geen_groep),'kit_id']
     show_input <-input_df[which(input_df$kit_id %in% selected_id),]    
     
+    # Haal de kwaliteitseisen op. 
+    ind_kwal_eisen <- Select_kwal_eisen(show_input)
+    # Als er eisen zijn, verwijder dan de metingen die niet aan de eisen voldoen
+    if (!is_empty(ind_kwal_eisen)){
+      show_input <- show_input[-ind_kwal_eisen,]
+    }
+    
     # Als er groepen zijn geselecteerd, bereken dan het gemiddelde
     if (length(unique(values$df$groep))>1){
       calc_groep_mean() # berekent groepsgemiddeldes
@@ -381,6 +557,13 @@ function(input, output, session){
     selected_id <- values$df[which(values$df$selected & values$df$groep == geen_groep),'kit_id']
     show_input <-input_df[which(input_df$kit_id %in% selected_id),]    
     
+    # Haal de kwaliteitseisen op. 
+    ind_kwal_eisen <- Select_kwal_eisen(show_input)
+    # Als er eisen zijn, verwijder dan de metingen die niet aan de eisen voldoen
+    if (!is_empty(ind_kwal_eisen)){
+      show_input <- show_input[-ind_kwal_eisen,]
+    }
+    
     # Als er groepen zijn geselecteerd, bereken dan het gemiddelde
     if (length(unique(values$df$groep))>1){
       calc_groep_mean() # berekent groepsgemiddeldes
@@ -399,6 +582,13 @@ function(input, output, session){
     comp <- selectReactiveComponent(input)
     selected_id <- values$df[which(values$df$selected & values$df$groep == geen_groep),'kit_id']
     show_input <-input_df[which(input_df$kit_id %in% selected_id),]    
+    
+    # Haal de kwaliteitseisen op. 
+    ind_kwal_eisen <- Select_kwal_eisen(show_input)
+    # Als er eisen zijn, verwijder dan de metingen die niet aan de eisen voldoen
+    if (!is_empty(ind_kwal_eisen)){
+      show_input <- show_input[-ind_kwal_eisen,]
+    }
     
     # Als er groepen zijn geselecteerd, bereken dan het gemiddelde
     if (length(unique(values$df$groep))>1){

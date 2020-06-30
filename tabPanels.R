@@ -26,6 +26,20 @@ library(shiny)
   return(tp)
 } 
 
+tpKwalindex <- function(){
+  
+  library(shiny)
+  
+  tp <-  tabPanel("Kwaliteitsindex",
+                  plotOutput("kwalindex"),
+                  h4("Toelichting"),
+                  p("",
+                    style = "font-size:12px")
+  )
+  
+  return(tp)
+} 
+
 tpKalender <- function(){
   
   library(shiny)

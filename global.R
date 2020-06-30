@@ -24,7 +24,7 @@ library(purrr)
 library(sp)
 library(devtools)
 library(geoshaper)
-
+library(ggplot2)
 
 
 ## Load Functions ----
@@ -37,6 +37,7 @@ source("tabPanels.R", local = TRUE)
 ## Initialise ----
 projectnaam <- "Hollandse Luchten"
 file <- "HLL_voorbeeld_data.RDS" 
+kwal_file <- "kwalindex_uur_HLL.RDS"
 
 choices <- c( "PM10 - gekalibreerd", "PM2.5 - gekalibreerd","PM10", "PM2.5") #set up choices for shiny app
 kleur_cat <- list('#42145f','#ffb612','#a90061','#777c00','#007bc7','#673327','#e17000','#39870c', '#94710a','#01689b','#f9e11e','#76d2b6','#d52b1e','#8fcae7','#ca005d','#275937','#f092cd')
@@ -50,6 +51,14 @@ icons_stations <- iconList(
 
 ## Inlezen van de data ----
 input_df <- readRDS(file)
+kwal_input_df <- readRDS(kwal_file)
+kwal_input_df$date <- kwal_input_df$timestamp_from
+
+# Voeg de uurlijkse kwalindex toe aan het input dataframe 
+input_df <- merge(input_df, kwal_input_df, by=c('date', 'kit_id'))
+
+# Maak ook een kolom met de kwal_index als text
+input_df$kwalindex_pm25_t <- sprintf("%04d", input_df$kwalindex_pm25)
 
 ## Default locatie, kleur en label opzetten ----
 input_df$kit_id <- gsub('HLL_hl_', '', input_df$kit_id) #remove HLL-string from input_df for shorter label

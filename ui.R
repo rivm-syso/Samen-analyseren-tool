@@ -78,6 +78,16 @@ htmlTemplate("./www/template_samenmeten.wide.html",
       selectInput(inputId = "Var", label = "Kies component:", choices = choices, selected = NULL, multiple = FALSE,
                 selectize = TRUE, width = NULL, size = NULL),
       
+      # Checkbox voor de kwaliteit
+      p("Kwaliteitseisen - verwijder de meetwaardes die:"),
+      checkboxInput('kwal_1','van alle sensoren boven het 0.95 percentiel zaten.'),
+      checkboxInput('kwal_2','van alle sensoren onder het 0.05 percentiel zaten.'),
+      checkboxInput('kwal_10','in de laagste of hoogste 5% van een lokale subgroep van de kalibratiebepaling zaten.'),
+      checkboxInput('kwal_100','meer dan een factor 2 verschillen van het dichtstbijzijnde ref. station.'),
+      checkboxInput('kwal_1000','een verschil hebben van meer dan 1/3 tussen wel/niet meenemen van ref. station met kalibratiefactoren.'),
+
+
+      
       # Input: Blokjes voor de datum
       dateInput("DateStart", label="Selecteer begin tijdreeks:", format='dd-mm-yyyy',value = min(input_df$date), 
                 min = min(input_df$date), max = max(input_df$date)),
@@ -107,6 +117,7 @@ htmlTemplate("./www/template_samenmeten.wide.html",
       # Output: Tabset voor openair plots, zie voor de inhoud het script: tabPanels.R
       tabsetPanel(type = "tabs",
                   tpTimeplot(),
+                  tpKwalindex(),
                   tpKalender(),
                   tpTimevariation(),
                   tpPercentileRose(),
