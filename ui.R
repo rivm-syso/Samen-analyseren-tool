@@ -13,7 +13,11 @@
 htmlTemplate("./www/template_samenmeten.wide.html",
              pageTitle=paste("Prototype Samen Analyseren tool: project ", projectnaam),
              
-             aboutSite=div(h3("Verantwoording"),
+             aboutSite=div(
+               h3("Gebruikershandleiding"),
+               p("In de ", a("handleiding", href = "https://www.samenmetenaanluchtkwaliteit.nl/documenten/gebruikershandleiding-samen-analyseren-tool", 
+                             target = 'blank'), "vind je meer informatie over het algemene gebruik van de Samen Analyseren Tool."),
+               h3("Verantwoording"),
                            
                            p("Dit dashboard is door het ", a("RIVM", href = "https://rivm.nl", target = 'blank'), "ontwikkeld voor snelle analyse van sensordata.
                              Het maakt gebruik van de R-package",
@@ -60,7 +64,6 @@ htmlTemplate("./www/template_samenmeten.wide.html",
                            tags$li("Tijdreeksselectie: makkelijker vanaf een specifieke dag te filteren"),
                            tags$li("Groepsselectie: makkelijker de sensoren te clusteren in een groep zodat groepsgemiddeldes kunnen worden vergeleken"))
                            ),
-             
   # Vanaf hier begint de tool zelf
   fluidPage=fluidPage(
     
