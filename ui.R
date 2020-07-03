@@ -75,17 +75,21 @@ htmlTemplate("./www/template_samenmeten.wide.html",
       actionButton("reset_all", "Reset alle sensoren"),
       br(),
       # Input: Selecteer de component uit de choices lijst
-      selectInput(inputId = "Var", label = "Kies component:", choices = choices, selected = NULL, multiple = FALSE,
+      selectInput(inputId = "Var", label = "Kies component:", choices = choices, selected = "PM2.5", multiple = FALSE,
                 selectize = TRUE, width = NULL, size = NULL),
+      
+      
+      checkboxInput('BB','Bekijk de meetwaardes die handmatig in BB zijn afgekeurd.'),
+      
       
       # Checkbox voor de kwaliteit
       p("Kwaliteitseisen - verwijder de meetwaardes die:"),
-      checkboxInput('kwal_1','van alle sensoren boven het 0.95 percentiel zaten.'),
-      checkboxInput('kwal_2','van alle sensoren onder het 0.05 percentiel zaten.'),
-      checkboxInput('kwal_10','in de laagste of hoogste 5% van een lokale subgroep van de kalibratiebepaling zaten.'),
-      checkboxInput('kwal_100','meer dan een factor 2 verschillen van het dichtstbijzijnde ref. station.'),
-      checkboxInput('kwal_1000','een verschil hebben van meer dan 1/3 tussen wel/niet meenemen van ref. station met kalibratiefactoren.'),
-
+      checkboxInput('kwal_1','van alle sensoren boven het 0.95 percentiel zaten. (i:1)'),
+      checkboxInput('kwal_2','van alle sensoren onder het 0.05 percentiel zaten. (i:2)'),
+      checkboxInput('kwal_10','in de laagste of hoogste 5% van een lokale subgroep van de kalibratiebepaling zaten. (i:10)'),
+      checkboxInput('kwal_100','meer dan een factor 2 verschillen van het dichtstbijzijnde ref. station.(i:100)'),
+      checkboxInput('kwal_1000','een verschil hebben van meer dan 1/3 tussen wel/niet meenemen van ref. station met kalibratiefactoren. (i:1000)'),
+      checkboxInput('kwal_rh', 'een relatieve luchtvochtigheid boven 97% hebben gemeten op KNMI-station in de buurt.'),
 
       
       # Input: Blokjes voor de datum

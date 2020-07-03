@@ -19,7 +19,9 @@ function(input, output, session){
   output$map <- renderLeaflet({
     leaflet() %>% 
       addTiles() %>% 
-      setView(4.720130, 52.408370, zoom = 10) %>%
+      # setView(4.720130, 52.408370, zoom = 10) %>% # Geschikt voor HLL
+      # setView(6.036506,51.496805, zoom = 10) %>% # Geschikt voor BB algemeen
+      setView(5.88723, 51.458 ,zoom=16) %>% # geschikt voor BB specifieke sensor 151
       addMarkers(icon = icons_stations["knmi"],data = knmi_stations, ~lon, ~lat, layerId = ~code, label = lapply(knmi_labels, HTML)) %>% 
       addMarkers(icon = icons_stations["lml"], data = lml_stations, ~lon, ~lat, layerId = ~code, label = lapply(lml_labels, HTML)) %>% 
       addCircleMarkers(data = sensor_unique, ~lon, ~lat, layerId = ~kit_id, label = lapply(sensor_labels, HTML), 
@@ -117,7 +119,8 @@ function(input, output, session){
     indices_1000 <- NULL
     indices_2 <- NULL
     indices_10 <- NULL
-
+    indices_rh <- NULL
+    
     if (values$kwal_1){
       indices_1 <- which(dataset$kwalindex_pm25 %in% c(1,11,101,111,1001,1101,1111))
     }
@@ -134,17 +137,17 @@ function(input, output, session){
     if (values$kwal_1000){
       indices_1000 <- which(dataset$kwalindex_pm25 >= 1000)
     }
+    if (values$kwal_rh){
+      indices_rh <- which(dataset$rh >= 97)
+    }
     # Voeg de indices toe die niet moeten worden meegenomen
-    indices_eisen <- c(indices_1, indices_2, indices_10, indices_100, indices_1000)
+    indices_eisen <- c(indices_1, indices_2, indices_10, indices_100, indices_1000, indices_rh)
     
     return(indices_eisen)
-    
-    
   }
 
   
   ## OBSERVE EVENTS ----
-  
   # Observe of de tekst wordt aangepast ----
   # Dan wil je dat er een nieuwe groep wordt aangemaakt
   # Bijvoorbeeld: je hebt een groep "Wijk aan Zee" aangemaakt, en je begint een nieuwe naam te typen "IJmuiden". 
@@ -211,7 +214,18 @@ function(input, output, session){
       values$kwal_1000 = F
     }
   })
+  
+  # Check voor de kwaliteitsindex bevattend een rh
+  observeEvent({input$kwal_rh},{
+    if(input$kwal_rh){
+      values$kwal_rh = T
+    }else{
+      values$kwal_rh = F
+    }
+  })
 
+  
+  
   # Observe if user selects a sensor ----
   observeEvent({input$map_marker_click$id}, {
     id_select <- input$map_marker_click$id
@@ -358,7 +372,7 @@ function(input, output, session){
   })
   
   # Create tijdreeks kwalindex plot  ----
-  output$kwalindex <- renderPlot({
+  output$kwalindex <- renderPlotly({
     
     selected_id <- values$df[which(values$df$selected & values$df$groep == geen_groep),'kit_id']
     show_input <-input_df[which(input_df$kit_id %in% selected_id),]
@@ -391,33 +405,58 @@ function(input, output, session){
     kleur_array <- kit_kleur_sort$kleur
     
     # Maken van de plot
-    ggplot(data = show_input, aes(x = date, y = kwalindex_pm25, colour = kit_id)) +
-      geom_point() +
-      scale_y_continuous(breaks=c(0,1,2,10,100,1000,1112), labels=c(0,1,2,10,100,1000,1112)) + 
+    p_kwalindex <- ggplot(data = show_input, aes(x = date, y = kwalindex_pm25, colour = kit_id)) +
+      geom_point(size=0.5) + 
+      scale_y_continuous(breaks=c(0,1,2,10,100,1000,1112), labels=c('0','1','2','10','100','1000','1112')) + 
       scale_color_manual(values = kleur_array) +
       labs(x = "Tijd", y = 'Kwaliteitsindex') +
       theme_bw()
+    
+    # Toevoegen/aangeven in andere kleur de waardes met hoge rh
+    if(!values$kwal_rh){
+      p_kwalindex <- p_kwalindex +
+        geom_point(data=show_input[which(show_input$rh>=97),],
+                   aes(x = date, y = kwalindex_pm25), size=0.1, col ='white')
+     }
+    
+    # Toevoegen de benb afgekeurde
+    if(input$BB){
+      p_kwalindex <- p_kwalindex +
+        geom_point(data=show_input[which(show_input$keep_pm25_kal==F),],
+                   aes(x = date, y = kwalindex_pm25, colour = kit_id), size=0.5, shape = 21, col ='black')
+    }
+    
+    # Maak de plot interactief
+    # en voeg een selectie slider voor de tijd toe
+    ggplotly(p_kwalindex, dynamicTicks = TRUE) %>%
+      rangeslider() 
+
+   
   })
   
   # Create time plot vanuit openair ----
-  output$timeplot <- renderPlot({
+  output$timeplot <- renderPlotly({
     
     comp <- selectReactiveComponent(input)
     selected_id <- values$df[which(values$df$selected & values$df$groep == geen_groep),'kit_id']
     show_input <-input_df[which(input_df$kit_id %in% selected_id),]
     
+    # Bepaal het limit voor y-as, zodat as niet verspringt als je kwal_eisen aanzet
+    ylimit <- max(show_input[,comp], na.rm=T)
+
     # Haal de kwaliteitseisen op
     ind_kwal_eisen <- Select_kwal_eisen(show_input)
+
     # Als er eisen zijn, verwijder dan de metingen die niet aan de eisen voldoen
     if (!is_empty(ind_kwal_eisen)){
       show_input <- show_input[-ind_kwal_eisen,]
     }
     
-    # # Als er groepen zijn geselecteerd, bereken dan het gemiddelde
-    # if (length(unique(values$df$groep))>1){
-    #   calc_groep_mean() # berekent groepsgemiddeldes
-    #   show_input <- merge(show_input,values$df_gem, all = T) }
-    
+    # Als er groepen zijn geselecteerd, bereken dan het gemiddelde
+    if (length(unique(values$df$groep))>1){
+      calc_groep_mean() # berekent groepsgemiddeldes
+      show_input <- merge(show_input,values$df_gem, all = T) }
+
     # # if / else statement om correctie lml data toe te voegen ----
     # if(comp == "pm10" || comp == "pm10_kal"){
     #   try(timePlot(selectByDate(mydata = show_input,start = values$startdatum, end = values$einddatum),
@@ -448,14 +487,27 @@ function(input, output, session){
     kit_kleur_sort <- kit_kleur[order(kit_kleur$kit_id),]
     # create colour array
     kleur_array <- kit_kleur_sort$kleur
-    
+
     # Maken van de plot
-    ggplot(data = show_input, aes_string(x = "date", y = comp, colour = "kit_id")) +
-      geom_point() +
-     
+    p_tijdreeks <- ggplot(data = show_input, aes_string(x = "date", y = comp, colour = "kit_id")) +
+      geom_point(size=0.5) +
       scale_color_manual(values = kleur_array) +
       labs(x = "Tijd", y = 'concentratie (ug/m3)') +
+      coord_cartesian(ylim = c(0, ylimit)) + 
       theme_bw()
+    
+    # Voeg de kleuren van BB afgekeurd toe
+    if(input$BB){
+      p_tijdreeks <- p_tijdreeks + 
+        geom_point(data=show_input[which(show_input$keep_pm25_kal==F),],
+                   aes_string(x = "date", y = comp, colour = "kit_id"), size=0.5,shape = 21, col ='black') 
+    }
+        
+    # Maak de plot interactief
+    # en voeg een selectie slider voor de tijd toe
+    ggplotly(p_tijdreeks, dynamicTicks = TRUE) %>%
+      rangeslider() %>%
+      layout(hovermode = "x")
   })
   
   # Create kalender plot vanuit openair ----

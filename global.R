@@ -25,7 +25,7 @@ library(sp)
 library(devtools)
 library(geoshaper)
 library(ggplot2)
-
+library(plotly)
 
 ## Load Functions ----
 
@@ -38,6 +38,10 @@ source("tabPanels.R", local = TRUE)
 projectnaam <- "Hollandse Luchten"
 file <- "HLL_voorbeeld_data.RDS" 
 kwal_file <- "kwalindex_uur_HLL.RDS"
+
+file <- "testdata_BB.RDS" 
+kwal_file <- "kwalindex_uur_NBI_BV.RDS"
+
 
 choices <- c( "PM10 - gekalibreerd", "PM2.5 - gekalibreerd","PM10", "PM2.5") #set up choices for shiny app
 kleur_cat <- list('#42145f','#ffb612','#a90061','#777c00','#007bc7','#673327','#e17000','#39870c', '#94710a','#01689b','#f9e11e','#76d2b6','#d52b1e','#8fcae7','#ca005d','#275937','#f092cd')

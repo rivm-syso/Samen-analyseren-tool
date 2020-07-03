@@ -14,7 +14,7 @@ tpTimeplot <- function(){
 library(shiny)
   
  tp <-  tabPanel("Tijdreeks",
-                    plotOutput("timeplot"),
+                    plotlyOutput("timeplot"),
                     h4("Toelichting"),
                     p("Als je een sensor aanklikt, zie je een tijdreeks van de uurlijkse sensorwaarden voor de geselecteerde periode.
                       Deze waarden worden vergeleken met het dichtstbijzijnde meetstation van het landelijk luchtmeetnet.
@@ -31,7 +31,7 @@ tpKwalindex <- function(){
   library(shiny)
   
   tp <-  tabPanel("Kwaliteitsindex",
-                  plotOutput("kwalindex"),
+                  plotlyOutput("kwalindex"),
                   h4("Toelichting"),
                   p("",
                     style = "font-size:12px")
