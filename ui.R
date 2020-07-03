@@ -74,6 +74,15 @@ htmlTemplate("./www/template_samenmeten.wide.html",
     # Sidebar panel voor leaflet map om sensoren te selecteren
     sidebarPanel(width=3,
       
+      # Mogelijkheid om je eigen data in te laden:
+      fileInput("eigen_datafile", "Kies csv-bestand:",
+                multiple = TRUE,
+                accept = c("text/csv",
+                           "text/comma-separated-values,text/plain",
+                           ".csv")),
+      
+      # Button om terug te gaan naar de standaard voorbeeld data
+      actionButton("voorbeeld_data","Laadt voorbeeld data."),
       # Button om de alles wat geselecteerd is te resetten
       actionButton("reset_all", "Reset alle sensoren"),
       br(),
@@ -82,10 +91,10 @@ htmlTemplate("./www/template_samenmeten.wide.html",
                 selectize = TRUE, width = NULL, size = NULL),
       
       # Input: Blokjes voor de datum
-      dateInput("DateStart", label="Selecteer begin tijdreeks:", format='dd-mm-yyyy',value = min(input_df$date), 
-                min = min(input_df$date), max = max(input_df$date)),
-      dateInput("DateEind", label="Selecteer einde tijdreeks:", format='dd-mm-yyyy', value = max(input_df$date), 
-                min = min(input_df$date), max = max(input_df$date)),
+      dateInput("DateStart", label="Selecteer begin tijdreeks:", format='dd-mm-yyyy',value = '2019-01-01'
+                ),
+      dateInput("DateEind", label="Selecteer einde tijdreeks:", format='dd-mm-yyyy', value = '2021-01-01' 
+                ),
       
       br(),
 

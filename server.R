@@ -20,10 +20,10 @@ function(input, output, session){
     leaflet() %>% 
       addTiles() %>% 
       setView(4.720130, 52.408370, zoom = 10) %>%
-      addMarkers(icon = icons_stations["knmi"],data = knmi_stations, ~lon, ~lat, layerId = ~code, label = lapply(knmi_labels, HTML)) %>% 
-      addMarkers(icon = icons_stations["lml"], data = lml_stations, ~lon, ~lat, layerId = ~code, label = lapply(lml_labels, HTML)) %>% 
-      addCircleMarkers(data = sensor_unique, ~lon, ~lat, layerId = ~kit_id, label = lapply(sensor_labels, HTML), 
-                       radius = 8, color = ~kleur, fillOpacity = 1, stroke = ~selected, group = "sensoren")%>%
+      addMarkers(icon = icons_stations["knmi"],data = knmi_stations, ~lon, ~lat, layerId = ~code, label = lapply(knmi_labels, HTML)) %>%
+      addMarkers(icon = icons_stations["lml"], data = lml_stations, ~lon, ~lat, layerId = ~code, label = lapply(lml_labels, HTML)) %>%
+      # addCircleMarkers(data = sensor_unique, ~lon, ~lat, layerId = ~kit_id, label = lapply(sensor_labels, HTML),
+      #                  radius = 8, color = ~kleur, fillOpacity = 1, stroke = ~selected, group = "sensoren")%>%
       addDrawToolbar(
         targetGroup = 'Selected',
         polylineOptions = FALSE,
@@ -37,7 +37,8 @@ function(input, output, session){
   })
   
   # Zet reactive dataframe op ----
-  values <- reactiveValues(df = sensor_unique, groepsnaam = geen_groep, df_gem = data.frame(), startdatum = 0, einddatum=0) 
+  values <- reactiveValues(df = sensor_unique, sensor_data = input_df,groepsnaam = geen_groep, df_gem = data.frame(), startdatum = 0, einddatum=0,
+                           data_set = 'voorbeeld') 
   overzicht_shapes <- reactiveValues(add = 0, delete = 0) # nodig om selectie ongedaan te maken
   
   ## FUNCTIES ----
@@ -80,6 +81,7 @@ function(input, output, session){
   
   # Functie: plaats sensoren met juiste kleur op de kaart ----
   add_sensors_map <- function(){ 
+    # TODO: zorg dat de zoom naar de markers gaat
     # Regenerate the sensors for the markers
     sensor_loc <- unique(select(values$df, kit_id, lat, lon, kleur, selected))
     
@@ -98,7 +100,7 @@ function(input, output, session){
         # Haal de kit_ids van de sensoren in de groep op
         sensor_groep <- values$df[which(values$df$groep == groepen),'kit_id']
         # Zoek de gegevens van de groep op
-        te_middelen <- input_df[which(input_df$kit_id %in% sensor_groep),]
+        te_middelen <- values$sensor_data[which(values$sensor_data$kit_id %in% sensor_groep),]
         # Bereken het gemiddelde van de groep. LET OP; vector middeling
         gemiddeld <- timeAverage(te_middelen, avg.time='hour', vector.ws=TRUE)
         gemiddeld$kit_id <- groepen
@@ -108,8 +110,54 @@ function(input, output, session){
     values$df_gem <- gemiddeld_all
   }
   
+  # Functie om een dataset in te lezen en vervolgens juist om te zetten
+  # in de reactive dataframe etc om te tonen in de app.
+  Insert_nieuwe_data <- function(){
+    # deze functie neemt de data en verandert de values$sensor_data en de values$df
+    # aan de hand van de invoer. Dat kan een eigen bestand zijn, of de voorbeeld dataset
+    if(values$data_set == 'voorbeeld'){
+      print('voorbeeld')
+      values$sensor_data <- readRDS(file)
+      
+      ## Default locatie, kleur en label opzetten ----
+      values$sensor_data$kit_id <- gsub('HLL_hl_', '', values$sensor_data$kit_id) #remove HLL-string from values$sensor_data for shorter label
+      
+    }else{
+      print(values$data_set)
+      values$sensor_data <- read.csv(input$eigen_datafile$datapath)
+    }
+    
+    # Voor de sensormarkers: locatie, label en kleur etc. Per sensor één unieke locatie
+    sensor_unique <- aggregate(values$sensor_data[,c('lat','lon')], list(values$sensor_data$kit_id), FUN = mean) # gemiddelde om per sensor een latlon te krijgen
+    names(sensor_unique)[names(sensor_unique)=='Group.1'] <-'kit_id'
+    sensor_unique$selected <-FALSE
+    sensor_unique$huidig <- FALSE
+    sensor_unique$groep <- geen_groep
+    sensor_unique$kleur <- kleur_marker_sensor
+    sensor_labels <- as.list(sensor_unique$kit_id) # labels to use for hoover info
+    
+    # Voor de multiselect tool: omzetten lat/lon naar spatialpoints
+    ms_coordinates <- SpatialPointsDataFrame(sensor_unique[,c('lon','lat')],sensor_unique)
+    
+    # Voeg de sensor locaties ed toe aan interactive dataframe
+    values$df <- sensor_unique
+    print(head(values$sensor_data))
+    # voeg de sensoren toe aan de kaart
+    add_sensors_map()
+  }
   
   ## OBSERVE EVENTS ----
+  
+  # observe of er een eigen data set is ingeladen:
+  observeEvent({req(input$eigen_datafile)},{
+    values$data_set <- input$eigen_datafile$datapath           
+    print("databestand geladen")
+    Insert_nieuwe_data()})
+  
+  # Observe of de voorbeeld dataset weer ingeladen moet worden
+  observeEvent({input$voorbeeld_data},{
+    values$data_set <- 'voorbeeld'
+    Insert_nieuwe_data()})
   
   # Observe of de tekst wordt aangepast ----
   # Dan wil je dat er een nieuwe groep wordt aangemaakt
@@ -283,18 +331,18 @@ function(input, output, session){
     
     comp <- selectReactiveComponent(input)
     selected_id <- values$df[which(values$df$selected & values$df$groep == geen_groep),'kit_id']
-    show_input <-input_df[which(input_df$kit_id %in% selected_id),]
+    show_input <-values$sensor_data[which(values$sensor_data$kit_id %in% selected_id),]
     
     # Als er groepen zijn geselecteerd, bereken dan het gemiddelde
     if (length(unique(values$df$groep))>1){
       calc_groep_mean() # berekent groepsgemiddeldes
       show_input <- merge(show_input,values$df_gem, all = T) }
 
-    
     # if / else statement om correctie lml data toe te voegen ----
     if(comp == "pm10" || comp == "pm10_kal"){
       # Bepaal de max voor de ylim
       ylim_max <- max(show_input$pm10)
+     
       try(timePlot(selectByDate(mydata = show_input,start = values$startdatum, end = values$einddatum),
                    pollutant = c(comp, "pm10_lml"), wd = "wd", type = "kit_id", local.tz="Europe/Amsterdam", ylim=c(0, ylim_max)))
       # Call in try() zodat er geen foutmelding wordt getoond als er geen enkele sensor is aangeklikt 
@@ -313,7 +361,7 @@ function(input, output, session){
     
     comp <- selectReactiveComponent(input)
     selected_id <- values$df[which(values$df$selected & values$df$groep == geen_groep),'kit_id']
-    show_input <-input_df[which(input_df$kit_id %in% selected_id),]
+    show_input <-values$sensor_data[which(values$sensor_data$kit_id %in% selected_id),]
     
     # Als er groepen zijn geselecteerd, bereken dan het gemiddelde
     if (length(unique(values$df$groep))>1){
@@ -330,7 +378,7 @@ function(input, output, session){
     
     comp <- selectReactiveComponent(input)
     selected_id <- values$df[which(values$df$selected & values$df$groep == geen_groep),'kit_id']
-    show_input <-input_df[which(input_df$kit_id %in% selected_id),]
+    show_input <-values$sensor_data[which(values$sensor_data$kit_id %in% selected_id),]
     
     # Als er groepen zijn geselecteerd, bereken dan het gemiddelde
     if (length(unique(values$df$groep))>1){
@@ -365,7 +413,7 @@ function(input, output, session){
     
     comp <- selectReactiveComponent(input)
     selected_id <- values$df[which(values$df$selected & values$df$groep == geen_groep),'kit_id']
-    show_input <-input_df[which(input_df$kit_id %in% selected_id),]    
+    show_input <-values$sensor_data[which(values$sensor_data$kit_id %in% selected_id),]    
     
     # Als er groepen zijn geselecteerd, bereken dan het gemiddelde
     if (length(unique(values$df$groep))>1){
@@ -384,7 +432,7 @@ function(input, output, session){
     
     comp <- selectReactiveComponent(input)
     selected_id <- values$df[which(values$df$selected & values$df$groep == geen_groep),'kit_id']
-    show_input <-input_df[which(input_df$kit_id %in% selected_id),]    
+    show_input <-values$sensor_data[which(values$sensor_data$kit_id %in% selected_id),]    
     
     # Als er groepen zijn geselecteerd, bereken dan het gemiddelde
     if (length(unique(values$df$groep))>1){
@@ -403,7 +451,7 @@ function(input, output, session){
     
     comp <- selectReactiveComponent(input)
     selected_id <- values$df[which(values$df$selected & values$df$groep == geen_groep),'kit_id']
-    show_input <-input_df[which(input_df$kit_id %in% selected_id),]    
+    show_input <-values$sensor_data[which(values$sensor_data$kit_id %in% selected_id),]    
     
     # Als er groepen zijn geselecteerd, bereken dan het gemiddelde
     if (length(unique(values$df$groep))>1){

@@ -48,23 +48,27 @@ icons_stations <- iconList(
   knmi = makeIcon("ionicons_compass.svg", 18, 18),
   lml = makeIcon("ionicons_analytics.svg", 15, 15))
 
-## Inlezen van de data ----
-input_df <- readRDS(file)
+input_df <- NULL
+sensor_unique <- NULL
+sensor_labels <- NULL
 
-## Default locatie, kleur en label opzetten ----
-input_df$kit_id <- gsub('HLL_hl_', '', input_df$kit_id) #remove HLL-string from input_df for shorter label
-
-# Voor de sensormarkers: locatie, label en kleur etc. Per sensor één unieke locatie
-sensor_unique <- aggregate(input_df[,c('lat','lon')], list(input_df$kit_id), FUN = mean) # gemiddelde om per sensor een latlon te krijgen
-names(sensor_unique)[names(sensor_unique)=='Group.1'] <-'kit_id'
-sensor_unique$selected <-FALSE
-sensor_unique$huidig <- FALSE
-sensor_unique$groep <- geen_groep
-sensor_unique$kleur <- kleur_marker_sensor
-sensor_labels <- as.list(sensor_unique$kit_id) # labels to use for hoover info
-
-# Voor de multiselect tool: omzetten lat/lon naar spatialpoints
-ms_coordinates <- SpatialPointsDataFrame(sensor_unique[,c('lon','lat')],sensor_unique)
+# ## Inlezen van de data ----
+# input_df <- readRDS(file)
+# 
+# ## Default locatie, kleur en label opzetten ----
+# input_df$kit_id <- gsub('HLL_hl_', '', input_df$kit_id) #remove HLL-string from input_df for shorter label
+# 
+# # Voor de sensormarkers: locatie, label en kleur etc. Per sensor één unieke locatie
+# sensor_unique <- aggregate(input_df[,c('lat','lon')], list(input_df$kit_id), FUN = mean) # gemiddelde om per sensor een latlon te krijgen
+# names(sensor_unique)[names(sensor_unique)=='Group.1'] <-'kit_id'
+# sensor_unique$selected <-FALSE
+# sensor_unique$huidig <- FALSE
+# sensor_unique$groep <- geen_groep
+# sensor_unique$kleur <- kleur_marker_sensor
+# sensor_labels <- as.list(sensor_unique$kit_id) # labels to use for hoover info
+# 
+# # Voor de multiselect tool: omzetten lat/lon naar spatialpoints
+# ms_coordinates <- SpatialPointsDataFrame(sensor_unique[,c('lon','lat')],sensor_unique)
 
 # Voor de knmimarkers: locatie en labels opzetten
 knmi_stations <- data.frame("code" = c("knmi_06225", "knmi_06240", "knmi_06260"), "lat" =c(52.4622,52.3156,52.0989), "lon" =c(4.555,4.79028,5.17972))
