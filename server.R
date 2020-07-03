@@ -289,16 +289,21 @@ function(input, output, session){
     if (length(unique(values$df$groep))>1){
       calc_groep_mean() # berekent groepsgemiddeldes
       show_input <- merge(show_input,values$df_gem, all = T) }
+
     
     # if / else statement om correctie lml data toe te voegen ----
     if(comp == "pm10" || comp == "pm10_kal"){
+      # Bepaal de max voor de ylim
+      ylim_max <- max(show_input$pm10)
       try(timePlot(selectByDate(mydata = show_input,start = values$startdatum, end = values$einddatum),
-                   pollutant = c(comp, "pm10_lml"), wd = "wd", type = "kit_id", local.tz="Europe/Amsterdam"))
+                   pollutant = c(comp, "pm10_lml"), wd = "wd", type = "kit_id", local.tz="Europe/Amsterdam", ylim=c(0, ylim_max)))
       # Call in try() zodat er geen foutmelding wordt getoond als er geen enkele sensor is aangeklikt 
     }
     else {
+      # Bepaal de max voor de ylim
+      ylim_max <- max(show_input$pm25)
       try(timePlot(selectByDate(mydata = show_input,start = values$startdatum, end = values$einddatum),
-                   pollutant = c(comp, "pm25_lml"), wd = "wd", type = "kit_id", local.tz="Europe/Amsterdam"))
+                   pollutant = c(comp, "pm25_lml"), wd = "wd", type = "kit_id", local.tz="Europe/Amsterdam", ylim=c(0, ylim_max)))
       # Call in try() zodat er geen foutmelding wordt getoond als er geen enkele sensor is aangeklikt 
     }
   })
