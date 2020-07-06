@@ -19,7 +19,7 @@ function(input, output, session){
   output$map <- renderLeaflet({
     leaflet() %>% 
       addTiles() %>% 
-      setView(4.720130, 52.408370, zoom = 10) %>%
+      setView(5.12446,52.105, zoom = 6) %>%
       # addMarkers(icon = icons_stations["knmi"],data = knmi_stations, ~lon, ~lat, layerId = ~code, label = lapply(knmi_labels, HTML)) %>%
       # addMarkers(icon = icons_stations["lml"], data = lml_stations, ~lon, ~lat, layerId = ~code, label = lapply(lml_labels, HTML)) %>%
       # addCircleMarkers(data = sensor_unique, ~lon, ~lat, layerId = ~kit_id, label = lapply(sensor_labels, HTML),
@@ -40,6 +40,7 @@ function(input, output, session){
   values <- reactiveValues(df = sensor_unique, sensor_data = input_df,groepsnaam = geen_groep, df_gem = data.frame(), startdatum = 0, einddatum=0,
                            data_set = 'voorbeeld') 
   overzicht_shapes <- reactiveValues(add = 0, delete = 0) # nodig om selectie ongedaan te maken
+  stations_reactive <- reactiveValues(lml=lml_stations_all)
   
   ## FUNCTIES ----
   
@@ -55,7 +56,7 @@ function(input, output, session){
   set_sensor_select <- function(id_select){
     values$df[values$df$kit_id == id_select, "selected"] <- TRUE
     values$df[values$df$kit_id == id_select, "huidig"] <- TRUE
-    # Selecteen kleur en geef dit mee aan de sensor
+    # Select een kleur en geef dit mee aan de sensor
     # Kies de eerste kleur in de lijst kleur_cat die aanwezig is
     count  <- 1
     # Zorg ervoor dat je blijft zoeken tot sensor een kleur heeft of dat de kleuren op zijn
@@ -77,6 +78,28 @@ function(input, output, session){
     # Geef kleur aan de sensor
     values$df[values$df$kit_id == id_select, "kleur"] <- kleur_sensor
     kleur_sensor <- "leeg"
+  }
+  
+  # Functie: Set the stations as deselect and change color to base color ----
+  #TODO dit is nog niet af, maak iets met de symbolen in een andere kleur
+  #TODO maak een if else voor knmi en lml
+  set_station_deselect <- function(id_select, type_stat){
+    if (type_stat=='lml'){
+    stations_reactive$lml[stations_reactive$lml$statcode == id_select, "selected"] <- FALSE 
+    }
+    }
+  
+  # Functie: Set station as select and specify color ----
+  #TODO dit is nog niet af, maak iets met de symbolen in een andere kleur
+  #TODO maak een if else voor knmi en lml
+  set_station_select <- function(id_select, type_stat){
+    if (type_stat=='lml'){
+      stations_reactive$lml[stations_reactive$lml$statcode == id_select, "selected"] <- TRUE
+      # Select een kleur en geef dit mee aan de station
+      
+      # Geef kleur aan de station
+      # values$df[values$lml$kit_id == id_select, "kleur"] <- kleur_sensor
+    }
   }
   
   # Functie: plaats sensoren met juiste kleur op de kaart ----
@@ -156,6 +179,22 @@ function(input, output, session){
     set_view_map(mean_lat, mean_lon)
   }
   
+  # Ophalen van de data vanuit een API
+  Get_data_API <- function(type_api){
+    #Maak een dataframe waar het in past
+    station_data_all <- data.frame()
+    #Maak een lijst van de statcodes die je wilt ophalen
+    lml_stats <- stations_reactive$lml$statcode[which(stations_reactive$lml$selected==T)]
+    for(stat in lml_stats){
+      # Haal voor elk station de data op van luchtmeetnet API
+      station_data_ruw <- GetLMLAPI(stat, format(values$startdatum, '%Y%m%d'), format(values$einddatum, '%Y%m%d'))
+      # Voeg alle meetwaardes vam de stations samen
+      station_data_all <- rbind(station_data_all, station_data_ruw$data)
+
+      #return de totale dataset
+      return(station_data_all)
+    }
+  }
   ## OBSERVE EVENTS ----
   
   # observe of er een eigen data set is ingeladen:
@@ -175,7 +214,8 @@ function(input, output, session){
     # Update map with new markers to show selected 
     proxy <- leafletProxy('map') # set up proxy map
     proxy %>% clearGroup("sensoren")  # Clear sensor markers
-    proxy %>% addMarkers(icon = icons_stations["lml"], data = lml_stations_all, ~lon, ~lat, layerId = ~statcode, label = lapply(lml_labels, HTML))
+    proxy %>% addMarkers(icon = icons_stations["lml"], data = lml_stations_all, 
+                         ~lon, ~lat, layerId = ~statcode, label = lapply(lml_labels, HTML))
     proxy %>% setView(5.12446,52.105, zoom = 6)
     })
   
@@ -217,6 +257,16 @@ function(input, output, session){
       # Laad de sensoren op de kaart zien
       add_sensors_map()
       # Bij elke selectie of deselectie moet de gemiddelde voor de groep herberekend worden
+    }else{
+      # Gebruik dit eerst alleen voor het ophalen van de data
+      # Check if station id already selected -> unselect station
+      if((stations_reactive$lml$selected[which(stations_reactive$lml$statcode == id_select)])){
+        set_station_deselect( id_select,'lml')
+      }
+      # If station is not yet present -> select station
+      else{
+        set_station_select(id_select,'lml')
+      }
     }
   })
   
@@ -267,7 +317,6 @@ function(input, output, session){
     updateTextInput(session,"Text_groep",'Maak nieuwe groep:', value = geen_groep)
   })
 
-  
   # Voor de bestaande groepen: maak de input-ui ----
   output$bestaande_groep <- renderUI({
     selectizeInput('bestaande_groep', 'Kies bestaande groep: ', choices = c("select" = "", levels(as.factor(values$df$groep))))
@@ -300,7 +349,6 @@ function(input, output, session){
       add_sensors_map()
     }
   })
-  
   
   # Observe voor multiselect deselect ----
   # Er zijn namelijk twee manieren om sensoren te selecteren: d.m.v. los aangeklikte sensoren (1), en d.m.v.
@@ -341,9 +389,27 @@ function(input, output, session){
   
   ## Genereer plots -----
   
+  # Download de data van de geselecteerde LML stations
+  output$downloadData <- downloadHandler(
+    # geef de filename op, zou via interactieve kunnen
+    filename = function(){
+      paste('testLML', 'csv', sep=".")
+    },
+    # Geef de data op: deze wordt eerst met de API opgehaald
+    content = function(file) {
+      write.table(Get_data_API('lml'), file, sep = ';',
+                  row.names = FALSE)
+    }
+  )
+  
   # Create tabel huidige selectie ----
   output$huidig <- renderTable({
-  huidig_df <- data.frame('Selectie' =values$df[which(values$df$huidig),'kit_id'])
+  huidig_df <- data.frame('Selectie' = values$df[which(values$df$huidig),'kit_id'])
+  })
+  
+  # Create tabel geselcteerde stations voor de download pagina ----
+  output$stations <- renderTable({
+    stations_df <- data.frame('Selectie' = stations_reactive$lml[which(stations_reactive$lml$selected),'statcode'])
   })
   
   # Create time plot vanuit openair ----

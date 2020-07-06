@@ -24,6 +24,7 @@ library(purrr)
 library(sp)
 library(devtools)
 library(geoshaper)
+library(DT) #for downlaod and datatable
 
 
 
@@ -33,6 +34,8 @@ library(geoshaper)
 source("selectReactiveComponent.R", local = TRUE) 
 # Functies voor het genereren van de inhoud van de tabpanels
 source("tabPanels.R", local = TRUE) 
+# Functies voor het ophalen van data via api
+source("Functies_API.R", local = TRUE) 
 
 ## Initialise ----
 projectnaam <- "Hollandse Luchten"
@@ -75,13 +78,14 @@ knmi_stations <- data.frame("code" = c("knmi_06225", "knmi_06240", "knmi_06260")
 knmi_stations$naam <- c("IJmuiden", "Schiphol", "De Bilt")
 knmi_labels <- as.list(paste("KNMI", knmi_stations$naam, sep = ": "))
 
-# Voor de lmlmarkers: locatie en labels opzetten
-lml_stations <- data.frame("code" = c("NL49014","NL49551","NL49572","NL49561","NL10636","NL49573","NL49570","NL49553","NL49012"))
-lml_stations$lat <- c(52.3597,52.463,52.4744,52.334,52.105,52.4789,52.4893,52.494,52.39)
-lml_stations$lon <- c(4.86621,4.60184,4.6288,4.77401,5.12446,4.57934,4.64053,4.60199,4.88781)
+# # Voor de lmlmarkers: locatie en labels opzetten
+# lml_stations <- data.frame("code" = c("NL49014","NL49551","NL49572","NL49561","NL10636","NL49573","NL49570","NL49553","NL49012"))
+# lml_stations$lat <- c(52.3597,52.463,52.4744,52.334,52.105,52.4789,52.4893,52.494,52.39)
+# lml_stations$lon <- c(4.86621,4.60184,4.6288,4.77401,5.12446,4.57934,4.64053,4.60199,4.88781)
 
-# Voor de lml stations: ophalen hun naam en locatie
+# Voor de lml stations: ophalen hun naam en locatie en labels opzetten
 lml_stations_all <- readRDS('locaties_lml_all.RDS')
+lml_stations_all$selected <- FALSE
 
 # Maak in de labelling onderscheid tussen de LML en GGD stations
 lml_labels <- vector("list", length(lml_stations_all$statcode))
