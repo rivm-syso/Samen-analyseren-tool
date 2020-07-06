@@ -20,8 +20,8 @@ function(input, output, session){
     leaflet() %>% 
       addTiles() %>% 
       setView(4.720130, 52.408370, zoom = 10) %>%
-      addMarkers(icon = icons_stations["knmi"],data = knmi_stations, ~lon, ~lat, layerId = ~code, label = lapply(knmi_labels, HTML)) %>%
-      addMarkers(icon = icons_stations["lml"], data = lml_stations, ~lon, ~lat, layerId = ~code, label = lapply(lml_labels, HTML)) %>%
+      # addMarkers(icon = icons_stations["knmi"],data = knmi_stations, ~lon, ~lat, layerId = ~code, label = lapply(knmi_labels, HTML)) %>%
+      # addMarkers(icon = icons_stations["lml"], data = lml_stations, ~lon, ~lat, layerId = ~code, label = lapply(lml_labels, HTML)) %>%
       # addCircleMarkers(data = sensor_unique, ~lon, ~lat, layerId = ~kit_id, label = lapply(sensor_labels, HTML),
       #                  radius = 8, color = ~kleur, fillOpacity = 1, stroke = ~selected, group = "sensoren")%>%
       addDrawToolbar(
@@ -81,7 +81,6 @@ function(input, output, session){
   
   # Functie: plaats sensoren met juiste kleur op de kaart ----
   add_sensors_map <- function(){ 
-    # TODO: zorg dat de zoom naar de markers gaat
     # Regenerate the sensors for the markers
     sensor_loc <- unique(select(values$df, kit_id, lat, lon, kleur, selected))
     
@@ -90,6 +89,13 @@ function(input, output, session){
     proxy %>% clearGroup("sensoren") # Clear sensor markers
     proxy %>% addCircleMarkers(data = sensor_loc, ~lon, ~lat, layerId = ~kit_id, label = lapply(as.list(sensor_loc$kit_id), HTML),
                                radius = 8, color = ~kleur, fillOpacity = 1,stroke = ~selected, group = "sensoren")}
+  
+  # Functie om de zoom/view te centreren rond de sensoren
+  set_view_map <- function(lat, lon){
+    # create a proxy map and zoom to the location
+    proxy <- leafletProxy('map')
+    proxy %>% setView(lon, lat, zoom = 10)
+  }
   
   # Functie om van alle groepen in de dataset een gemiddelde te berekenen ----
   calc_groep_mean <- function(){
@@ -144,6 +150,10 @@ function(input, output, session){
     print(head(values$sensor_data))
     # voeg de sensoren toe aan de kaart
     add_sensors_map()
+    # zoom naar de nieuwe sensoren
+    mean_lat <- mean(sensor_unique$lat)
+    mean_lon <- mean(sensor_unique$lon)
+    set_view_map(mean_lat, mean_lon)
   }
   
   ## OBSERVE EVENTS ----
@@ -158,6 +168,16 @@ function(input, output, session){
   observeEvent({input$voorbeeld_data},{
     values$data_set <- 'voorbeeld'
     Insert_nieuwe_data()})
+  
+  #Observe of de luchtmeetnetstations moeten worden getoond
+  observeEvent({input$show_luchtmeetnet},{
+    print('laad zien')
+    # Update map with new markers to show selected 
+    proxy <- leafletProxy('map') # set up proxy map
+    proxy %>% clearGroup("sensoren")  # Clear sensor markers
+    proxy %>% addMarkers(icon = icons_stations["lml"], data = lml_stations_all, ~lon, ~lat, layerId = ~statcode, label = lapply(lml_labels, HTML))
+    proxy %>% setView(5.12446,52.105, zoom = 6)
+    })
   
   # Observe of de tekst wordt aangepast ----
   # Dan wil je dat er een nieuwe groep wordt aangemaakt

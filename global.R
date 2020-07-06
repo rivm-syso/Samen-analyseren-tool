@@ -80,8 +80,15 @@ lml_stations <- data.frame("code" = c("NL49014","NL49551","NL49572","NL49561","N
 lml_stations$lat <- c(52.3597,52.463,52.4744,52.334,52.105,52.4789,52.4893,52.494,52.39)
 lml_stations$lon <- c(4.86621,4.60184,4.6288,4.77401,5.12446,4.57934,4.64053,4.60199,4.88781)
 
+# Voor de lml stations: ophalen hun naam en locatie
+lml_stations_all <- readRDS('locaties_lml_all.RDS')
+
 # Maak in de labelling onderscheid tussen de LML en GGD stations
-lml_labels <- vector("list", length(lml_stations$code))
-lml_labels[grep('NL49', lml_stations$code)] <- "GGD"
-lml_labels[grep('NL10', lml_stations$code)] <- "LML"
-lml_labels <- as.list(paste(lml_labels, lml_stations$code, sep = ": "))
+lml_labels <- vector("list", length(lml_stations_all$statcode))
+lml_labels[grep('NL49', lml_stations_all$statcode)] <- "GGD"
+lml_labels[grep('NL10', lml_stations_all$statcode)] <- "LML"
+lml_labels[grep('NL01', lml_stations_all$statcode)] <- "DCMR"
+lml_labels[grep('NL54', lml_stations_all$statcode)] <- "ODRA"
+lml_labels[grep('NL50', lml_stations_all$statcode)] <- "Lim"
+
+lml_labels <- as.list(paste(lml_labels, lml_stations_all$statcode, sep = ": "))

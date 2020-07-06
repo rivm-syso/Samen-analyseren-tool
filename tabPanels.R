@@ -9,6 +9,22 @@
 ## In dit script worden de verschillende tabbladen gemaakt
 ## ---------------------------------------------------------
 
+tpData <- function(){
+  library(shiny)
+  
+  tp <-  tabPanel("Data",
+                  helpText("Selecteer een sensor. Deze grafiek laat de tijdreeks van de sensor in vergelijking met het meetstation zien."),
+                  # Button om de luchtmeetnetsations op de kaart te zetten
+                  actionButton("show_luchtmeetnet", "Laadt locaties luchtmeetnetstations"),
+                  p("Selecteer luchtmeetnetstations om de data op te halen. De eigenaar van het station staat erbij. DCMR, GGD Amsterdam, Provincie Limburg, ODRA, LML"),
+                  h4("Toelichting"),
+                  p("",
+                    style = "font-size:12px")
+  )
+  
+  return(tp)
+} 
+
 tpTimeplot <- function(){
   
 library(shiny)

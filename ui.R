@@ -9,7 +9,7 @@
 ## Het eerste gedeelte bevat de opmaak/styling
 ## ---------------------------------------------------------
 
-# HTML template voor de opmaak/styling
+# HTML template voor de opmaak/styling ----
 htmlTemplate("./www/template_samenmeten.wide.html",
              pageTitle=paste("Prototype Samen Analyseren tool: project ", projectnaam),
              
@@ -64,7 +64,7 @@ htmlTemplate("./www/template_samenmeten.wide.html",
                            tags$li("Tijdreeksselectie: makkelijker vanaf een specifieke dag te filteren"),
                            tags$li("Groepsselectie: makkelijker de sensoren te clusteren in een groep zodat groepsgemiddeldes kunnen worden vergeleken"))
                            ),
-  # Vanaf hier begint de tool zelf
+  # Vanaf hier begint de tool zelf ----
   fluidPage=fluidPage(
     
   # wellPanel voor grijze boxing
@@ -118,6 +118,7 @@ htmlTemplate("./www/template_samenmeten.wide.html",
       leafletOutput("map", height = "300px"),
       # Output: Tabset voor openair plots, zie voor de inhoud het script: tabPanels.R
       tabsetPanel(type = "tabs",
+                  tpData(),
                   tpTimeplot(),
                   tpKalender(),
                   tpTimevariation(),
