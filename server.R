@@ -152,8 +152,11 @@ function(input, output, session){
       values$sensor_data$kit_id <- gsub('HLL_hl_', '', values$sensor_data$kit_id) #remove HLL-string from values$sensor_data for shorter label
       
     }else{
-      print(values$data_set)
-      values$sensor_data <- read.csv(input$eigen_datafile$datapath)
+      # Lees de csv uit en sla de gegevens op in interactive
+      values$sensor_data <- read.csv(input$eigen_datafile$datapath, sep=",")
+
+      # Zet de date naar een posixct
+      values$sensor_data$date <- as.POSIXct(values$sensor_data$date, tryFormat=c("%d/%m/%Y %H:%M","%Y-%m-%d %H:%M:%S"), tz='UTC')
     }
     
     # Voor de sensormarkers: locatie, label en kleur etc. Per sensor één unieke locatie
@@ -170,7 +173,6 @@ function(input, output, session){
     
     # Voeg de sensor locaties ed toe aan interactive dataframe
     values$df <- sensor_unique
-    print(head(values$sensor_data))
     # voeg de sensoren toe aan de kaart
     add_sensors_map()
     # zoom naar de nieuwe sensoren
@@ -275,7 +277,6 @@ function(input, output, session){
   observeEvent({input$DateEind},{
     values$einddatum <- input$DateEind
   })
-  
   
   # Observe if user selects a sensor ----
   observeEvent({input$map_marker_click$id}, {
@@ -433,7 +434,7 @@ function(input, output, session){
     },
     # Geef de data op: deze wordt eerst met de API opgehaald
     content = function(file) {
-      write.table(Get_data_API('lml'), file, sep = ';',
+      write.table(Get_data_API('lml'), file, sep = ',',
                   row.names = FALSE)
     }
   )
@@ -446,7 +447,7 @@ function(input, output, session){
     },
     # Geef de data op: deze wordt eerst met de API opgehaald
     content = function(file) {
-      write.table(Get_data_API('samenmeten'), file, sep = ';',
+      write.table(Get_data_API('samenmeten'), file, sep = ',',
                   row.names = FALSE)
     }
   )
