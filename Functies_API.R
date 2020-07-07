@@ -67,7 +67,8 @@ GetLMLAPI <- function(station, ymd_vanaf, ymd_tot){
     url_week <- gsub(" ","T", url_week) # Spaties mogen niet in de api, dan krijg je geen resultaat terug.
     print(url_week)
     # Haal de gegevens op
-    content_measurements <-  GetAPIDataframe(url_week)
+    content_measurements <- GetAPIDataframe(url_week)
+    print("URL week van Luchtmeetnet opgehaald")
     if (length(content_measurements) == 1) {
       # Dan is er een error teruggekomen, bijvoorbeeld 502
       print(content_measurements)
@@ -86,6 +87,7 @@ GetLMLAPI <- function(station, ymd_vanaf, ymd_tot){
   # Maak een named list voor de output
   lml_info_data <- list(info=stat_info_df, data=metingen_df)
   
+  print("Alle data van Luchtmeetnet opgehaald")
   return(lml_info_data)
 }
 
@@ -138,7 +140,7 @@ GetAPIDataframe <- function(url_api){
 ##################### ----
 GetSamenMetenAPI <- function(projectnaam, ymd_vanaf, ymd_tot, data_opslag = data_opslag_list){
   # Functie die de sensordata van het samenmetenportaal haalt
-  # Voorbeeld: TEST <- GetSamenMetenAPI("Amersfoort","20190909", "20190912")
+  # Voorbeeld: TEST <- GetSamenMetenAPI("project,'Amersfoort'","20190909", "20190912")
   # input:
   # projectnaam: string met projectnaam erin. Van dit project worden alle
   #              sensoren opgehaald
@@ -159,7 +161,7 @@ GetSamenMetenAPI <- function(projectnaam, ymd_vanaf, ymd_tot, data_opslag = data
   
   # Voor als je wilt debuggen, dan worden er verschillende prints uitgevoerd
   # Zet dan debug=T
-  debug=F
+  debug=T
   
   ##################### ----
   # Helperfuncties
@@ -321,9 +323,9 @@ GetSamenMetenAPI <- function(projectnaam, ymd_vanaf, ymd_tot, data_opslag = data
   # URL van de sensoren binnen een project
   # url_things <- paste("https://api-samenmeten.rivm.nl/v1.0/Things?$filter=contains(properties/project,'",projectnaam,"')", sep='')
   # Ontwikkel api TEST of die ook werkt
-  url_things <- paste("https://ontw.api-samenmeten.rivm.nl/v1.0/Things?$filter=contains(properties/project,'",projectnaam,"')", sep='')
+  url_things <- paste("https://ontw.api-samenmeten.rivm.nl/v1.0/Things?$filter=contains(properties/",projectnaam,")", sep='')
   
-  if(debug){print(past0("URL things: ", url_things))}
+  if(debug){print(paste0("URL things: ", url_things))}
   
   # Dataframe om de basisgegevens van de sensoren op te slaan (naam, locatie, project, url)
   sensor_data <- data.frame()
@@ -383,7 +385,7 @@ GetSamenMetenAPI <- function(projectnaam, ymd_vanaf, ymd_tot, data_opslag = data
   # OPHALEN van de locaties ----
   ##################### ----
   # haal locatie op voor alle sensors tegelijk met apply
-  locaties <- mclapply(ind, GetlocatieAPI, mc.cores = 1)
+  locaties <- lapply(ind, GetlocatieAPI)
   # Zet de list op naar 1 grote dataframe
   locaties <- do.call("rbind", locaties)
   
@@ -402,7 +404,7 @@ GetSamenMetenAPI <- function(projectnaam, ymd_vanaf, ymd_tot, data_opslag = data
   # Zoek alle urls bij elkaar waar meetgegevens inzitten
   # Deze neemt ook de types van de grootheid mee
   # De functie GeturlsmeetAPI doet dit
-  urls_meet <- mclapply(ind, GeturlsmeetAPI, mc.cores = 1)
+  urls_meet <- lapply(ind, GeturlsmeetAPI)
   # urls_meet <- lapply(ind, GeturlsmeetAPI)
   urls_meet <- do.call("rbind", urls_meet)
   
@@ -427,7 +429,7 @@ GetSamenMetenAPI <- function(projectnaam, ymd_vanaf, ymd_tot, data_opslag = data
   # Haal de gegevens op en zet in dataframe met kit_id en grootheid.
   # Dit is wat de functie GetmeetgegevensAPI doet
   
-  meetgegevens <- mclapply(ind_meet, GetmeetgegevensAPI, mc.cores = 1) # TODO dit geeft een error, kan dit wel op de rserver? Wellicht omdat het srcipt niet doet oid
+  meetgegevens <- lapply(ind_meet, GetmeetgegevensAPI) # TODO dit geeft een error, kan dit wel op de rserver? Wellicht omdat het srcipt niet doet oid
   # meetgegevens <- lapply(ind_meet, GetmeetgegevensAPI)
   meetgegevens <- do.call("rbind", meetgegevens)
   
