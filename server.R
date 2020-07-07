@@ -181,18 +181,54 @@ function(input, output, session){
   
   # Ophalen van de data vanuit een API
   Get_data_API <- function(type_api){
-    #Maak een dataframe waar het in past
-    station_data_all <- data.frame()
-    #Maak een lijst van de statcodes die je wilt ophalen
-    lml_stats <- stations_reactive$lml$statcode[which(stations_reactive$lml$selected==T)]
-    for(stat in lml_stats){
-      # Haal voor elk station de data op van luchtmeetnet API
-      station_data_ruw <- GetLMLAPI(stat, format(values$startdatum, '%Y%m%d'), format(values$einddatum, '%Y%m%d'))
-      # Voeg alle meetwaardes vam de stations samen
-      station_data_all <- rbind(station_data_all, station_data_ruw$data)
+    if(type_api=='lml'){
+      #Maak een dataframe waar het in past
+      station_data_all <- data.frame()
+      #Maak een lijst van de statcodes die je wilt ophalen
+      lml_stats <- stations_reactive$lml$statcode[which(stations_reactive$lml$selected==T)]
+      for(stat in lml_stats){
+        # Haal voor elk station de data op van luchtmeetnet API
+        station_data_ruw <- GetLMLAPI(stat, format(values$startdatum, '%Y%m%d'), format(values$einddatum, '%Y%m%d'))
+        # Voeg alle meetwaardes vam de stations samen
+        station_data_all <- rbind(station_data_all, station_data_ruw$data)
+  
+        #return de totale dataset
+        return(station_data_all)}
+       }else if(type_api=='samenmeten'){
+        # Maak een lege lijst aan. Hier worden alle gegevens in opgeslagen en 
+        # doorgegeven aan de helperfuncties,
+        # zodat die ook alle gegevens ter beschikking hebben.
+        data_opslag_list <- list()
+        # Geef het project mee zoals gebruiker kan aangeven
+        # TODO met een validate en need?
+        # 
+        projectnaam<-'Amersfoort'
+        print('aanroepen api')
+        sensor_data_ruw <- GetSamenMetenAPI(projectnaam, format(values$startdatum, '%Y%m%d'), 
+                                            format(values$einddatum, '%Y%m%d'), data_opslag_list) 
+        print('api opgehaald:')
+        print(summary(sensor_data_ruw))
+        # Dit bestaat uit 2 delen: 
+        # sensordata die kan worden gebruikt voor de markers(values$df) 
+        # metingen met de meetwaardes voor de grafieken (alleen de sensormetingen) dus deel van input_df
+        # TODO: hoe wil je dit koppelen in 1 df voor de downlaod? wel makkelijk om er 1 bestand van te maken
+        # is het werken met 2 werkbladenn in excel moeilijk? anders gewoon 1 grote csv.
+        sensor_data_metingen <- distinct(sensor_data_ruw$metingen)
+        sensor_data_all <- merge(sensor_data_metingen, sensor_data_ruw$sensordata[,c('kit_id','lat','lon')],
+                                 all.x, by.x='kit_id', by.y='kit_id')
+        
+        print('data samenvoegen:')
 
-      #return de totale dataset
-      return(station_data_all)
+        # Omzetten naar een wide dataframe, dat er per kit_id en timestamp 1 rij data is
+        sensor_data_all_wide <- pivot_wider(distinct(sensor_data_all),names_from = 'grootheid', values_from='waarde')
+        
+        print(head(sensor_data_all_wide))
+        
+        # Hernoemen van de tijd, zodat hetzelfde is als de input_df
+        names(sensor_data_all_wide)[names(sensor_data_all_wide) == "tijd"] <- "date"
+        
+        return(sensor_data_all_wide)
+      
     }
   }
   ## OBSERVE EVENTS ----
@@ -398,6 +434,19 @@ function(input, output, session){
     # Geef de data op: deze wordt eerst met de API opgehaald
     content = function(file) {
       write.table(Get_data_API('lml'), file, sep = ';',
+                  row.names = FALSE)
+    }
+  )
+  
+  # Download de data van de projectgeselecteerde sensoren
+  output$downloadData_sensor <- downloadHandler(
+    # geef de filename op, zou via interactieve kunnen
+    filename = function(){
+      paste('testsensor', 'csv', sep=".")
+    },
+    # Geef de data op: deze wordt eerst met de API opgehaald
+    content = function(file) {
+      write.table(Get_data_API('samenmeten'), file, sep = ';',
                   row.names = FALSE)
     }
   )

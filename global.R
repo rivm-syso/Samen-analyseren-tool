@@ -37,6 +37,7 @@ source("tabPanels.R", local = TRUE)
 # Functies voor het ophalen van data via api
 source("Functies_API.R", local = TRUE) 
 
+
 ## Initialise ----
 projectnaam <- "Hollandse Luchten"
 file <- "HLL_voorbeeld_data.RDS" 
@@ -46,6 +47,8 @@ kleur_cat <- list('#42145f','#ffb612','#a90061','#777c00','#007bc7','#673327','#
 kleur_sensor <- "leeg"
 kleur_marker_sensor <- "#525252" # default kleur sensor
 geen_groep <- "" # default waarde als de sensor niet in een groep zit
+
+project_choices <- c('Amersfoort', 'Hollandse Luchten')
 
 icons_stations <- iconList(
   knmi = makeIcon("ionicons_compass.svg", 18, 18),

@@ -19,6 +19,30 @@ tpData <- function(){
                   # Output: tabel met de geslecteerde kitids, voor toekenning aan groep
                   tableOutput("stations"),
                   downloadButton("downloadData",'download metingen luchtmeetnetstations'),
+                  # Selecteer een project waarvan de data gedoawnload kan worden
+                  selectInput(inputId = "sensor_project", label = "Kies project:", choices = project_choices, selected = NULL, multiple = FALSE,
+                              selectize = TRUE, width = NULL, size = NULL),
+                  # Button om de sensor data te downloaden
+                  downloadButton("downloadData_sensor",'download metingen sensoren'),
+                  # Deze code zorgt voor een loading message bovenaan de pagina
+                  tags$head(tags$style(type="text/css", "
+                                       #loadmessage {
+                                         position: fixed;
+                                         top: 200px;
+                                         left: 0px;
+                                         width: 100%;
+                                         padding: 5px 0px 5px 0px;
+                                         text-align: center;
+                                         font-weight: bold;
+                                         font-size: 100%;
+                                         color: #000000;
+                                         background-color: #CCFF66;
+                                         z-index: 105;
+                                       }
+                                    ")),
+                  conditionalPanel(condition="$('html').hasClass('shiny-busy')",
+                                   tags$div("De gegevens worden opgehaald, dit kan een tijd duren....",id="loadmessage")),
+                  
                   p("Selecteer luchtmeetnetstations om de data op te halen. De eigenaar van het station staat erbij. DCMR, GGD Amsterdam, Provincie Limburg, ODRA, LML"),
                   h4("Toelichting"),
                   p("",
