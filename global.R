@@ -18,6 +18,7 @@ library(openair)
 library(leaflet)
 library(leaflet.extras)
 library(dplyr)
+library(tidyr) # for pivot_wider
 library(shinythemes)
 library(shinyWidgets)
 library(purrr)
@@ -57,6 +58,7 @@ icons_stations <- iconList(
 input_df <- NULL
 sensor_unique <- NULL
 sensor_labels <- NULL
+input_df_lml <- NULL
 
 # ## Inlezen van de data ----
 # input_df <- readRDS(file)
@@ -99,3 +101,9 @@ lml_labels[grep('NL54', lml_stations_all$statcode)] <- "ODRA"
 lml_labels[grep('NL50', lml_stations_all$statcode)] <- "Lim"
 
 lml_labels <- as.list(paste(lml_labels, lml_stations_all$statcode, sep = ": "))
+
+# Inladen overzicht gemeente code en naam
+overzicht_gemeente <- read.csv('./overzicht_code_gemeentes.csv',header=F)
+# Sorteer de gemeentes per naam
+overzicht_gemeente <- overzicht_gemeente[order(overzicht_gemeente$V2),]
+gemeente_choices = setNames(overzicht_gemeente$V1,overzicht_gemeente$V2)

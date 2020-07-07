@@ -12,8 +12,8 @@
 
 function(input, output, session){ 
   
-  ## Initializatie
-  # Generate base map ----
+  ## INITIALISATIE ----
+  # Generate base map
   # Hierop staan de knmi-stations, de luchtmeetnetstations en de sensoren
   # Daarnaast zijn er edit buttons toegevoegd
   output$map <- renderLeaflet({
@@ -36,15 +36,15 @@ function(input, output, session){
         editOptions = editToolbarOptions(edit = FALSE, selectedPathOptions = selectedPathOptions()))
   })
   
-  # Zet reactive dataframe op ----
-  values <- reactiveValues(df = sensor_unique, sensor_data = input_df,groepsnaam = geen_groep, df_gem = data.frame(), startdatum = 0, einddatum=0,
-                           data_set = 'voorbeeld') 
+  # Zet reactive dataframe op
+  values <- reactiveValues(df = sensor_unique, sensor_data = input_df,groepsnaam = geen_groep, 
+                           df_gem = data.frame(), startdatum = 0, einddatum=0,data_set = 'voorbeeld') 
   overzicht_shapes <- reactiveValues(add = 0, delete = 0) # nodig om selectie ongedaan te maken
-  stations_reactive <- reactiveValues(lml=lml_stations_all)
+  stations_reactive <- reactiveValues(lml=lml_stations_all, lml_data = input_df_lml)
   
   ## FUNCTIES ----
   
-  # Functie: Set the sensor as deselect and change color to base color ----
+  # Functie: Set the sensor as deselect and change color to base color
   set_sensor_deselect <- function(id_select){
     values$df[values$df$kit_id == id_select, "selected"] <- FALSE 
     values$df[values$df$kit_id == id_select, "huidig"] <- FALSE 
@@ -52,7 +52,7 @@ function(input, output, session){
     values$df[values$df$kit_id == id_select, "groep"] <- geen_groep
   }
   
-  # Functie: Set sensor as select and specify color ----
+  # Functie: Set sensor as select and specify color
   set_sensor_select <- function(id_select){
     values$df[values$df$kit_id == id_select, "selected"] <- TRUE
     values$df[values$df$kit_id == id_select, "huidig"] <- TRUE
@@ -80,16 +80,16 @@ function(input, output, session){
     kleur_sensor <- "leeg"
   }
   
-  # Functie: Set the stations as deselect and change color to base color ----
+  # Functie: Set the stations as deselect and change color to base color
   #TODO dit is nog niet af, maak iets met de symbolen in een andere kleur
   #TODO maak een if else voor knmi en lml
   set_station_deselect <- function(id_select, type_stat){
     if (type_stat=='lml'){
-    stations_reactive$lml[stations_reactive$lml$statcode == id_select, "selected"] <- FALSE 
+      stations_reactive$lml[stations_reactive$lml$statcode == id_select, "selected"] <- FALSE 
     }
     }
   
-  # Functie: Set station as select and specify color ----
+  # Functie: Set station as select and specify color
   #TODO dit is nog niet af, maak iets met de symbolen in een andere kleur
   #TODO maak een if else voor knmi en lml
   set_station_select <- function(id_select, type_stat){
@@ -102,7 +102,7 @@ function(input, output, session){
     }
   }
   
-  # Functie: plaats sensoren met juiste kleur op de kaart ----
+  # Functie: plaats sensoren met juiste kleur op de kaart  
   add_sensors_map <- function(){ 
     # Regenerate the sensors for the markers
     sensor_loc <- unique(select(values$df, kit_id, lat, lon, kleur, selected))
@@ -120,7 +120,7 @@ function(input, output, session){
     proxy %>% setView(lon, lat, zoom = 10)
   }
   
-  # Functie om van alle groepen in de dataset een gemiddelde te berekenen ----
+  # Functie om van alle groepen in de dataset een gemiddelde te berekenen  
   calc_groep_mean <- function(){
     # LET OP: wind moet via vectormean. Zie openair timeAverage
     gemiddeld_all <- data.frame()
@@ -144,41 +144,51 @@ function(input, output, session){
   Insert_nieuwe_data <- function(){
     # deze functie neemt de data en verandert de values$sensor_data en de values$df
     # aan de hand van de invoer. Dat kan een eigen bestand zijn, of de voorbeeld dataset
-    if(values$data_set == 'voorbeeld'){
-      print('voorbeeld')
-      values$sensor_data <- readRDS(file)
+    if(values$data_set %in% c('voorbeeld', 'eigen_dataset','API_samenmeten' )){
+      if(values$data_set == 'voorbeeld'){
+        print('voorbeeld')
+        values$sensor_data <- readRDS(file)
+        
+        ## Default locatie, kleur en label opzetten  
+        values$sensor_data$kit_id <- gsub('HLL_hl_', '', values$sensor_data$kit_id) #remove HLL-string from values$sensor_data for shorter label
+        
+      }else if(values$data_set=='API_samenmeten'){
+        # Haal de gegevens op van de sensoren via de samenmeten API
+        values$sensor_data <- Get_data_API('samenmeten')
+        
+      }else if(values$data_set=='eigen_dataset'){
+        # Lees de csv uit en sla de gegevens op in interactive
+        values$sensor_data <- read.csv(input$eigen_datafile$datapath, sep=",")
+  
+        # Zet de date naar een posixct
+        values$sensor_data$date <- as.POSIXct(values$sensor_data$date, tryFormat=c("%d/%m/%Y %H:%M","%Y-%m-%d %H:%M:%S"), tz='UTC')
+      }
       
-      ## Default locatie, kleur en label opzetten ----
-      values$sensor_data$kit_id <- gsub('HLL_hl_', '', values$sensor_data$kit_id) #remove HLL-string from values$sensor_data for shorter label
+      # Voor de sensormarkers: locatie, label en kleur etc. Per sensor één unieke locatie
+      sensor_unique <- aggregate(values$sensor_data[,c('lat','lon')], list(values$sensor_data$kit_id), FUN = mean) # gemiddelde om per sensor een latlon te krijgen
+      names(sensor_unique)[names(sensor_unique)=='Group.1'] <-'kit_id'
+      sensor_unique$selected <-FALSE
+      sensor_unique$huidig <- FALSE
+      sensor_unique$groep <- geen_groep
+      sensor_unique$kleur <- kleur_marker_sensor
+      sensor_labels <- as.list(sensor_unique$kit_id) # labels to use for hoover info
       
-    }else{
-      # Lees de csv uit en sla de gegevens op in interactive
-      values$sensor_data <- read.csv(input$eigen_datafile$datapath, sep=",")
-
-      # Zet de date naar een posixct
-      values$sensor_data$date <- as.POSIXct(values$sensor_data$date, tryFormat=c("%d/%m/%Y %H:%M","%Y-%m-%d %H:%M:%S"), tz='UTC')
+      # Voor de multiselect tool: omzetten lat/lon naar spatialpoints
+      ms_coordinates <- SpatialPointsDataFrame(sensor_unique[,c('lon','lat')],sensor_unique)
+      
+      # Voeg de sensor locaties ed toe aan interactive dataframe
+      values$df <- sensor_unique
+      # voeg de sensoren toe aan de kaart
+      add_sensors_map()
+      # zoom naar de nieuwe sensoren
+      mean_lat <- mean(sensor_unique$lat)
+      mean_lon <- mean(sensor_unique$lon)
+      set_view_map(mean_lat, mean_lon)
+    }else if(values$data_set=='API_luchtmeetnet'){
+      # Haal de gegevens op van de stations via de luchtmeetnet API
+      print('ophalen api luchtmeetnet')
+      stations_reactive$lml_data <- Get_data_API('lml')
     }
-    
-    # Voor de sensormarkers: locatie, label en kleur etc. Per sensor één unieke locatie
-    sensor_unique <- aggregate(values$sensor_data[,c('lat','lon')], list(values$sensor_data$kit_id), FUN = mean) # gemiddelde om per sensor een latlon te krijgen
-    names(sensor_unique)[names(sensor_unique)=='Group.1'] <-'kit_id'
-    sensor_unique$selected <-FALSE
-    sensor_unique$huidig <- FALSE
-    sensor_unique$groep <- geen_groep
-    sensor_unique$kleur <- kleur_marker_sensor
-    sensor_labels <- as.list(sensor_unique$kit_id) # labels to use for hoover info
-    
-    # Voor de multiselect tool: omzetten lat/lon naar spatialpoints
-    ms_coordinates <- SpatialPointsDataFrame(sensor_unique[,c('lon','lat')],sensor_unique)
-    
-    # Voeg de sensor locaties ed toe aan interactive dataframe
-    values$df <- sensor_unique
-    # voeg de sensoren toe aan de kaart
-    add_sensors_map()
-    # zoom naar de nieuwe sensoren
-    mean_lat <- mean(sensor_unique$lat)
-    mean_lon <- mean(sensor_unique$lon)
-    set_view_map(mean_lat, mean_lon)
   }
   
   # Ophalen van de data vanuit een API
@@ -188,14 +198,15 @@ function(input, output, session){
       station_data_all <- data.frame()
       #Maak een lijst van de statcodes die je wilt ophalen
       lml_stats <- stations_reactive$lml$statcode[which(stations_reactive$lml$selected==T)]
+      print(lml_stats)
       for(stat in lml_stats){
         # Haal voor elk station de data op van luchtmeetnet API
         station_data_ruw <- GetLMLAPI(stat, format(values$startdatum, '%Y%m%d'), format(values$einddatum, '%Y%m%d'))
         # Voeg alle meetwaardes vam de stations samen
         station_data_all <- rbind(station_data_all, station_data_ruw$data)
-  
         #return de totale dataset
         return(station_data_all)}
+      
        }else if(type_api=='samenmeten'){
         # Maak een lege lijst aan. Hier worden alle gegevens in opgeslagen en 
         # doorgegeven aan de helperfuncties,
@@ -204,7 +215,8 @@ function(input, output, session){
         # Geef het project mee zoals gebruiker kan aangeven
         # TODO met een validate en need?
         # 
-        projectnaam<-'Amersfoort'
+        projectnaam <- "project,'Amersfoort'"
+        # projectnaam <- "codegemeente,'518'"
         print('aanroepen api')
         sensor_data_ruw <- GetSamenMetenAPI(projectnaam, format(values$startdatum, '%Y%m%d'), 
                                             format(values$einddatum, '%Y%m%d'), data_opslag_list) 
@@ -237,7 +249,8 @@ function(input, output, session){
   
   # observe of er een eigen data set is ingeladen:
   observeEvent({req(input$eigen_datafile)},{
-    values$data_set <- input$eigen_datafile$datapath           
+    values$data_set <- input$eigen_datafile$datapath  
+    values$data_set <- 'eigen_dataset'
     print("databestand geladen")
     Insert_nieuwe_data()})
   
@@ -246,18 +259,30 @@ function(input, output, session){
     values$data_set <- 'voorbeeld'
     Insert_nieuwe_data()})
   
+  # Observe of de specifieke sensor dataset opgehaald en ingeladen moet worden
+  observeEvent({input$API_samenmeten},{
+    values$data_set <- 'API_samenmeten'
+    Insert_nieuwe_data()})
+  
+  # Observe of de specifieke luchtmeetnet stations dataset opgehaald en ingeladen moet worden
+  observeEvent({input$API_luchtmeetnet},{
+    print("Eerste aanroep api luchtmeetnet")
+    values$data_set <- 'API_luchtmeetnet'
+    Insert_nieuwe_data()})
+  
   #Observe of de luchtmeetnetstations moeten worden getoond
   observeEvent({input$show_luchtmeetnet},{
     print('laad zien')
     # Update map with new markers to show selected 
     proxy <- leafletProxy('map') # set up proxy map
     proxy %>% clearGroup("sensoren")  # Clear sensor markers
-    proxy %>% addMarkers(icon = icons_stations["lml"], data = lml_stations_all, 
+    proxy %>% addMarkers(icon = icons_stations["lml"], data = stations_reactive$lml, 
                          ~lon, ~lat, layerId = ~statcode, label = lapply(lml_labels, HTML))
     proxy %>% setView(5.12446,52.105, zoom = 6)
+    print("op kaart getoond")
     })
   
-  # Observe of de tekst wordt aangepast ----
+  # Observe of de tekst wordt aangepast 
   # Dan wil je dat er een nieuwe groep wordt aangemaakt
   # Bijvoorbeeld: je hebt een groep "Wijk aan Zee" aangemaakt, en je begint een nieuwe naam te typen "IJmuiden". 
   # Deze groep moet dan nieuw aangemaakt worden "IJmuiden".
@@ -278,7 +303,7 @@ function(input, output, session){
     values$einddatum <- input$DateEind
   })
   
-  # Observe if user selects a sensor ----
+  # Observe if user selects a sensor 
   observeEvent({input$map_marker_click$id}, {
     id_select <- input$map_marker_click$id
     # Wanneer er op een Luchtmeetnet of KNMI station marker geklikt wordt, gebeurt er niks
@@ -307,7 +332,7 @@ function(input, output, session){
     }
   })
   
-  # Observe of de huidige selectie moet worden gereset ----
+  # Observe of de huidige selectie moet worden gereset 
   # De values selected worden weer FALSE en de markers kleur_sensor_marker gekleurd, groepen verwijderd
   observeEvent(input$reset_huidig, {
     values$df[which(values$df$huidig == TRUE), "selected"] <- FALSE 
@@ -318,7 +343,7 @@ function(input, output, session){
     add_sensors_map()
   })
   
-  # Observe of de alle geselecteerde sensoren moet worden gereset ----
+  # Observe of de alle geselecteerde sensoren moet worden gereset
   # De values selected worden weer FALSE en de markers kleur_sensor_marker gekleurd, groepen verwijderd
   observeEvent(input$reset_all, {
     values$df[, "selected"] <- FALSE 
@@ -329,7 +354,7 @@ function(input, output, session){
     add_sensors_map()
   })
   
-  # Observe of de selectie moet worden toegevoegd aan de groep ----
+  # Observe of de selectie moet worden toegevoegd aan de groep
   # De values selected worden weer FALSE en de markers kleur_sensor_marker gekleurd, groepen verwijderd
   observeEvent(input$groeperen, {
     # Check of een groep gekozen is, anders geen groepering
@@ -354,12 +379,12 @@ function(input, output, session){
     updateTextInput(session,"Text_groep",'Maak nieuwe groep:', value = geen_groep)
   })
 
-  # Voor de bestaande groepen: maak de input-ui ----
+  # Voor de bestaande groepen: maak de input-ui 
   output$bestaande_groep <- renderUI({
     selectizeInput('bestaande_groep', 'Kies bestaande groep: ', choices = c("select" = "", levels(as.factor(values$df$groep))))
   })
   
-  # Observe voor multiselect ---- 
+  # Observe voor multiselect
   observeEvent(input$map_draw_new_feature,{
     
     # Houd bij hoeveel features er zijn. Later nodig bij verwijderen, i.v.m. reset ook de losse selectie.
@@ -387,7 +412,7 @@ function(input, output, session){
     }
   })
   
-  # Observe voor multiselect deselect ----
+  # Observe voor multiselect deselect 
   # Er zijn namelijk twee manieren om sensoren te selecteren: d.m.v. los aangeklikte sensoren (1), en d.m.v.
   # de DrawToolBox (2). De delete knop op de DrawToolBox verwijderd enkel de sensoren die d.m.v. de DrawToolBox geselecteerd zijn,
   # dus niet de losse sensoren. Onderstaand stukzorgt ervoor dat zowel selectie via (1) als (2) worden verwijderd.
@@ -424,17 +449,17 @@ function(input, output, session){
   })
   
   
-  ## Genereer plots -----
+  ## GENEREER PLOTS -----
   
   # Download de data van de geselecteerde LML stations
-  output$downloadData <- downloadHandler(
+  output$downloadData_luchtmeetnet <- downloadHandler(
     # geef de filename op, zou via interactieve kunnen
     filename = function(){
       paste('testLML', 'csv', sep=".")
     },
     # Geef de data op: deze wordt eerst met de API opgehaald
     content = function(file) {
-      write.table(Get_data_API('lml'), file, sep = ',',
+      write.table(stations_reactive$lml_data, file, sep = ',',
                   row.names = FALSE)
     }
   )
@@ -447,22 +472,22 @@ function(input, output, session){
     },
     # Geef de data op: deze wordt eerst met de API opgehaald
     content = function(file) {
-      write.table(Get_data_API('samenmeten'), file, sep = ',',
+      write.table(values$sensor_data, file, sep = ',',
                   row.names = FALSE)
     }
   )
   
-  # Create tabel huidige selectie ----
+  # Create tabel huidige selectie 
   output$huidig <- renderTable({
   huidig_df <- data.frame('Selectie' = values$df[which(values$df$huidig),'kit_id'])
   })
   
-  # Create tabel geselcteerde stations voor de download pagina ----
+  # Create tabel geselecteerde stations voor de download pagina 
   output$stations <- renderTable({
     stations_df <- data.frame('Selectie' = stations_reactive$lml[which(stations_reactive$lml$selected),'statcode'])
   })
   
-  # Create time plot vanuit openair ----
+  # Create time plot vanuit openair 
   output$timeplot <- renderPlot({
     
     comp <- selectReactiveComponent(input)
@@ -474,7 +499,7 @@ function(input, output, session){
       calc_groep_mean() # berekent groepsgemiddeldes
       show_input <- merge(show_input,values$df_gem, all = T) }
 
-    # if / else statement om correctie lml data toe te voegen ----
+    # if / else statement om correctie lml data toe te voegen  
     if(comp == "pm10" || comp == "pm10_kal"){
       # Bepaal de max voor de ylim
       ylim_max <- max(show_input$pm10)
@@ -492,7 +517,7 @@ function(input, output, session){
     }
   })
   
-  # Create kalender plot vanuit openair ----
+  # Create kalender plot vanuit openair
   output$calendar <- renderPlot({
     
     comp <- selectReactiveComponent(input)
@@ -509,7 +534,7 @@ function(input, output, session){
     # Call in try() zodat er geen foutmelding wordt getoond als er geen enkele sensor is aangeklikt 
   })
   
-  # Create timevariation functie vanuit openair ----
+  # Create timevariation functie vanuit openair 
   output$timevariation <- renderPlot({
     
     comp <- selectReactiveComponent(input)
@@ -544,7 +569,7 @@ function(input, output, session){
     
   })
   
-  # Create pollutionrose functie vanuit openair ----
+  # Create pollutionrose functie vanuit openair
   output$pollutionplot <- renderPlot({
     
     comp <- selectReactiveComponent(input)
@@ -563,7 +588,7 @@ function(input, output, session){
   })
   
   
-  # Create windrose vanuit openair ----
+  # Create windrose vanuit openair 
   output$windplot <- renderPlot({
     
     comp <- selectReactiveComponent(input)
@@ -582,7 +607,7 @@ function(input, output, session){
     
   })
   
-  # Create percentilerose functie vanuit openair ----
+  # Create percentilerose functie vanuit openair
   output$percentileplot <- renderPlot({
     
     comp <- selectReactiveComponent(input)

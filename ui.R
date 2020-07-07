@@ -69,20 +69,26 @@ htmlTemplate("./www/template_samenmeten.wide.html",
     
   # wellPanel voor grijze boxing
   wellPanel(
+    # Deze code zorgt voor een loading message bovenaan de pagina
+    tags$head(tags$style(type="text/css", 
+                         "#loadmessage {
+                          position: fixed;
+                          top: 200px;
+                          left: 0px;
+                          width: 100%;
+                          padding: 5px 0px 5px 0px;
+                          text-align: center;
+                          font-weight: bold;
+                          font-size: 100%;
+                          color: #FFFFFF;
+                          background-color: #c7005d;
+                          z-index: 1100;}")),
+    conditionalPanel(condition="$('html').hasClass('shiny-busy')",
+                     tags$div("De gegevens worden opgehaald, dit kan een tijd duren....",id="loadmessage")),
   # Sidebar layout met input en output definities
   sidebarLayout(
     # Sidebar panel voor leaflet map om sensoren te selecteren
     sidebarPanel(width=3,
-      
-      # Mogelijkheid om je eigen data in te laden:
-      fileInput("eigen_datafile", "Kies csv-bestand:",
-                multiple = TRUE,
-                accept = c("text/csv",
-                           "text/comma-separated-values,text/plain",
-                           ".csv")),
-      
-      # Button om terug te gaan naar de standaard voorbeeld data
-      actionButton("voorbeeld_data","Laadt voorbeeld data."),
       # Button om de alles wat geselecteerd is te resetten
       actionButton("reset_all", "Reset alle sensoren"),
       br(),
@@ -91,9 +97,9 @@ htmlTemplate("./www/template_samenmeten.wide.html",
                 selectize = TRUE, width = NULL, size = NULL),
       
       # Input: Blokjes voor de datum
-      dateInput("DateStart", label="Selecteer begin tijdreeks:", format='dd-mm-yyyy',value = '2019-01-01'
+      dateInput("DateStart", label="Selecteer begin tijdreeks:", format='dd-mm-yyyy',value = '2019-04-04'
                 ),
-      dateInput("DateEind", label="Selecteer einde tijdreeks:", format='dd-mm-yyyy', value = '2021-01-01' 
+      dateInput("DateEind", label="Selecteer einde tijdreeks:", format='dd-mm-yyyy', value = '2019-04-07' 
                 ),
       
       br(),

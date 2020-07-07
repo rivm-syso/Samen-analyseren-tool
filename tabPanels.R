@@ -13,40 +13,54 @@ tpData <- function(){
   library(shiny)
   
   tp <-  tabPanel("Data",
-                  helpText("Selecteer een sensor. Deze grafiek laat de tijdreeks van de sensor in vergelijking met het meetstation zien."),
-                  # Button om de luchtmeetnetsations op de kaart te zetten
-                  actionButton("show_luchtmeetnet", "Laadt locaties luchtmeetnetstations"),
-                  # Output: tabel met de geslecteerde kitids, voor toekenning aan groep
-                  tableOutput("stations"),
-                  downloadButton("downloadData",'download metingen luchtmeetnetstations'),
-                  # Selecteer een project waarvan de data gedoawnload kan worden
-                  selectInput(inputId = "sensor_project", label = "Kies project:", choices = project_choices, selected = NULL, multiple = FALSE,
-                              selectize = TRUE, width = NULL, size = NULL),
-                  # Button om de sensor data te downloaden
-                  downloadButton("downloadData_sensor",'download metingen sensoren'),
-                  # Deze code zorgt voor een loading message bovenaan de pagina
-                  tags$head(tags$style(type="text/css", "
-                                       #loadmessage {
-                                         position: fixed;
-                                         top: 200px;
-                                         left: 0px;
-                                         width: 100%;
-                                         padding: 5px 0px 5px 0px;
-                                         text-align: center;
-                                         font-weight: bold;
-                                         font-size: 100%;
-                                         color: #000000;
-                                         background-color: #CCFF66;
-                                         z-index: 105;
-                                       }
-                                    ")),
-                  conditionalPanel(condition="$('html').hasClass('shiny-busy')",
-                                   tags$div("De gegevens worden opgehaald, dit kan een tijd duren....",id="loadmessage")),
-                  
-                  p("Selecteer luchtmeetnetstations om de data op te halen. De eigenaar van het station staat erbij. DCMR, GGD Amsterdam, Provincie Limburg, ODRA, LML"),
-                  h4("Toelichting"),
-                  p("",
-                    style = "font-size:12px")
+                  tabsetPanel(
+                    tabPanel("Sensoren",
+                             helpText("Selecteer hieronder het project of de gemeente waarvan u de sensoren wilt opvragen.
+                                      Vraag daarna de gegevens op. LET OP: het opvragen van de gegevens kan enkele minuten tot een half uur duren.
+                                      De opgevraagde gegevens worden direct getoond. U kunt ze ook downloaden en op een ander moment weer inladen, 
+                                      zodat u niet elke keer hoeft te wachten."),
+                             # Button om terug te gaan naar de standaard voorbeeld data
+                             actionButton("voorbeeld_data","Laad voorbeeld data"),
+                             # Selecteer een project waarvan de data gedoawnload kan worden
+                             selectInput(inputId = "sensor_project", label = "Kies project:", choices = project_choices, selected = NULL, multiple = FALSE,
+                                         selectize = TRUE, width = NULL, size = NULL),
+                             # Selecteer een gemeente waarvan de data gedoawnload kan worden
+                             selectInput(inputId = "sensor_gemeente", label = "Kies gemeente:", choices = gemeente_choices, selected = NULL, multiple = FALSE,
+                                         selectize = TRUE, width = NULL, size = NULL),
+                             # Button om de gegevens van de sensore op t halen via de API
+                             actionButton("API_samenmeten","Haal de metingen van de sensoren op"),
+                             # Button om de sensor data te downloaden
+                             downloadButton("downloadData_sensor",'Download de metingen van de sensoren'),
+                             # Mogelijkheid om je eigen data in te laden:
+                             fileInput("eigen_datafile", "Laad dataset sensormetingen(csv-bestand): ",
+                                       multiple = FALSE,
+                                       accept = c("text/csv",
+                                                  "text/comma-separated-values,text/plain",
+                                                  ".csv"))
+                             ),
+                    tabPanel("Luchtmeetnet",
+                             helpText("Laadt eerst de locaties van de meetstations van Luchtmeetnet. 
+                                      Selecteer daarna de stations waarvan u de meetgegevens wilt opvragen.
+                                      De opgevraagde gegevens worden direct getoond. U kunt ze ook downloaden 
+                                      en op een ander moment weer inladen, 
+                                      zodat u niet elke keer hoeft te wachten.
+                                      LET OP/TODO dit werkt nog niet allemaal"),
+                            # Button om de luchtmeetnetsations op de kaart te zetten
+                            actionButton("show_luchtmeetnet", "Laadt locaties luchtmeetnetstations"),
+                            # Output: tabel met de geslecteerde LML station, voor het downloaden van de data
+                            tableOutput("stations"),
+                            # Button om de gegevens van de luchtmeetnetstations op et halen via de API
+                            actionButton("API_luchtmeetnet","Haal de metingen van de stations op"),
+                            # Button om de LML data te downloaden
+                            downloadButton("downloadData_luchtmeetnet",'download metingen luchtmeetnetstations'),
+                            p("Selecteer luchtmeetnetstations om de data op te halen. De eigenaar van het station staat erbij. DCMR, GGD Amsterdam, Provincie Limburg, ODRA, LML"),
+                            h4("Toelichting"),
+                            p("",style = "font-size:12px")
+                    ),
+                    tabPanel("KNMI",
+                             helpText("TODO")
+                             )
+    )
   )
   
   return(tp)
