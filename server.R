@@ -41,6 +41,7 @@ function(input, output, session){
                            df_gem = data.frame(), startdatum = 0, einddatum=0,data_set = 'voorbeeld') 
   overzicht_shapes <- reactiveValues(add = 0, delete = 0) # nodig om selectie ongedaan te maken
   stations_reactive <- reactiveValues(lml=lml_stations_all, lml_data = input_df_lml)
+  choices_api_reactive <- reactiveValues(choices=gemeente_choices)
   
   ## FUNCTIES ----
   
@@ -144,7 +145,7 @@ function(input, output, session){
   Insert_nieuwe_data <- function(){
     # deze functie neemt de data en verandert de values$sensor_data en de values$df
     # aan de hand van de invoer. Dat kan een eigen bestand zijn, of de voorbeeld dataset
-    if(values$data_set %in% c('voorbeeld', 'eigen_dataset','API_samenmeten' )){
+    if(values$data_set %in% c('voorbeeld', 'eigen_dataset', 'API_samenmeten')){
       if(values$data_set == 'voorbeeld'){
         print('voorbeeld')
         values$sensor_data <- readRDS(file)
@@ -155,7 +156,6 @@ function(input, output, session){
       }else if(values$data_set=='API_samenmeten'){
         # Haal de gegevens op van de sensoren via de samenmeten API
         values$sensor_data <- Get_data_API('samenmeten')
-        
       }else if(values$data_set=='eigen_dataset'){
         # Lees de csv uit en sla de gegevens op in interactive
         values$sensor_data <- read.csv(input$eigen_datafile$datapath, sep=",")
@@ -184,6 +184,7 @@ function(input, output, session){
       mean_lat <- mean(sensor_unique$lat)
       mean_lon <- mean(sensor_unique$lon)
       set_view_map(mean_lat, mean_lon)
+    # De gegevens van Luchtmeetnet worden in een andere reactivevalues opgeslagen  
     }else if(values$data_set=='API_luchtmeetnet'){
       # Haal de gegevens op van de stations via de luchtmeetnet API
       print('ophalen api luchtmeetnet')
@@ -215,8 +216,11 @@ function(input, output, session){
         # Geef het project mee zoals gebruiker kan aangeven
         # TODO met een validate en need?
         # 
-        projectnaam <- "project,'Amersfoort'"
-        # projectnaam <- "codegemeente,'518'"
+        if(input$sensor_hoofdgroep=='project'){
+          projectnaam <- paste0("project,'",input$sensor_specificeer,"'")
+        }else if(input$sensor_hoofdgroep=='gemeente'){
+          projectnaam <- paste0("codegemeente,'",input$sensor_specificeer,"'")}
+        print(projectnaam)
         print('aanroepen api')
         sensor_data_ruw <- GetSamenMetenAPI(projectnaam, format(values$startdatum, '%Y%m%d'), 
                                             format(values$einddatum, '%Y%m%d'), data_opslag_list) 
@@ -246,6 +250,24 @@ function(input, output, session){
     }
   }
   ## OBSERVE EVENTS ----
+  # Check waarop de data geselecteerd wordt: zet de choices klaar -gemeente of -project
+  observeEvent({input$sensor_hoofdgroep},{
+    if(input$sensor_hoofdgroep=='gemeente'){
+      choices_api_reactive$choices <- gemeente_choices
+    }else{
+      choices_api_reactive$choices <- project_choices
+    }
+  })
+  
+  # Haal de choices in de SelectInput voor de sensoren API
+  observe({
+    updateSelectInput(session, "sensor_specificeer",choices = choices_api_reactive$choices
+    )})
+  #Print welke datagroep bij samenmeten api wordt opgevraagd
+  observeEvent({input$sensor_specificeer},{
+    print(input$sensor_specificeer)
+    print(input$sensor_hoofdgroep)
+  })
   
   # observe of er een eigen data set is ingeladen:
   observeEvent({req(input$eigen_datafile)},{

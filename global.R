@@ -27,8 +27,6 @@ library(devtools)
 library(geoshaper)
 library(DT) #for downlaod and datatable
 
-
-
 ## Load Functions ----
 
 # Functies voor het genereren van de input opties voor openair call
@@ -49,7 +47,7 @@ kleur_sensor <- "leeg"
 kleur_marker_sensor <- "#525252" # default kleur sensor
 geen_groep <- "" # default waarde als de sensor niet in een groep zit
 
-project_choices <- c('Amersfoort', 'Hollandse Luchten')
+
 
 icons_stations <- iconList(
   knmi = makeIcon("ionicons_compass.svg", 18, 18),
@@ -101,6 +99,14 @@ lml_labels[grep('NL54', lml_stations_all$statcode)] <- "ODRA"
 lml_labels[grep('NL50', lml_stations_all$statcode)] <- "Lim"
 
 lml_labels <- as.list(paste(lml_labels, lml_stations_all$statcode, sep = ": "))
+
+## Voor het kiezen van gemeente of rpoject voor het data ophalen van samenmeten API
+# hoofdkeuze 
+hoofd_choices <- data.frame('namen'=c('project', 'gemeente'), 'labels'=c('Project','Gemeente')) #LET op deze worden gebruikt in server voor if else, dus pas niet zomaar aan.
+hoofd_choices = setNames(hoofd_choices$namen,hoofd_choices$labels)
+
+# Overzicht projectnamen
+project_choices <- c('Amersfoort', 'Hollandse Luchten')
 
 # Inladen overzicht gemeente code en naam
 overzicht_gemeente <- read.csv('./overzicht_code_gemeentes.csv',header=F)

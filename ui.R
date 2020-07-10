@@ -9,7 +9,7 @@
 ## Het eerste gedeelte bevat de opmaak/styling
 ## ---------------------------------------------------------
 
-# HTML template voor de opmaak/styling ----
+# HTML template voor de opmaak/styling ---- 
 htmlTemplate("./www/template_samenmeten.wide.html",
              pageTitle=paste("Prototype Samen Analyseren tool: project ", projectnaam),
              
