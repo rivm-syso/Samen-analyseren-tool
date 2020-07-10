@@ -43,7 +43,9 @@ function(input, output, session){
   stations_reactive <- reactiveValues(lml=lml_stations_all, lml_data = input_df_lml)
   choices_api_reactive <- reactiveValues(choices=gemeente_choices)
   
+
   ## FUNCTIES ----
+
   
   # Functie: Set the sensor as deselect and change color to base color
   set_sensor_deselect <- function(id_select){
@@ -154,6 +156,8 @@ function(input, output, session){
         values$sensor_data$kit_id <- gsub('HLL_hl_', '', values$sensor_data$kit_id) #remove HLL-string from values$sensor_data for shorter label
         
       }else if(values$data_set=='API_samenmeten'){
+
+        
         # Haal de gegevens op van de sensoren via de samenmeten API
         values$sensor_data <- Get_data_API('samenmeten')
       }else if(values$data_set=='eigen_dataset'){
@@ -213,24 +217,44 @@ function(input, output, session){
         # doorgegeven aan de helperfuncties,
         # zodat die ook alle gegevens ter beschikking hebben.
         data_opslag_list <- list()
-        # Geef het project mee zoals gebruiker kan aangeven
-        # TODO met een validate en need?
-        # 
+        
+        # Voor het maken van een progresbar voor het laden van de data via de samenmetenAPI
+        # Create a Progress object
+        progress <- shiny::Progress$new()
+        progress$set(message = "Ophalen van de gegevens", value = 0)
+        # Close the progress when this reactive exits (even if there's an error)
+        on.exit(progress$close())
+        
+        # Create a callback function to update progress.
+        # Each time this is called:
+        # - If `value` is NULL, it will move the progress bar 1/5 of the remaining
+        #   distance. If non-NULL, it will set the progress to that value.
+        # - It also accepts optional detail text.
+        updateProgress <- function(value = NULL, detail = NULL) {
+          if (is.null(value)) {
+            value <- progress$getValue()
+            value <- value + (progress$getMax() - value) / 5
+          }
+          progress$set(value = value, detail = detail)
+        }
+        # Vanuit de gebruiker wordt aangegeven welke gegevens moeten worden opgehaald.
+        # hier wordt het stukje van de url voor project en gemeente gezet.
         if(input$sensor_hoofdgroep=='project'){
           projectnaam <- paste0("project,'",input$sensor_specificeer,"'")
         }else if(input$sensor_hoofdgroep=='gemeente'){
           projectnaam <- paste0("codegemeente,'",input$sensor_specificeer,"'")}
-        print(projectnaam)
+        
         print('aanroepen api')
+        # Aanroepen van de API
         sensor_data_ruw <- GetSamenMetenAPI(projectnaam, format(values$startdatum, '%Y%m%d'), 
-                                            format(values$einddatum, '%Y%m%d'), data_opslag_list) 
+                                            format(values$einddatum, '%Y%m%d'), data_opslag_list,
+                                            updateProgress) 
         print('api opgehaald:')
         print(summary(sensor_data_ruw))
         # Dit bestaat uit 2 delen: 
         # sensordata die kan worden gebruikt voor de markers(values$df) 
         # metingen met de meetwaardes voor de grafieken (alleen de sensormetingen) dus deel van input_df
-        # TODO: hoe wil je dit koppelen in 1 df voor de downlaod? wel makkelijk om er 1 bestand van te maken
-        # is het werken met 2 werkbladenn in excel moeilijk? anders gewoon 1 grote csv.
+        # Deze worden samengevoegd in 1 wide tabel
         sensor_data_metingen <- distinct(sensor_data_ruw$metingen)
         sensor_data_all <- merge(sensor_data_metingen, sensor_data_ruw$sensordata[,c('kit_id','lat','lon')],
                                  all.x, by.x='kit_id', by.y='kit_id')
@@ -244,11 +268,14 @@ function(input, output, session){
         
         # Hernoemen van de tijd, zodat hetzelfde is als de input_df
         names(sensor_data_all_wide)[names(sensor_data_all_wide) == "tijd"] <- "date"
-        
+        #TODO: de error kolom weglaten.
+        updateProgress(100, 'Alles geladen')
         return(sensor_data_all_wide)
       
     }
   }
+
+ 
   ## OBSERVE EVENTS ----
   # Check waarop de data geselecteerd wordt: zet de choices klaar -gemeente of -project
   observeEvent({input$sensor_hoofdgroep},{

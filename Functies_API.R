@@ -138,7 +138,7 @@ GetAPIDataframe <- function(url_api){
 ##################### ----
 # Hoofdfunctie ----
 ##################### ----
-GetSamenMetenAPI <- function(projectnaam, ymd_vanaf, ymd_tot, data_opslag = data_opslag_list){
+GetSamenMetenAPI <- function(projectnaam, ymd_vanaf, ymd_tot, data_opslag = data_opslag_list, updateProgress=NULL){
   # Functie die de sensordata van het samenmetenportaal haalt
   # Voorbeeld: TEST <- GetSamenMetenAPI("project,'Amersfoort'","20190909", "20190912")
   # input:
@@ -266,6 +266,14 @@ GetSamenMetenAPI <- function(projectnaam, ymd_vanaf, ymd_tot, data_opslag = data
     kit_id <- urls_meet_meet[urls_meet_meet$id==ind, 'kit_id']
     grootheid <- urls_meet_meet[urls_meet_meet$id==ind, 'grootheid']
     
+    # Voor de progres bar in de tool: aangeven welke sensor er nu is en hoeveel er nog zijn
+    # If we were passed a progress update function, call it
+    aantal_sensoren <- length(urls_meet_meet$kit_id)
+    if (is.function(updateProgress)) {
+      text <- paste0("Sensor: ", kit_id, " - stap (",ind,"/",aantal_sensoren ,")")
+      updateProgress(value = (ind/aantal_sensoren)*0.8+0.1 ,detail = text)
+    }
+    
     # Voeg filter toe die op tijdstip kan selecteren
     url_meetgegevens <- paste(url_meetgegevens,"?$filter=phenomenonTime+gt+%27",ymd_vanaf,"%27+and+phenomenonTime+lt+%27",ymd_tot,"%27&$orderby=phenomenonTime",sep='') # Met Orderby
     
@@ -340,7 +348,11 @@ GetSamenMetenAPI <- function(projectnaam, ymd_vanaf, ymd_tot, data_opslag = data
   # De api splitst de gegevens op in meerdere pagina's. 
   # Alle pagina's wil je uitlezen, dus zolang er nog een nieuwe pagina is, pak die uit
   pagina_aanwezig_things <- TRUE
-  
+  # If we were passed a progress update function, call it
+  if (is.function(updateProgress)) {
+    text <- paste0("basisgegevens")
+    updateProgress(value=0.1, detail = text)
+  }
   # Ga alle sensoren binnen dit project af en haal basisgegevens ervan op
   # Daarna de locatie
   # Tot slot alle meetgegevens binnen de meegegevens tijdsperiode
@@ -381,6 +393,8 @@ GetSamenMetenAPI <- function(projectnaam, ymd_vanaf, ymd_tot, data_opslag = data
   
   print('Sensordata opgehaald')
   
+  
+  
   ##################### ----
   # OPHALEN van de locaties ----
   ##################### ----
@@ -401,6 +415,7 @@ GetSamenMetenAPI <- function(projectnaam, ymd_vanaf, ymd_tot, data_opslag = data
   ##################### ----
   # OPHALEN van alle meetgegevens urls per sensor ----
   ##################### ----  
+  
   # Zoek alle urls bij elkaar waar meetgegevens inzitten
   # Deze neemt ook de types van de grootheid mee
   # De functie GeturlsmeetAPI doet dit
@@ -422,9 +437,11 @@ GetSamenMetenAPI <- function(projectnaam, ymd_vanaf, ymd_tot, data_opslag = data
   print('URLS meet opgehaald')
   if(debug){print(paste0('aantal api calls: ', length(ind)*4))}
   
+  
   ##################### ----
   # OPHALEN van alle data per sensor ----
   ##################### ----
+
   # Ga alle urls af waar meeteggevens bevinden (met vorige stap opgehaald)
   # Haal de gegevens op en zet in dataframe met kit_id en grootheid.
   # Dit is wat de functie GetmeetgegevensAPI doet
@@ -439,7 +456,11 @@ GetSamenMetenAPI <- function(projectnaam, ymd_vanaf, ymd_tot, data_opslag = data
   #################### ----
   # Combine output ----
   #################### ----
-  
+  # If we were passed a progress update function, call it
+  if (is.function(updateProgress)) {
+    text <- paste0("Verwerken naar Samen Analyseren Tool")
+    updateProgress(value=0.95,detail = text)
+  }
   # Maak een list van de sensordata en de metingen, zodat meegegeven kan worden als output
   all_data_list <- list('sensordata' = sensor_data, 'metingen' = meetgegevens,  'dataopslag'=data_opslag)
   return(all_data_list)
