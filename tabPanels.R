@@ -14,19 +14,24 @@ tpData <- function(){
   
   tp <-  tabPanel("Data",
                   tabsetPanel(
-                    tabPanel("Sensoren",
+                    tabPanel("Start",
+                             p("Welkom bij de Samen Anlayseren tool. 
+                               Klik op de buttom om de tool te testen met een voorbeeld data set. Wilt u de sensoren binnen uw eigen gemeente of project bekijken. Volg dan de stappen in de andere tabbladen."),
+                             p("Real-live metingen van de sensoren kunt u vinden op het Samen Meten Dataportaal:", a("samenmeten.rivm.nl", href ='https://samenmeten.rivm.nl/dataportaal/', target = 'blank')),
+                             # Button om terug te gaan naar de standaard voorbeeld data
+                             actionButton("voorbeeld_data","Laad voorbeeld data")),
+                    tabPanel("Stap 1: Sensoren",
                              helpText("Selecteer hieronder het project of de gemeente waarvan u de sensoren wilt opvragen.
                                       Vraag daarna de gegevens op. LET OP: het opvragen van de gegevens kan enkele minuten tot een half uur duren.
                                       De opgevraagde gegevens worden direct getoond. U kunt ze ook downloaden en op een ander moment weer inladen, 
                                       zodat u niet elke keer hoeft te wachten."),
-                             # Button om terug te gaan naar de standaard voorbeeld data
-                             actionButton("voorbeeld_data","Laad voorbeeld data"),
-                             # Selecteer een project waarvan de data gedoawnload kan worden
-                             selectInput(inputId = "sensor_project", label = "Kies project:", choices = project_choices, selected = NULL, multiple = FALSE,
+                             # Kies eerst waarvan je data wilt selecteren: gemeente of project
+                             selectInput(inputId = "sensor_hoofdgroep", label = "Selecteer op project of gemeente:", choices = hoofd_choices, selected = NULL, multiple = FALSE,
                                          selectize = TRUE, width = NULL, size = NULL),
-                             # Selecteer een gemeente waarvan de data gedoawnload kan worden
-                             selectInput(inputId = "sensor_gemeente", label = "Kies gemeente:", choices = gemeente_choices, selected = NULL, multiple = FALSE,
-                                         selectize = TRUE, width = NULL, size = NULL),
+                             # Specificeer waarvan de data gedownload kan worden (de choices worden reactive gemaakt door de selectinput hierboven)
+                             selectInput(inputId = "sensor_specificeer", label = "Maak uw keuze:", choice="",selected = NULL, multiple = FALSE,
+                                         selectize = TRUE, width = NULL, size = NULL),                   
+                             
                              # Button om de gegevens van de sensore op t halen via de API
                              actionButton("API_samenmeten","Haal de metingen van de sensoren op"),
                              # Button om de sensor data te downloaden
@@ -38,7 +43,7 @@ tpData <- function(){
                                                   "text/comma-separated-values,text/plain",
                                                   ".csv"))
                              ),
-                    tabPanel("Luchtmeetnet",
+                    tabPanel("Stap 2: Luchtmeetnet",
                              helpText("Laadt eerst de locaties van de meetstations van Luchtmeetnet. 
                                       Selecteer daarna de stations waarvan u de meetgegevens wilt opvragen.
                                       De opgevraagde gegevens worden direct getoond. U kunt ze ook downloaden 
@@ -57,7 +62,7 @@ tpData <- function(){
                             h4("Toelichting"),
                             p("",style = "font-size:12px")
                     ),
-                    tabPanel("KNMI",
+                    tabPanel("Stap 3: KNMI",
                              helpText("TODO")
                              )
     )
