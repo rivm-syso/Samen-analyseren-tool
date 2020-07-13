@@ -216,6 +216,8 @@ GetSamenMetenAPI <- function(projectnaam, ymd_vanaf, ymd_tot, data_opslag = data
     url_datastream <- sensor_data_urlsmeet[sensor_data_urlsmeet$id==ind,'url_datastream']
     kit_id <- sensor_data_urlsmeet[sensor_data_urlsmeet$id==ind, 'kit_id']
     
+    if(debug){print(paste0("urlsdatastream ",url_datastream ))}
+    
     # Ophalen van de informatie in API: Datastream
     content_datastream_data <- GetAPIDataframe(url_datastream)
     content_datastream_data_df <- content_datastream_data$value
@@ -227,6 +229,7 @@ GetSamenMetenAPI <- function(projectnaam, ymd_vanaf, ymd_tot, data_opslag = data
     
     # Haal de verschillende grootheden op (de naam dus pm10)
     grootheden <- unlist(lapply(overzicht_url_grootheid, GetgrootheidAPI))
+    if(debug){print(paste0("grootheden ",grootheden ))}
     
     # Maak de output dataframe, met de url van de meetgevens per grootheid
     output_df <- data_frame('url_meet' = overzicht_url_meetgegevens[,1], 'grootheid' = grootheden, 'kit_id' = kit_id)
@@ -329,9 +332,11 @@ GetSamenMetenAPI <- function(projectnaam, ymd_vanaf, ymd_tot, data_opslag = data
   options(stringsAsFactors = FALSE)
   
   # URL van de sensoren binnen een project
-  # url_things <- paste("https://api-samenmeten.rivm.nl/v1.0/Things?$filter=contains(properties/project,'",projectnaam,"')", sep='')
+  # url_things <- paste("https://api-samenmeten.rivm.nl/v1.0/Things?$filter=contains(properties/",projectnaam,")", sep='')
   # Ontwikkel api TEST of die ook werkt
   url_things <- paste("https://ontw.api-samenmeten.rivm.nl/v1.0/Things?$filter=contains(properties/",projectnaam,")", sep='')
+  
+  url_things <- gsub(' ','%20', url_things)
   
   if(debug){print(paste0("URL things: ", url_things))}
   
@@ -420,6 +425,7 @@ GetSamenMetenAPI <- function(projectnaam, ymd_vanaf, ymd_tot, data_opslag = data
   # Deze neemt ook de types van de grootheid mee
   # De functie GeturlsmeetAPI doet dit
   urls_meet <- lapply(ind, GeturlsmeetAPI)
+
   # urls_meet <- lapply(ind, GeturlsmeetAPI)
   urls_meet <- do.call("rbind", urls_meet)
   
