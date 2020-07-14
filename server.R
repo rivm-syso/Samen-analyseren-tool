@@ -371,6 +371,34 @@ function(input, output, session){
   huidig_df <- data.frame('Selectie' =values$df[which(values$df$huidig),'kit_id'])
   })
   
+  # Create tabel kwaliteitseisen ----
+  # In deze tabel kan je zien hoeveel metingen je eruit gooit wanneer je een kwaliteitseis aan zet.
+  # Ook wordt het totaal en het aantal waar geen enkele eis op zit weergegeven
+  output$kwal_overzicht <- renderTable({
+    # Neem de sensorenen meetwaardes mee die geselecteerd zijn
+    selected_id <- values$df[which(values$df$selected & values$df$groep == geen_groep),'kit_id']
+    dataset <-input_df[which(input_df$kit_id %in% selected_id),]
+
+    # Bekijk welke kwaliteitseisen welke indices heeft
+    indices_1 <- which(dataset$kwalindex_pm25 %in% c(1,11,101,111,1001,1101,1111))
+    indices_2 <- which(dataset$kwalindex_pm25 %in% c(2,12,102,112,1002,1102,1112))
+    indices_10 <- which(dataset$kwalindex_pm25 %in% c(10,11,12,110,111,112,1010,1011,1012,1110,1111,1112))
+    indices_100 <- which((dataset$kwalindex_pm25 < 1000 & dataset$kwalindex_pm25 >= 100) |
+                             dataset$kwalindex_pm25 == 1100)
+    indices_1000 <- which(dataset$kwalindex_pm25 >= 1000)
+    indices_rh <- which(dataset$rh >= 97)
+    
+    # Voeg de indices toe die niet moeten worden meegenomen
+    indices_eisen <- c(indices_1, indices_2, indices_10, indices_100, indices_1000, indices_rh)
+    dataset_zondereisen <- dataset[-indices_eisen,]
+    
+    # maak een dataframe voor de tabel die de aantallen van bovenstaande indeices weergeeft
+    kwal_overzicht_df <- data.frame('kwaliteitseis'= c('Totaal','Geen eisen','i1','i2','i10','i100','i1000','irh' ) ,
+                                    'Aantal'=c(length(dataset$kwalindex_pm25),length(dataset_zondereisen$kwalindex_pm25),
+                                               length(indices_1),length(indices_2),length(indices_10),
+                                               length(indices_100),length(indices_1000),length(indices_rh)))
+  })
+  
   # Create tijdreeks kwalindex plot  ----
   output$kwalindex <- renderPlotly({
     
@@ -428,10 +456,7 @@ function(input, output, session){
     
     # Maak de plot interactief
     # en voeg een selectie slider voor de tijd toe
-    ggplotly(p_kwalindex, dynamicTicks = TRUE) %>%
-      rangeslider() 
-
-   
+    ggplotly(p_kwalindex, dynamicTicks = TRUE) # %>% rangeslider() # Voor als je een kleine tijdsslider erin wilt
   })
   
   # Create time plot vanuit openair ----
@@ -506,7 +531,7 @@ function(input, output, session){
     # Maak de plot interactief
     # en voeg een selectie slider voor de tijd toe
     ggplotly(p_tijdreeks, dynamicTicks = TRUE) %>%
-      rangeslider() %>%
+      #rangeslider() %>% # voor een kleine tijdslider toevoegen
       layout(hovermode = "x")
   })
   

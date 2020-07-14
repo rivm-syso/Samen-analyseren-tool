@@ -32,6 +32,7 @@ tpKwalindex <- function(){
   
   tp <-  tabPanel("Kwaliteitsindex",
                   plotlyOutput("kwalindex"),
+                  tableOutput('kwal_overzicht'),
                   h4("Toelichting"),
                   p("",
                     style = "font-size:12px")
