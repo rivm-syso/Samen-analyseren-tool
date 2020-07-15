@@ -9,7 +9,7 @@
 ## Het eerste gedeelte bevat de opmaak/styling
 ## ---------------------------------------------------------
 
-# HTML template voor de opmaak/styling
+# HTML template voor de opmaak/styling ----
 htmlTemplate("./www/template_samenmeten.wide.html",
              pageTitle=paste("Prototype Samen Analyseren tool: project ", projectnaam),
              
@@ -61,7 +61,7 @@ htmlTemplate("./www/template_samenmeten.wide.html",
                            tags$li("Groepsselectie: makkelijker de sensoren te clusteren in een groep zodat groepsgemiddeldes kunnen worden vergeleken"))
                            ),
              
-  # Vanaf hier begint de tool zelf
+  # Vanaf hier begint de tool zelf ----
   fluidPage=fluidPage(
     
   # wellPanel voor grijze boxing
@@ -79,7 +79,7 @@ htmlTemplate("./www/template_samenmeten.wide.html",
                 selectize = TRUE, width = NULL, size = NULL),
       
       
-      checkboxInput('BB','Bekijk de meetwaardes die handmatig in BB zijn afgekeurd.'),
+      # checkboxInput('BB','Bekijk de meetwaardes die handmatig in BB zijn afgekeurd.'),
       
       
       # Checkbox voor de kwaliteit
@@ -94,9 +94,9 @@ htmlTemplate("./www/template_samenmeten.wide.html",
       
       # Input: Blokjes voor de datum
       dateInput("DateStart", label="Selecteer begin tijdreeks:", format='dd-mm-yyyy',value = min(input_df$date), 
-                min = min(input_df$date), max = max(input_df$date)),
+                min = min(input_df$date), max = '2020-12-30'),
       dateInput("DateEind", label="Selecteer einde tijdreeks:", format='dd-mm-yyyy', value = max(input_df$date), 
-                min = min(input_df$date), max = max(input_df$date)),
+                min = min(input_df$date), max = '2020-12-30'),
       
       br(),
 

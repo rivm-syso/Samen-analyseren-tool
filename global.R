@@ -36,11 +36,12 @@ source("tabPanels.R", local = TRUE)
 
 ## Initialise ----
 projectnaam <- "Hollandse Luchten"
-file <- "HLL_voorbeeld_data.RDS" 
+file <- "HLL_voorbeeld_data.RDS"
+file <- "HLL_20190401_20200701.RDS"
 kwal_file <- "kwalindex_uur_HLL.RDS"
-
-file <- "testdata_BB.RDS" 
-kwal_file <- "kwalindex_uur_NBI_BV.RDS"
+# # 
+# file <- "testdata_BB.RDS"
+# kwal_file <- "kwalindex_uur_NBI_BV.RDS"
 
 
 choices <- c( "PM10 - gekalibreerd", "PM2.5 - gekalibreerd","PM10", "PM2.5") #set up choices for shiny app
@@ -94,3 +95,4 @@ lml_labels <- vector("list", length(lml_stations$code))
 lml_labels[grep('NL49', lml_stations$code)] <- "GGD"
 lml_labels[grep('NL10', lml_stations$code)] <- "LML"
 lml_labels <- as.list(paste(lml_labels, lml_stations$code, sep = ": "))
+

@@ -19,9 +19,9 @@ function(input, output, session){
   output$map <- renderLeaflet({
     leaflet() %>% 
       addTiles() %>% 
-      # setView(4.720130, 52.408370, zoom = 10) %>% # Geschikt voor HLL
+      setView(4.720130, 52.408370, zoom = 10) %>% # Geschikt voor HLL
       # setView(6.036506,51.496805, zoom = 10) %>% # Geschikt voor BB algemeen
-      setView(5.88723, 51.458 ,zoom=16) %>% # geschikt voor BB specifieke sensor 151
+      # setView(5.88723, 51.458 ,zoom=16) %>% # geschikt voor BB specifieke sensor 151
       addMarkers(icon = icons_stations["knmi"],data = knmi_stations, ~lon, ~lat, layerId = ~code, label = lapply(knmi_labels, HTML)) %>% 
       addMarkers(icon = icons_stations["lml"], data = lml_stations, ~lon, ~lat, layerId = ~code, label = lapply(lml_labels, HTML)) %>% 
       addCircleMarkers(data = sensor_unique, ~lon, ~lat, layerId = ~kit_id, label = lapply(sensor_labels, HTML), 
@@ -379,6 +379,10 @@ function(input, output, session){
     selected_id <- values$df[which(values$df$selected & values$df$groep == geen_groep),'kit_id']
     dataset <-input_df[which(input_df$kit_id %in% selected_id),]
 
+    
+    # Selecteer de juiste tijdreeks als aangegeven bij de slider
+    dataset <- selectByDate(mydata = dataset, start = values$startdatum, end = values$einddatum)
+    
     # Bekijk welke kwaliteitseisen welke indices heeft
     indices_1 <- which(dataset$kwalindex_pm25 %in% c(1,11,101,111,1001,1101,1111))
     indices_2 <- which(dataset$kwalindex_pm25 %in% c(2,12,102,112,1002,1102,1112))
@@ -404,19 +408,22 @@ function(input, output, session){
     
     selected_id <- values$df[which(values$df$selected & values$df$groep == geen_groep),'kit_id']
     show_input <-input_df[which(input_df$kit_id %in% selected_id),]
-    
+
     # Als er groepen zijn geselecteerd, bereken dan het gemiddelde
     if (length(unique(values$df$groep))>1){
       calc_groep_mean() # berekent groepsgemiddeldes
       show_input <- merge(show_input,values$df_gem, all = T) }
-
+ 
     # Haal de kwaliteitseisen op. 
     ind_kwal_eisen <- Select_kwal_eisen(show_input)
     # Als er eisen zijn, verwijder dan de metingen die niet aan de eisen voldoen
     if (!is_empty(ind_kwal_eisen)){
       show_input <- show_input[-ind_kwal_eisen,]
     }
-
+    
+    # Selecteer de juiste tijdreeks als aangegeven bij de slider
+    show_input <- selectByDate(mydata = show_input, start = values$startdatum, end = values$einddatum)
+    
     ## Create array for the colours
     # get the unique kit_id and the color
     kit_kleur <- unique(values$df[which(values$df$selected),c('kit_id','kleur','groep')])
@@ -435,27 +442,28 @@ function(input, output, session){
     # Maken van de plot
     p_kwalindex <- ggplot(data = show_input, aes(x = date, y = kwalindex_pm25, colour = kit_id)) +
       geom_point(size=0.5) + 
-      scale_y_continuous(breaks=c(0,1,2,10,100,1000,1112), labels=c('0','1','2','10','100','1000','1112')) + 
+      # scale_y_continuous(breaks=c(0,1,2,10,100,1000,1112), labels=c('0','1','2','10','100','1000','1112')) + 
       scale_color_manual(values = kleur_array) +
       labs(x = "Tijd", y = 'Kwaliteitsindex') +
       theme_bw()
-    
+
     # Toevoegen/aangeven in andere kleur de waardes met hoge rh
-    if(!values$kwal_rh){
+    # Als er geen rh gegevens zijn (of niet in de data of eruit gefilterd met de kwaliteitseis) 
+    # Dan GEEN plot met rh gegevens erin
+    if(!values$kwal_rh & dim(show_input[which(show_input$rh>=97),])[1]!=0){
       p_kwalindex <- p_kwalindex +
         geom_point(data=show_input[which(show_input$rh>=97),],
                    aes(x = date, y = kwalindex_pm25), size=0.1, col ='white')
      }
-    
-    # Toevoegen de benb afgekeurde
-    if(input$BB){
-      p_kwalindex <- p_kwalindex +
-        geom_point(data=show_input[which(show_input$keep_pm25_kal==F),],
-                   aes(x = date, y = kwalindex_pm25, colour = kit_id), size=0.5, shape = 21, col ='black')
-    }
-    
+
+    # Toevoegen de benb afgekeurde Voor testvergelijking met handmatige selectie
+    # if(input$BB){
+    #   p_kwalindex <- p_kwalindex +
+    #     geom_point(data=show_input[which(show_input$keep_pm25_kal==F),],
+    #                aes(x = date, y = kwalindex_pm25, colour = kit_id), size=0.5, shape = 21, col ='black')
+    # }
+  
     # Maak de plot interactief
-    # en voeg een selectie slider voor de tijd toe
     ggplotly(p_kwalindex, dynamicTicks = TRUE) # %>% rangeslider() # Voor als je een kleine tijdsslider erin wilt
   })
   
@@ -521,12 +529,12 @@ function(input, output, session){
       coord_cartesian(ylim = c(0, ylimit)) + 
       theme_bw()
     
-    # Voeg de kleuren van BB afgekeurd toe
-    if(input$BB){
-      p_tijdreeks <- p_tijdreeks + 
-        geom_point(data=show_input[which(show_input$keep_pm25_kal==F),],
-                   aes_string(x = "date", y = comp, colour = "kit_id"), size=0.5,shape = 21, col ='black') 
-    }
+    # # Voeg de kleuren van BB afgekeurd toe
+    # if(input$BB){
+    #   p_tijdreeks <- p_tijdreeks + 
+    #     geom_point(data=show_input[which(show_input$keep_pm25_kal==F),],
+    #                aes_string(x = "date", y = comp, colour = "kit_id"), size=0.5,shape = 21, col ='black') 
+    # }
         
     # Maak de plot interactief
     # en voeg een selectie slider voor de tijd toe
