@@ -240,9 +240,10 @@ function(input, output, session){
         # Vanuit de gebruiker wordt aangegeven welke gegevens moeten worden opgehaald.
         # hier wordt het stukje van de url voor project en gemeente gezet.
         if(input$sensor_hoofdgroep=='project'){
-          projectnaam <- paste0("project,'",input$sensor_specificeer,"'")
+          projectnaam <- paste0("project eq'",input$sensor_specificeer,"'")
+          
         }else if(input$sensor_hoofdgroep=='gemeente'){
-          projectnaam <- paste0("codegemeente,'",input$sensor_specificeer,"'")}
+          projectnaam <- paste0("codegemeente eq'",input$sensor_specificeer,"'")}
         
         print('aanroepen api')
         # Aanroepen van de API
@@ -265,6 +266,7 @@ function(input, output, session){
         sensor_data_all_wide <- pivot_wider(distinct(sensor_data_all),names_from = 'grootheid', values_from='waarde')
         
         print(head(sensor_data_all_wide))
+        print(tail(sensor_data_all_wide))
         
         # Hernoemen van de tijd, zodat hetzelfde is als de input_df
         names(sensor_data_all_wide)[names(sensor_data_all_wide) == "tijd"] <- "date"
