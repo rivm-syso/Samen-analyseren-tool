@@ -27,6 +27,9 @@ library(devtools)
 library(geoshaper)
 library(DT) #for downlaod and datatable
 
+# library(profvis)
+# profvis(runApp())
+
 ## Load Functions ----
 
 # Functies voor het genereren van de input opties voor openair call
@@ -51,12 +54,15 @@ geen_groep <- "" # default waarde als de sensor niet in een groep zit
 
 icons_stations <- iconList(
   knmi = makeIcon("ionicons_compass.svg", 18, 18),
+  # knmi = makeIcon("ionicons_analytics_white.svg", 18, 18),
+  # lml = makeIcon("ionicons_analytics_black.svg", 15, 15))
   lml = makeIcon("ionicons_analytics.svg", 15, 15))
 
 input_df <- NULL
 sensor_unique <- NULL
 sensor_labels <- NULL
 input_df_lml <- NULL
+input_df_knmi <- NULL
 
 # ## Inlezen van de data ----
 # input_df <- readRDS(file)
@@ -77,9 +83,14 @@ input_df_lml <- NULL
 # ms_coordinates <- SpatialPointsDataFrame(sensor_unique[,c('lon','lat')],sensor_unique)
 
 # Voor de knmimarkers: locatie en labels opzetten
-knmi_stations <- data.frame("code" = c("knmi_06225", "knmi_06240", "knmi_06260"), "lat" =c(52.4622,52.3156,52.0989), "lon" =c(4.555,4.79028,5.17972))
-knmi_stations$naam <- c("IJmuiden", "Schiphol", "De Bilt")
-knmi_labels <- as.list(paste("KNMI", knmi_stations$naam, sep = ": "))
+# knmi_stations <- data.frame("code" = c("knmi_06225", "knmi_06240", "knmi_06260"), "lat" =c(52.4622,52.3156,52.0989), "lon" =c(4.555,4.79028,5.17972))
+# knmi_stations$naam <- c("IJmuiden", "Schiphol", "De Bilt")
+# knmi_labels <- as.list(paste("KNMI", knmi_stations$naam, sep = ": "))
+
+knmi_stations_all <- readRDS('locaties_knmi_all.RDS')
+knmi_stations_all$selected <- FALSE
+knmi_labels <- as.list(knmi_stations_all$statcode)
+
 
 # # Voor de lmlmarkers: locatie en labels opzetten
 # lml_stations <- data.frame("code" = c("NL49014","NL49551","NL49572","NL49561","NL10636","NL49573","NL49570","NL49553","NL49012"))

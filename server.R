@@ -40,12 +40,12 @@ function(input, output, session){
   values <- reactiveValues(df = sensor_unique, sensor_data = input_df,groepsnaam = geen_groep, 
                            df_gem = data.frame(), startdatum = 0, einddatum=0,data_set = 'voorbeeld') 
   overzicht_shapes <- reactiveValues(add = 0, delete = 0) # nodig om selectie ongedaan te maken
-  stations_reactive <- reactiveValues(lml=lml_stations_all, lml_data = input_df_lml)
+  stations_reactive <- reactiveValues(lml=lml_stations_all, lml_data = input_df_lml, 
+                                      knmi=knmi_stations_all, knmi_data = input_df_knmi)
   choices_api_reactive <- reactiveValues(choices=gemeente_choices)
   
 
   ## FUNCTIES ----
-
   
   # Functie: Set the sensor as deselect and change color to base color
   set_sensor_deselect <- function(id_select){
@@ -89,6 +89,8 @@ function(input, output, session){
   set_station_deselect <- function(id_select, type_stat){
     if (type_stat=='lml'){
       stations_reactive$lml[stations_reactive$lml$statcode == id_select, "selected"] <- FALSE 
+    }else if (type_stat=='knmi'){
+      stations_reactive$knmi[stations_reactive$knmi$statcode == id_select, "selected"] <- FALSE 
     }
     }
   
@@ -102,6 +104,12 @@ function(input, output, session){
       
       # Geef kleur aan de station
       # values$df[values$lml$kit_id == id_select, "kleur"] <- kleur_sensor
+    }else if (type_stat=='knmi'){
+      stations_reactive$knmi[stations_reactive$knmi$statcode == id_select, "selected"] <- TRUE
+      # Select een kleur en geef dit mee aan de station
+      
+      # Geef kleur aan de station
+      # values$df[values$knmi$kit_id == id_select, "kleur"] <- kleur_sensor
     }
   }
   
@@ -193,6 +201,10 @@ function(input, output, session){
       # Haal de gegevens op van de stations via de luchtmeetnet API
       print('ophalen api luchtmeetnet')
       stations_reactive$lml_data <- Get_data_API('lml')
+    }else if(values$data_set=='API_knmi'){
+      # Haal de gegevens op van de stations via de KNMI API
+      print('ophalen api KNMI')
+      stations_reactive$knmi_data <- Get_data_API('knmi')
     }
   }
   
@@ -211,7 +223,12 @@ function(input, output, session){
         station_data_all <- rbind(station_data_all, station_data_ruw$data)
         #return de totale dataset
         return(station_data_all)}
-      
+    }else if(type_api=='knmi'){
+      #Maak een dataframe waar het in past
+      station_data_all <- data.frame()
+      #Maak een lijst van de statcodes die je wilt ophalen
+      knmi_stats <- stations_reactive$knmi$statcode[which(stations_reactive$knmi$selected==T)]
+      print(paste0('API ophalen: ',knmi_stats))
        }else if(type_api=='samenmeten'){
         # Maak een lege lijst aan. Hier worden alle gegevens in opgeslagen en 
         # doorgegeven aan de helperfuncties,
@@ -321,6 +338,13 @@ function(input, output, session){
     values$data_set <- 'API_luchtmeetnet'
     Insert_nieuwe_data()})
   
+  # Observe of de specifieke KNMI stations dataset opgehaald en ingeladen moet worden
+  observeEvent({input$API_knmi},{
+    print("Eerste aanroep api knmi")
+    values$data_set <- 'API_knmi'
+    Insert_nieuwe_data()
+    })
+  
   #Observe of de luchtmeetnetstations moeten worden getoond
   observeEvent({input$show_luchtmeetnet},{
     print('laad zien')
@@ -332,6 +356,19 @@ function(input, output, session){
     proxy %>% setView(5.12446,52.105, zoom = 6)
     print("op kaart getoond")
     })
+  
+  #Observe of de knmi-stations moeten worden getoond
+  observeEvent({input$show_knmi},{
+    # TODO: maak ook van de knmi en lml stations een group, die dan ook cleargroup kan worden gewist
+    print('laad zien')
+    # Update map with new markers to show selected 
+    proxy <- leafletProxy('map') # set up proxy map
+    proxy %>% clearGroup("sensoren")  # Clear sensor markers
+    proxy %>% addMarkers(icon = icons_stations["knmi"], data = stations_reactive$knmi, 
+                         ~lon, ~lat, layerId = ~statcode, label = lapply(knmi_labels, HTML))
+    proxy %>% setView(5.12446,52.105, zoom = 6)
+    print("op kaart getoond")
+  })
   
   # Observe of de tekst wordt aangepast 
   # Dan wil je dat er een nieuwe groep wordt aangemaakt
@@ -357,6 +394,7 @@ function(input, output, session){
   # Observe if user selects a sensor 
   observeEvent({input$map_marker_click$id}, {
     id_select <- input$map_marker_click$id
+    #TODO hier wil iets dat het per tabblad uitmaakt wat er gebeurd? Of niet?
     # Wanneer er op een Luchtmeetnet of KNMI station marker geklikt wordt, gebeurt er niks
     if (is_empty(grep("^knmi|^NL", id_select)) ){
       # Check if sensor id already selected -> unselect sensor
@@ -370,18 +408,29 @@ function(input, output, session){
       # Laad de sensoren op de kaart zien
       add_sensors_map()
       # Bij elke selectie of deselectie moet de gemiddelde voor de groep herberekend worden
-    }else{
-      # Gebruik dit eerst alleen voor het ophalen van de data
-      # Check if station id already selected -> unselect station
-      if((stations_reactive$lml$selected[which(stations_reactive$lml$statcode == id_select)])){
-        set_station_deselect( id_select,'lml')
+    }else{ 
+      # Check of het een lml station is:
+      if(!is_empty(grep("^NL", id_select))){
+        # Check if station id already selected -> unselect station
+        if((stations_reactive$lml$selected[which(stations_reactive$lml$statcode == id_select)])){
+          set_station_deselect(id_select,'lml')
+        }
+        # If station is not yet present -> select station
+        else{
+          set_station_select(id_select,'lml')
+        }
+      }else if(!is_empty(grep("^knmi", id_select))){ # Als het een KNMI station is
+        # Check if station id already selected -> unselect station
+        if((stations_reactive$knmi$selected[which(stations_reactive$knmi$statcode == id_select)])){
+          set_station_deselect(id_select,'knmi')
+        }
+        # If station is not yet present -> select station
+        else{
+          set_station_select(id_select,'knmi')
+        }
       }
-      # If station is not yet present -> select station
-      else{
-        set_station_select(id_select,'lml')
       }
-    }
-  })
+    })
   
   # Observe of de huidige selectie moet worden gereset 
   # De values selected worden weer FALSE en de markers kleur_sensor_marker gekleurd, groepen verwijderd
@@ -514,6 +563,18 @@ function(input, output, session){
                   row.names = FALSE)
     }
   )
+  # Download de data van de geselecteerde KNMI stations
+  output$downloadData_knmi <- downloadHandler(
+    # geef de filename op, zou via interactieve kunnen
+    filename = function(){
+      paste('testknmi', 'csv', sep=".")
+    },
+    # Geef de data op: deze wordt eerst met de API opgehaald
+    content = function(file) {
+      write.table(stations_reactive$knmi_data, file, sep = ',',
+                  row.names = FALSE)
+    }
+  )
   
   # Download de data van de projectgeselecteerde sensoren
   output$downloadData_sensor <- downloadHandler(
@@ -534,8 +595,12 @@ function(input, output, session){
   })
   
   # Create tabel geselecteerde stations voor de download pagina 
-  output$stations <- renderTable({
+  output$stations_lml <- renderTable({
     stations_df <- data.frame('Selectie' = stations_reactive$lml[which(stations_reactive$lml$selected),'statcode'])
+  })
+  # Create tabel geselecteerde stations voor de download pagina 
+  output$stations_knmi <- renderTable({
+    stations_df <- data.frame('Selectie' = stations_reactive$knmi[which(stations_reactive$knmi$selected),'statcode'])
   })
   
   # Create time plot vanuit openair 

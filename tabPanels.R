@@ -53,7 +53,7 @@ tpData <- function(){
                             # Button om de luchtmeetnetsations op de kaart te zetten
                             actionButton("show_luchtmeetnet", "Laadt locaties luchtmeetnetstations"),
                             # Output: tabel met de geslecteerde LML station, voor het downloaden van de data
-                            tableOutput("stations"),
+                            tableOutput("stations_lml"),
                             # Button om de gegevens van de luchtmeetnetstations op et halen via de API
                             actionButton("API_luchtmeetnet","Haal de metingen van de stations op"),
                             # Button om de LML data te downloaden
@@ -63,7 +63,22 @@ tpData <- function(){
                             p("",style = "font-size:12px")
                     ),
                     tabPanel("Stap 3: KNMI",
-                             helpText("TODO")
+                             helpText("Laadt eerst de locaties van de meetstations van het KNMI.
+                                      Selecteer daarna de stations waarvan u de meetgegevens wilt opvragen.
+                                      De opgevraagde gegevens worden direct getoond. U kunt ze ook downloaden
+                                      en op een ander moment weer inladen,
+                                      zodat u niet elke keer hoeft te wachten.
+                                      LET OP/TODO dit werkt nog niet allemaal"),
+                             # Button om de luchtmeetnetsations op de kaart te zetten
+                             actionButton("show_knmi", "Laadt locaties knmi-stations"),
+                             # # Output: tabel met de geslecteerde knmi station, voor het downloaden van de data
+                             tableOutput("stations_knmi"),
+                             # # Button om de gegevens van de knmi-stations op te halen via de API
+                             actionButton("API_knmi","Haal de metingen van de stations op"),
+                             # # Button om de knmi data te downloaden
+                             downloadButton("downloadData_knmi",'download metingen knmi-stations'),
+                             h4("Toelichting"),
+                             p("Zie knmi website voor meer informatie",style = "font-size:12px")
                              )
     )
   )
