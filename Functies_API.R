@@ -161,7 +161,7 @@ GetSamenMetenAPI <- function(projectnaam, ymd_vanaf, ymd_tot, data_opslag = data
   
   # Voor als je wilt debuggen, dan worden er verschillende prints uitgevoerd
   # Zet dan debug=T
-  debug=T
+  debug=F
   
   ##################### ----
   # Helperfuncties
@@ -300,12 +300,12 @@ GetSamenMetenAPI <- function(projectnaam, ymd_vanaf, ymd_tot, data_opslag = data
         # Pak de meetwaardes en de desbetreffende tijd
         waardes <- content_meetgegevens_df$result
         tijd <- as.POSIXct(content_meetgegevens_df$phenomenonTime, format='%Y-%m-%dT%H:%M:%S', tz='UTC')
-        
+
         # Voeg de meetwaarde met tijd toe aan de algemene metingen dataframe
         gegevens_toevoegen <- data.frame('waarde' = waardes, 'tijd' = tijd, 'grootheid' = grootheid, 'kit_id' = kit_id, 'error' = NA)
         
       } else{ # nu is er dus een error met het ophalen van de data
-        gegevens_toevoegen <- data.frame('waarde' = NA, 'tijd' = NA, 'grootheid' = grootheid, 
+        gegevens_toevoegen <- data.frame('waarde' = NA, 'tijd' = as.POSIXct(NA, tz='UTC'), 'grootheid' = grootheid, 
                                          'kit_id' = kit_id, 'error' = paste('error in: ', url_meetgegevens, sep=""))
       }
       
@@ -331,10 +331,17 @@ GetSamenMetenAPI <- function(projectnaam, ymd_vanaf, ymd_tot, data_opslag = data
   # Dat is nl heel onhandig bij het doorgeven van strings naar de API
   options(stringsAsFactors = FALSE)
   
+  # CONTAINS werkt is niet uniek
   # URL van de sensoren binnen een project
   # url_things <- paste("https://api-samenmeten.rivm.nl/v1.0/Things?$filter=contains(properties/",projectnaam,")", sep='')
   # Ontwikkel api TEST of die ook werkt
-  url_things <- paste("https://ontw.api-samenmeten.rivm.nl/v1.0/Things?$filter=contains(properties/",projectnaam,")", sep='')
+  # url_things <- paste("https://ontw.api-samenmeten.rivm.nl/v1.0/Things?$filter=contains(properties/",projectnaam,")", sep='')
+  
+  # EQUALS is wel uniek
+  # URL van de sensoren binnen een project
+  # url_things <- paste("https://api-samenmeten.rivm.nl/v1.0/Things?$filter=properties/",projectnaam,")", sep='')
+  # Ontwikkel api TEST of die ook werkt
+  url_things <- paste("https://ontw.api-samenmeten.rivm.nl/v1.0/Things?$filter=(properties/",projectnaam,")", sep='')
   
   url_things <- gsub(' ','%20', url_things)
   
@@ -398,8 +405,6 @@ GetSamenMetenAPI <- function(projectnaam, ymd_vanaf, ymd_tot, data_opslag = data
   
   print('Sensordata opgehaald')
   
-  
-  
   ##################### ----
   # OPHALEN van de locaties ----
   ##################### ----
@@ -452,8 +457,7 @@ GetSamenMetenAPI <- function(projectnaam, ymd_vanaf, ymd_tot, data_opslag = data
   # Haal de gegevens op en zet in dataframe met kit_id en grootheid.
   # Dit is wat de functie GetmeetgegevensAPI doet
   
-  meetgegevens <- lapply(ind_meet, GetmeetgegevensAPI) # TODO dit geeft een error, kan dit wel op de rserver? Wellicht omdat het srcipt niet doet oid
-  # meetgegevens <- lapply(ind_meet, GetmeetgegevensAPI)
+  meetgegevens <- lapply(ind_meet, GetmeetgegevensAPI) 
   meetgegevens <- do.call("rbind", meetgegevens)
   
   print('Meetgegevens opgehaald')
