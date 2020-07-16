@@ -163,12 +163,14 @@ function(input, output, session){
         ## Default locatie, kleur en label opzetten  
         values$sensor_data$kit_id <- gsub('HLL_hl_', '', values$sensor_data$kit_id) #remove HLL-string from values$sensor_data for shorter label
         
-      }else if(values$data_set=='API_samenmeten'){
+      
+        }else if(values$data_set=='API_samenmeten'){
 
         
         # Haal de gegevens op van de sensoren via de samenmeten API
         values$sensor_data <- Get_data_API('samenmeten')
-      }else if(values$data_set=='eigen_dataset'){
+      
+        }else if(values$data_set=='eigen_dataset'){
         # Lees de csv uit en sla de gegevens op in interactive
         values$sensor_data <- read.csv(input$eigen_datafile$datapath, sep=",")
   
@@ -226,9 +228,14 @@ function(input, output, session){
     }else if(type_api=='knmi'){
       #Maak een dataframe waar het in past
       station_data_all <- data.frame()
-      #Maak een lijst van de statcodes die je wilt ophalen
-      knmi_stats <- stations_reactive$knmi$statcode[which(stations_reactive$knmi$selected==T)]
+      #Maak een string van de statcodes die je wilt ophalen
+      knmi_stats <- stations_reactive$knmi$nummer[which(stations_reactive$knmi$selected==T)]
       print(paste0('API ophalen: ',knmi_stats))
+      station_all_data <- GetKNMIAPI(knmi_stats,format(values$startdatum, '%Y%m%d'), format(values$einddatum, '%Y%m%d'))
+      print(head(station_all_data))
+      # Je hebt voor nu alleen het data deel van de gegevens uit de api nodig
+      station_all_data <- station_all_data$data
+      return(station_all_data)
        }else if(type_api=='samenmeten'){
         # Maak een lege lijst aan. Hier worden alle gegevens in opgeslagen en 
         # doorgegeven aan de helperfuncties,
@@ -600,7 +607,7 @@ function(input, output, session){
   })
   # Create tabel geselecteerde stations voor de download pagina 
   output$stations_knmi <- renderTable({
-    stations_df <- data.frame('Selectie' = stations_reactive$knmi[which(stations_reactive$knmi$selected),'statcode'])
+    stations_df <- data.frame('Selectie' = stations_reactive$knmi[which(stations_reactive$knmi$selected),'nummer'])
   })
   
   # Create time plot vanuit openair 
