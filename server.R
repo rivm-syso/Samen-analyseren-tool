@@ -155,7 +155,7 @@ function(input, output, session){
   Insert_nieuwe_data <- function(){
     # deze functie neemt de data en verandert de values$sensor_data en de values$df
     # aan de hand van de invoer. Dat kan een eigen bestand zijn, of de voorbeeld dataset
-    if(values$data_set %in% c('voorbeeld', 'eigen_dataset', 'API_samenmeten')){
+    if(values$data_set %in% c('voorbeeld', 'eigen_dataset_sensoren', 'API_samenmeten')){
       if(values$data_set == 'voorbeeld'){
         print('voorbeeld')
         values$sensor_data <- readRDS(file)
@@ -170,9 +170,9 @@ function(input, output, session){
         # Haal de gegevens op van de sensoren via de samenmeten API
         values$sensor_data <- Get_data_API('samenmeten')
       
-        }else if(values$data_set=='eigen_dataset'){
+        }else if(values$data_set=='eigen_dataset_sensoren'){
         # Lees de csv uit en sla de gegevens op in interactive
-        values$sensor_data <- read.csv(input$eigen_datafile$datapath, sep=",")
+        values$sensor_data <- read.csv(input$eigen_datafile_sensoren$datapath, sep=",")
   
         # Zet de date naar een posixct
         values$sensor_data$date <- as.POSIXct(values$sensor_data$date, tryFormat=c("%d/%m/%Y %H:%M","%Y-%m-%d %H:%M:%S"), tz='UTC')
@@ -198,7 +198,7 @@ function(input, output, session){
       mean_lat <- mean(sensor_unique$lat)
       mean_lon <- mean(sensor_unique$lon)
       set_view_map(mean_lat, mean_lon)
-    # De gegevens van Luchtmeetnet worden in een andere reactivevalues opgeslagen  
+    # De gegevens van Luchtmeetnet en knmi worden in een andere reactivevalues opgeslagen  
     }else if(values$data_set=='API_luchtmeetnet'){
       # Haal de gegevens op van de stations via de luchtmeetnet API
       print('ophalen api luchtmeetnet')
@@ -207,6 +207,26 @@ function(input, output, session){
       # Haal de gegevens op van de stations via de KNMI API
       print('ophalen api KNMI')
       stations_reactive$knmi_data <- Get_data_API('knmi')
+    }else if(values$data_set=='eigen_dataset_lml'){
+      # Haal de gegevens op van de stations via de luchtmeetnet API
+      print('ophalen api luchtmeetnet')
+    
+      # Lees de csv uit en sla de gegevens op in interactive
+      stations_reactive$lml_data <- read.csv(input$eigen_datafile_lml$datapath, sep=",")
+      print(head(stations_reactive$lml_data))
+      # Zet de date naar een posixct
+      stations_reactive$lml_data$date <- as.POSIXct(stations_reactive$lml_data$timestamp_measured , tryFormat=c("%d/%m/%Y %H:%M","%Y-%m-%d %H:%M:%S"), tz='UTC')
+      print(summary(stations_reactive$lml_data))
+    }else if(values$data_set=='eigen_dataset_knmi'){
+      # Haal de gegevens op van de stations vanuit een ingelezen bestand
+      print('ophalen uit bestand KNMI')
+      
+      # Lees de csv uit en sla de gegevens op in interactive
+      stations_reactive$knmi_data <- read.csv(input$eigen_datafile_knmi$datapath, sep=",")
+      print(head(stations_reactive$knmi_data))
+      # Zet de date naar een posixct
+      stations_reactive$knmi_data$date <- as.POSIXct(stations_reactive$knmi_data$tijd , tryFormat=c("%d/%m/%Y %H:%M","%Y-%m-%d %H:%M:%S"), tz='UTC')
+      print(summary(stations_reactive$knmi_data))
     }
   }
   
@@ -232,7 +252,6 @@ function(input, output, session){
       knmi_stats <- stations_reactive$knmi$nummer[which(stations_reactive$knmi$selected==T)]
       print(paste0('API ophalen: ',knmi_stats))
       station_all_data <- GetKNMIAPI(knmi_stats,format(values$startdatum, '%Y%m%d'), format(values$einddatum, '%Y%m%d'))
-      print(head(station_all_data))
       # Je hebt voor nu alleen het data deel van de gegevens uit de api nodig
       station_all_data <- station_all_data$data
       return(station_all_data)
@@ -322,12 +341,26 @@ function(input, output, session){
     print(input$sensor_hoofdgroep)
   })
   
-  # observe of er een eigen data set is ingeladen:
-  observeEvent({req(input$eigen_datafile)},{
-    values$data_set <- input$eigen_datafile$datapath  
-    values$data_set <- 'eigen_dataset'
-    print("databestand geladen")
+  # observe of er een eigen data set is ingeladen voor de sensoren:
+  observeEvent({req(input$eigen_datafile_sensoren)},{
+    values$data_set <- input$eigen_datafile_sensoren$datapath  
+    values$data_set <- 'eigen_dataset_sensoren'
+    print("databestand sensoren geladen")
     Insert_nieuwe_data()})
+  
+  # observe of er een eigen data set is ingeladen voor de luchtmeetnetmetingen:
+  observeEvent({req(input$eigen_datafile_lml)},{
+    values$data_set <- input$eigen_datafile_lml$datapath  
+    values$data_set <- 'eigen_dataset_lml'
+    print("databestand lml geladen")
+    Insert_nieuwe_data()})
+  
+  # observe of er een eigen data set is ingeladen voor de knmi metingen:
+  observeEvent({req(input$eigen_datafile_knmi)},{
+    values$data_set <- input$eigen_datafile_knmi$datapath  
+    values$data_set <- 'eigen_dataset_knmi'
+    print("databestand knmi geladen")
+    Insert_nieuwe_data()})  
   
   # Observe of de voorbeeld dataset weer ingeladen moet worden
   observeEvent({input$voorbeeld_data},{

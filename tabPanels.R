@@ -37,7 +37,7 @@ tpData <- function(){
                              # Button om de sensor data te downloaden
                              downloadButton("downloadData_sensor",'Download de metingen van de sensoren'),
                              # Mogelijkheid om je eigen data in te laden:
-                             fileInput("eigen_datafile", "Laad dataset sensormetingen(csv-bestand): ",
+                             fileInput("eigen_datafile_sensoren", "Laad dataset sensormetingen(csv-bestand): ",
                                        multiple = FALSE,
                                        accept = c("text/csv",
                                                   "text/comma-separated-values,text/plain",
@@ -58,6 +58,12 @@ tpData <- function(){
                             actionButton("API_luchtmeetnet","Haal de metingen van de stations op"),
                             # Button om de LML data te downloaden
                             downloadButton("downloadData_luchtmeetnet",'download metingen luchtmeetnetstations'),
+                            # Mogelijkheid om je eigen data in te laden:
+                            fileInput("eigen_datafile_lml", "Laad dataset luchtmeetnetmetingen(csv-bestand): ",
+                                      multiple = FALSE,
+                                      accept = c("text/csv",
+                                                 "text/comma-separated-values,text/plain",
+                                                 ".csv")),
                             p("Selecteer luchtmeetnetstations om de data op te halen. De eigenaar van het station staat erbij. DCMR, GGD Amsterdam, Provincie Limburg, ODRA, LML"),
                             h4("Toelichting"),
                             p("",style = "font-size:12px")
@@ -77,6 +83,12 @@ tpData <- function(){
                              actionButton("API_knmi","Haal de metingen van de stations op"),
                              # # Button om de knmi data te downloaden
                              downloadButton("downloadData_knmi",'download metingen knmi-stations'),
+                             # Mogelijkheid om je eigen data in te laden:
+                             fileInput("eigen_datafile_knmi", "Laad dataset knmi-metingen(csv-bestand): ",
+                                       multiple = FALSE,
+                                       accept = c("text/csv",
+                                                  "text/comma-separated-values,text/plain",
+                                                  ".csv")),
                              h4("Toelichting"),
                              p("Zie knmi website voor meer informatie",style = "font-size:12px")
                              )
