@@ -165,7 +165,6 @@ function(input, output, session){
         
       
         }else if(values$data_set=='API_samenmeten'){
-
         
         # Haal de gegevens op van de sensoren via de samenmeten API
         values$sensor_data <- Get_data_API('samenmeten')
@@ -232,54 +231,83 @@ function(input, output, session){
   
   # Ophalen van de data vanuit een API
   Get_data_API <- function(type_api){
+    
+    # Create a callback function to update progress.
+    # Each time this is called:
+    # - If `value` is NULL, it will move the progress bar 1/5 of the remaining
+    #   distance. If non-NULL, it will set the progress to that value.
+    # - It also accepts optional detail text.
+    updateProgress <- function(value = NULL, detail = NULL) {
+      if (is.null(value)) {
+        value <- progress$getValue()
+        value <- value + (progress$getMax() - value) / 5
+      }
+      progress$set(value = value, detail = detail)
+    }
+    ## Om de gegevens van het Luchtmeetnet op te halen
     if(type_api=='lml'){
       #Maak een dataframe waar het in past
       station_data_all <- data.frame()
       #Maak een lijst van de statcodes die je wilt ophalen
       lml_stats <- stations_reactive$lml$statcode[which(stations_reactive$lml$selected==T)]
       print(lml_stats)
-      for(stat in lml_stats){
+      # Voor het maken van een progresbar voor het laden van de data via de lmlapi
+      # Create a Progress object
+      progress <- shiny::Progress$new()
+      progress$set(message = "Ophalen van de gegevens", value = 0)
+      # Close the progress when this reactive exits (even if there's an error)
+      on.exit(progress$close())
+      
+      for(ind in seq(1,length(lml_stats))){
+        stat <- lml_stats[ind]
+        text <- paste0("Luchtmeetnet station: ", stat, "stap (",ind,"/",length(lml_stats) ,")")
+        updateProgress(value = (ind/length(lml_stats))*0.8, detail = text)
+        
         # Haal voor elk station de data op van luchtmeetnet API
         station_data_ruw <- GetLMLAPI(stat, format(values$startdatum, '%Y%m%d'), format(values$einddatum, '%Y%m%d'))
         # Voeg alle meetwaardes vam de stations samen
-        station_data_all <- rbind(station_data_all, station_data_ruw$data)
-        #return de totale dataset
-        return(station_data_all)}
+        station_data_all <- rbind(station_data_all, station_data_ruw$data)}
+      
+      # Alle gegevens zijn van de api opgehaald, retun de totale set
+      updateProgress(value = 0.90 ,detail = "Alle data van Luchtmeetnet opgehaald.")
+      #return de totale dataset
+      return(station_data_all)
+      
+      ## Om de gegevens van het KNMI op te halen
     }else if(type_api=='knmi'){
       #Maak een dataframe waar het in past
       station_data_all <- data.frame()
       #Maak een string van de statcodes die je wilt ophalen
       knmi_stats <- stations_reactive$knmi$nummer[which(stations_reactive$knmi$selected==T)]
       print(paste0('API ophalen: ',knmi_stats))
+      
+      # Voor het maken van een progresbar voor het laden van de data via de KNMI api
+      # Create a Progress object
+      progress <- shiny::Progress$new()
+      progress$set(message = "Ophalen van de gegevens", value = 0.3)
+      # Close the progress when this reactive exits (even if there's an error)
+      on.exit(progress$close())
+      # ophalen van de gegevens via de API
       station_all_data <- GetKNMIAPI(knmi_stats,format(values$startdatum, '%Y%m%d'), format(values$einddatum, '%Y%m%d'))
       # Je hebt voor nu alleen het data deel van de gegevens uit de api nodig
       station_all_data <- station_all_data$data
+      progress$set(message = "Gegevens opgehaald", value = 1)
       return(station_all_data)
-       }else if(type_api=='samenmeten'){
-        # Maak een lege lijst aan. Hier worden alle gegevens in opgeslagen en 
-        # doorgegeven aan de helperfuncties,
-        # zodat die ook alle gegevens ter beschikking hebben.
-        data_opslag_list <- list()
-        
-        # Voor het maken van een progresbar voor het laden van de data via de samenmetenAPI
-        # Create a Progress object
-        progress <- shiny::Progress$new()
-        progress$set(message = "Ophalen van de gegevens", value = 0)
-        # Close the progress when this reactive exits (even if there's an error)
-        on.exit(progress$close())
-        
-        # Create a callback function to update progress.
-        # Each time this is called:
-        # - If `value` is NULL, it will move the progress bar 1/5 of the remaining
-        #   distance. If non-NULL, it will set the progress to that value.
-        # - It also accepts optional detail text.
-        updateProgress <- function(value = NULL, detail = NULL) {
-          if (is.null(value)) {
-            value <- progress$getValue()
-            value <- value + (progress$getMax() - value) / 5
-          }
-          progress$set(value = value, detail = detail)
-        }
+      
+      ## Om de gegevens van de sensoren op te halen van Samenmeten
+     }else if(type_api=='samenmeten'){
+      # Maak een lege lijst aan. Hier worden alle gegevens in opgeslagen en 
+      # doorgegeven aan de helperfuncties,
+      # zodat die ook alle gegevens ter beschikking hebben.
+      data_opslag_list <- list()
+      
+      # Voor het maken van een progresbar voor het laden van de data via de samenmetenAPI
+      # Create a Progress object
+      progress <- shiny::Progress$new()
+      progress$set(message = "Ophalen van de gegevens", value = 0)
+      # Close the progress when this reactive exits (even if there's an error)
+      on.exit(progress$close())
+      
         # Vanuit de gebruiker wordt aangegeven welke gegevens moeten worden opgehaald.
         # hier wordt het stukje van de url voor project en gemeente gezet.
         if(input$sensor_hoofdgroep=='project'){
@@ -304,7 +332,7 @@ function(input, output, session){
                                  all.x, by.x='kit_id', by.y='kit_id')
         
         print('data samenvoegen:')
-
+  
         # Omzetten naar een wide dataframe, dat er per kit_id en timestamp 1 rij data is
         sensor_data_all_wide <- pivot_wider(distinct(sensor_data_all),names_from = 'grootheid', values_from='waarde')
         
@@ -316,7 +344,7 @@ function(input, output, session){
         #TODO: de error kolom weglaten.
         updateProgress(100, 'Alles geladen')
         return(sensor_data_all_wide)
-      
+        
     }
   }
 

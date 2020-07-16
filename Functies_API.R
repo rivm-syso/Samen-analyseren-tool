@@ -146,6 +146,7 @@ GetSamenMetenAPI <- function(projectnaam, ymd_vanaf, ymd_tot, data_opslag = data
   #              sensoren opgehaald
   # ymd_vanaf: string met datum van start van de periode Bijv:"20190909"
   # ymd_tot: string met datum van eind van de periode Bijv:"20190912"
+  # updateProgress: functie om de progress te tonen in bijv. shiny tool
   # output:
   #     named list met:
   #       sensordata: dataframe met de informatie over de sensor
@@ -261,7 +262,7 @@ GetSamenMetenAPI <- function(projectnaam, ymd_vanaf, ymd_tot, data_opslag = data
     #     kit_id = input kit_id
     #     error = als er een error was bij het ophalen van de data staat hierin de url. 
     
-    Sys.sleep(runif(1,0,1))
+    # Sys.sleep(runif(1,0,1))
     
     # Haal de betreffende url en kit_id op uit dataframe
     urls_meet_meet <- data_opslag_meet$urls_meet
@@ -460,6 +461,7 @@ GetSamenMetenAPI <- function(projectnaam, ymd_vanaf, ymd_tot, data_opslag = data
   #################### ----
   # Combine output ----
   #################### ----
+  # Om het progress aan te geven van de laatste stap
   # If we were passed a progress update function, call it
   if (is.function(updateProgress)) {
     text <- paste0("Verwerken naar Samen Analyseren Tool")
@@ -509,8 +511,7 @@ GetKNMIAPI <- function(stations, ymd_vanaf, ymd_tot){
   ymdh_vanaf <- paste(ymd_vanaf,'01',sep='')
   ymdh_tot <- paste(ymd_tot,'24',sep='')
   
-  # Zet de lijstje stations om in 1 string
-  # stns <- paste(stations, sep=":" ) # Dit werkt niet als je vanuit list wilt omzetten
+  # Zet de lijstje stations om in 1 string die dan in de wget kan
   for(ind in seq(1:length(stations))){
     if(ind==1){
       samengevoegd <- stations[ind]
@@ -541,7 +542,7 @@ GetKNMIAPI <- function(stations, ymd_vanaf, ymd_tot){
   knmi_uur_df <- read.csv(textConnection(knmi_uur_raw), header=F, skip=aantal_headers, na.strings="-", col.names=header_names)
   
   print('KNMI: data omgezet naar dataframe')
-  
+
   # Zet de eenheid Temp om van 0.1 graden C naar 1 graden C
   knmi_uur_df['TEMP'] <- knmi_uur_df['TEMP']/10
   
@@ -570,8 +571,7 @@ GetKNMIAPI <- function(stations, ymd_vanaf, ymd_tot){
   stn_info_df <- (read.csv(textConnection(stn_info_ruw),header=F,sep=" " ,strip.white=T, stringsAsFactors = F))
   
   print('KNMI: metadata omgezet naar dataframe')
-  
-  
+
   # Helaas staan er nog veel spaties in de dataframe. Verwijder de kolommen met spaties
   stn_info_df <- stn_info_df[,colSums(is.na(stn_info_df[,]))==0]
   
@@ -591,7 +591,6 @@ GetKNMIAPI <- function(stations, ymd_vanaf, ymd_tot){
   knmi_info_data <- list(info=stn_info_df, data=knmi_uur_df)
   
   print('KNMI: metadata en data gecombineerd')
-  
   
   return(knmi_info_data)
 }
