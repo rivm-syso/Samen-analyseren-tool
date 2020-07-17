@@ -141,7 +141,7 @@ function(input, output, session){
     proxy <- leafletProxy('map') # set up proxy map
     proxy %>% clearGroup("knmistations") # Clear sensor markers
     proxy %>% addMarkers(data = station_loc, ~lon, ~lat, layerId = ~nummer, label = lapply(as.list(station_loc$nummer), HTML),
-                         icon = icons_stations["knmi"], group = "knmistations")}
+                         icon = icons_stations["knmi_black"], group = "knmistations")}
 
   # Functie: plaats lml stations  op de kaart  
   add_lmlstat_map <- function(){ 
@@ -152,7 +152,7 @@ function(input, output, session){
     proxy <- leafletProxy('map') # set up proxy map
     proxy %>% clearGroup("luchtmeetnetstations") # Clear sensor markers
     proxy %>% addMarkers(data = station_loc, ~lon, ~lat, layerId = ~statcode, label = lapply(as.list(station_loc$statcode), HTML),
-                               icon = icons_stations["lml"], group = "luchtmeetnetstations")}
+                               icon = icons_stations["lml_black"], group = "luchtmeetnetstations")}
   
   # Functie om de zoom/view te centreren rond de sensoren
   set_view_map <- function(lat, lon){
@@ -550,7 +550,7 @@ function(input, output, session){
     # Update map with new markers to show selected 
     proxy <- leafletProxy('map') # set up proxy map
     proxy %>% clearGroup("luchtmeetnetstations")  # Clear sensor markers
-    proxy %>% addMarkers(icon = icons_stations["lml"], data = lml_stations_reactive$statinfo, 
+    proxy %>% addMarkers(icon = icons_stations["lml_black"], data = lml_stations_reactive$statinfo, 
                          ~lon, ~lat, layerId = ~statcode, label = lapply(lml_labels, HTML),
                          group = 'luchtmeetnetstations')
     proxy %>% setView(5.12446,52.105, zoom = 6)
@@ -563,7 +563,7 @@ function(input, output, session){
     # Update map with new markers to show selected
     proxy <- leafletProxy('map') # set up proxy map
     proxy %>% clearGroup("knmistations")  # Clear sensor markers
-    proxy %>% addMarkers(icon = icons_stations["knmi"], data = knmi_stations_reactive$statinfo,
+    proxy %>% addMarkers(icon = icons_stations["knmi_black"], data = knmi_stations_reactive$statinfo,
                          ~lon, ~lat, layerId = ~statcode, label = lapply(knmi_labels, HTML),
                          group = 'knmistations')
     proxy %>% setView(5.12446,52.105, zoom = 6)

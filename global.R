@@ -39,7 +39,6 @@ source("tabPanels.R", local = TRUE)
 # Functies voor het ophalen van data via api
 source("Functies_API.R", local = TRUE) 
 
-
 ## Initialise ----
 projectnaam <- "Hollandse Luchten"
 file <- "HLL_voorbeeld_data.RDS" 
@@ -50,37 +49,19 @@ kleur_sensor <- "leeg"
 kleur_marker_sensor <- "#525252" # default kleur sensor
 geen_groep <- "" # default waarde als de sensor niet in een groep zit
 
-
-
 icons_stations <- iconList(
-  knmi = makeIcon("ionicons_compass.svg", 18, 18),
-  # knmi = makeIcon("ionicons_analytics_white.svg", 18, 18),
-  # lml = makeIcon("ionicons_analytics_black.svg", 15, 15))
-  lml = makeIcon("ionicons_analytics.svg", 15, 15))
+  # knmi = makeIcon("ionicons_compass.svg", 18, 18),
+  knmi_black = makeIcon("symbol_knmi_black.svg", 40, 40),
+  lml_white = makeIcon("symbol_lml_white.svg", 30, 30),
+  knmi_white = makeIcon("symbol_knmi_white.svg", 40, 40),
+  lml_black = makeIcon("symbol_lml_black.svg", 30, 30))
+  # lml = makeIcon("ionicons_analytics.svg", 15, 15))
 
 input_df <- NULL
 sensor_unique <- NULL
 sensor_labels <- NULL
 input_df_lml <- NULL
 input_df_knmi <- NULL
-
-# ## Inlezen van de data ----
-# input_df <- readRDS(file)
-# 
-# ## Default locatie, kleur en label opzetten ----
-# input_df$kit_id <- gsub('HLL_hl_', '', input_df$kit_id) #remove HLL-string from input_df for shorter label
-# 
-# # Voor de sensormarkers: locatie, label en kleur etc. Per sensor één unieke locatie
-# sensor_unique <- aggregate(input_df[,c('lat','lon')], list(input_df$kit_id), FUN = mean) # gemiddelde om per sensor een latlon te krijgen
-# names(sensor_unique)[names(sensor_unique)=='Group.1'] <-'kit_id'
-# sensor_unique$selected <-FALSE
-# sensor_unique$huidig <- FALSE
-# sensor_unique$groep <- geen_groep
-# sensor_unique$kleur <- kleur_marker_sensor
-# sensor_labels <- as.list(sensor_unique$kit_id) # labels to use for hoover info
-# 
-# # Voor de multiselect tool: omzetten lat/lon naar spatialpoints
-# ms_coordinates <- SpatialPointsDataFrame(sensor_unique[,c('lon','lat')],sensor_unique)
 
 # Voor de knmimarkers: locatie en labels opzetten
 knmi_stations_all <- readRDS('locaties_knmi_all.RDS')
@@ -93,12 +74,6 @@ knmi_stations_all <- knmi_stations_all[which(knmi_stations_all$nummer %in% numme
 knmi_stations_all$selected <- FALSE
 knmi_stations_all$hasdata <- FALSE
 knmi_labels <- as.list(paste("KNMI", knmi_stations_all$nummer, sep = ": "))
-
-
-# # Voor de lmlmarkers: locatie en labels opzetten
-# lml_stations <- data.frame("code" = c("NL49014","NL49551","NL49572","NL49561","NL10636","NL49573","NL49570","NL49553","NL49012"))
-# lml_stations$lat <- c(52.3597,52.463,52.4744,52.334,52.105,52.4789,52.4893,52.494,52.39)
-# lml_stations$lon <- c(4.86621,4.60184,4.6288,4.77401,5.12446,4.57934,4.64053,4.60199,4.88781)
 
 # Voor de lml stations: ophalen hun naam en locatie en labels opzetten
 lml_stations_all <- readRDS('locaties_lml_all.RDS')
