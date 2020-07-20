@@ -138,7 +138,7 @@ GetAPIDataframe <- function(url_api){
 ##################### ----
 # Hoofdfunctie ----
 ##################### ----
-GetSamenMetenAPI <- function(projectnaam, ymd_vanaf, ymd_tot, data_opslag = data_opslag_list, updateProgress=NULL){
+GetSamenMetenAPI <- function(projectnaam, ymd_vanaf, ymd_tot, data_opslag = data_opslag_list, updateProgress=NULL, debug=F){
   # Functie die de sensordata van het samenmetenportaal haalt
   # Voorbeeld: TEST <- GetSamenMetenAPI("project,'Amersfoort'","20190909", "20190912")
   # input:
@@ -147,6 +147,7 @@ GetSamenMetenAPI <- function(projectnaam, ymd_vanaf, ymd_tot, data_opslag = data
   # ymd_vanaf: string met datum van start van de periode Bijv:"20190909"
   # ymd_tot: string met datum van eind van de periode Bijv:"20190912"
   # updateProgress: functie om de progress te tonen in bijv. shiny tool
+  # debug: boolean, om aan te geven of er prints moeten worden gemaakt die kunnen helpen bij debuggen.
   # output:
   #     named list met:
   #       sensordata: dataframe met de informatie over de sensor
@@ -159,10 +160,6 @@ GetSamenMetenAPI <- function(projectnaam, ymd_vanaf, ymd_tot, data_opslag = data
   #               error = wanneer er geen metingen konden worden opgehaald staat hier de url die geprobeed is
   # LET OP: wanneer er geen metingen van een sensor zijn in de meegegeven periode
   # staat de sensor wel in de sensordata, maar heeft geen gegevens in metingen!
-  
-  # Voor als je wilt debuggen, dan worden er verschillende prints uitgevoerd
-  # Zet dan debug=T
-  debug=F
   
   ##################### ----
   # Helperfuncties
