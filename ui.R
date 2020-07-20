@@ -125,15 +125,9 @@ htmlTemplate("./www/template_samenmeten.wide.html",
       # Output: Tabset voor openair plots, zie voor de inhoud het script: tabPanels.R
       tabsetPanel(type = "tabs",
                   tpData(),
-                  tpTimeplot(),
-                  tpKalender(),
-                  tpTimevariation(),
-                  tpPercentileRose(),
-                  tpPollutionRose(),
-                  tpWindRose()
+                  tpAnalyse()
+                  )
       )
-      
-    ) 
     ),
   )
 )
