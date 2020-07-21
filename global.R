@@ -31,9 +31,6 @@ library(DT) #for downlaod and datatable
 # profvis(runApp())
 
 ## Load Functions ----
-
-# Functies voor het genereren van de input opties voor openair call
-source("selectReactiveComponent.R", local = TRUE) 
 # Functies voor het genereren van de inhoud van de tabpanels
 source("tabPanelsData.R", local = TRUE)
 source("tabPanelsAnalyse.R", local = TRUE)
