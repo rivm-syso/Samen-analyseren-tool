@@ -140,7 +140,7 @@ function(input, output, session){
     # Update map with new markers to show selected
     proxy <- leafletProxy('map') # set up proxy map
     proxy %>% clearGroup("knmistations") # Clear sensor markers
-    proxy %>% addMarkers(data = station_loc, ~lon, ~lat, layerId = ~nummer, label = lapply(as.list(station_loc$nummer), HTML),
+    proxy %>% addMarkers(data = station_loc, ~lon, ~lat, layerId = ~nummer, label = lapply(as.list(paste0('KNMI: ',station_loc$nummer)), HTML),
                          icon = icons_stations["knmi_black"], group = "knmistations")}
 
   # Functie: plaats lml stations  op de kaart  
@@ -303,11 +303,11 @@ function(input, output, session){
       knmi_stations_reactive$knmi_data <- read.csv(input$eigen_datafile_knmi$datapath, sep=",")
       print(head(knmi_stations_reactive$knmi_data))
       # Zet de date naar een posixct
-      knmi_stations_reactive$knmi_data$date <- as.POSIXct(knmi_stations_reactive$knmi_data$tijd , tryFormat=c("%d/%m/%Y %H:%M","%Y-%m-%d %H:%M:%S"), tz='UTC')
+      knmi_stations_reactive$knmi_data$date <- as.POSIXct(knmi_stations_reactive$knmi_data$date , tryFormat=c("%d/%m/%Y %H:%M","%Y-%m-%d %H:%M:%S"), tz='UTC')
       print(summary(knmi_stations_reactive$knmi_data))
     }
      # Geef aan van welke stations nu databeschikbaar is:
-     station_metdata <- unique(knmi_stations_reactive$knmi_data$STNS)
+     station_metdata <- unique(knmi_stations_reactive$knmi_data$station_nummer)
      print(station_metdata)
      knmi_stations_reactive$statinfo$hasdata[which(knmi_stations_reactive$statinfo$nummer %in% station_metdata)] <- TRUE
      # Laat vervolgens alleen de stations zien waarvan ook data beschikbaar is:
@@ -343,7 +343,6 @@ function(input, output, session){
     station_data_all <- data.frame()
     # Maak een lijst van de statcodes die je wilt ophalen
     lml_stats <- lml_stations_reactive$statinfo$statcode[which(lml_stations_reactive$statinfo$selected==T)]
-    print(lml_stats)
     
     # Ga elk station af en haal de gegevens op uit de API
     for(ind in seq(1,length(lml_stats))){
@@ -356,7 +355,7 @@ function(input, output, session){
       station_data_ruw <- GetLMLAPI(stat, format(tijdreeks_reactive$startdatum, '%Y%m%d'), format(tijdreeks_reactive$einddatum, '%Y%m%d'))
       # Voeg alle meetwaardes vam de stations samen
       station_data_all <- rbind(station_data_all, station_data_ruw$data)}
-    
+    print(names(station_data_all))
     # Alle gegevens zijn van de api opgehaald, retun de totale set
     updateProgress(value = 0.90 ,detail = "Alle data van Luchtmeetnet opgehaald.")
     #return de totale dataset
@@ -402,6 +401,12 @@ function(input, output, session){
     
     # Je hebt voor nu alleen het data deel van de gegevens uit de api nodig
     station_all_data <- station_all_data$data
+    
+    # hernoem de kolommen en gooi overige kolommen weg
+    station_all_data <- select(station_all_data, -c('YYYYMMDD', 'HH'))
+    station_all_data <- plyr::rename(station_all_data, c('STNS'= 'station_nummer', 'DD' = 'wd', 'FF'='ws', 'TEMP'='temp','U' = 'rh', 'tijd'='date'))
+
+    station_all_data$station_code <- paste0('KNMI', station_all_data$station_nummer)
     
     # Voor de progress message dat het bijna is afgerong
     progress$set(message = "Gegevens opgehaald", value = 1)
@@ -594,6 +599,7 @@ function(input, output, session){
   # Observe if user selects a sensor ----
   observeEvent({input$map_marker_click$id}, {
     id_select <- input$map_marker_click$id
+    print(id_select)
     #TODO hier wil iets dat het per tabblad uitmaakt wat er gebeurd? Of niet?
     # Wanneer er op een Luchtmeetnet of KNMI station marker geklikt wordt, gebeurt er niks
     if (is_empty(grep("^knmi|^NL", id_select)) ){
