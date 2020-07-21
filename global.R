@@ -71,12 +71,15 @@ knmi_stations_all$nummer <- as.numeric(gsub('knmi_06', '', knmi_stations_all$sta
 knmi_stations_all <- knmi_stations_all[which(knmi_stations_all$nummer %in% nummers_knmi),]
 knmi_stations_all$selected <- FALSE
 knmi_stations_all$hasdata <- FALSE
+knmi_stations_all$name_icon <- 'knmi_black'
 knmi_labels <- as.list(paste("KNMI", knmi_stations_all$nummer, sep = ": "))
+
 
 # Voor de lml stations: ophalen hun naam en locatie en labels opzetten
 lml_stations_all <- readRDS('locaties_lml_all.RDS')
 lml_stations_all$selected <- FALSE
 lml_stations_all$hasdata <- FALSE
+lml_stations_all$name_icon <- 'lml_black'
 
 # Maak in de labelling onderscheid tussen de LML en GGD stations
 lml_labels <- vector("list", length(lml_stations_all$statcode))

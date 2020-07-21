@@ -20,11 +20,7 @@ function(input, output, session){
     leaflet() %>%
       addTiles() %>%
       setView(5.12446,52.105, zoom = 6) %>%
-      # addMarkers(icon = icons_stations["knmi"],data = knmi_stations, ~lon, ~lat, layerId = ~code, label = lapply(knmi_labels, HTML)) %>%
-      # addMarkers(icon = icons_stations["lml"], data = lml_stations, ~lon, ~lat, layerId = ~code, label = lapply(lml_labels, HTML)) %>%
-      # addCircleMarkers(data = sensor_unique, ~lon, ~lat, layerId = ~kit_id, label = lapply(sensor_labels, HTML),
-      #                  radius = 8, color = ~kleur, fillOpacity = 1, stroke = ~selected, group = "sensoren")%>%
-      addDrawToolbar(
+       addDrawToolbar(
         targetGroup = 'Selected',
         polylineOptions = FALSE,
         markerOptions = FALSE,
@@ -87,36 +83,27 @@ function(input, output, session){
   }
   
   # Functie: Set the LML stations as deselect and change color to base color
-  #TODO dit is nog niet af, maak iets met de symbolen in een andere kleur
   set_lml_station_deselect <- function(id_select){
     lml_stations_reactive$statinfo[lml_stations_reactive$statinfo$statcode == id_select, "selected"] <- FALSE 
-    }
+    lml_stations_reactive$statinfo[lml_stations_reactive$statinfo$statcode == id_select, "name_icon"] <- 'lml_black'
+  }
   
   # Functie: Set station as select and specify color
-  #TODO dit is nog niet af, maak iets met de symbolen in een andere kleur
   set_lml_station_select <- function(id_select){
     lml_stations_reactive$statinfo[lml_stations_reactive$statinfo$statcode == id_select, "selected"] <- TRUE
-    # Select een kleur en geef dit mee aan de station
-    # Geef kleur aan de station
-    # sensor_reactive$statinfo[values$lml$kit_id == id_select, "kleur"] <- kleur_sensor
+    lml_stations_reactive$statinfo[lml_stations_reactive$statinfo$statcode == id_select, "name_icon"] <- 'lml_white'
   }
   
   # Functie: Set the stations as deselect and change color to base color
-  #TODO dit is nog niet af, maak iets met de symbolen in een andere kleur
   set_knmi_station_deselect <- function(id_select){
-    knmi_stations_reactive$statinfo[knmi_stations_reactive$statinfo$statcode == id_select, "selected"] <- FALSE 
-
+    knmi_stations_reactive$statinfo[knmi_stations_reactive$statinfo$nummer == id_select, "selected"] <- FALSE 
+    knmi_stations_reactive$statinfo[knmi_stations_reactive$statinfo$nummer == id_select, "name_icon"] <- 'knmi_black'
   }
   
   # Functie: Set station as select and specify color
-  #TODO dit is nog niet af, maak iets met de symbolen in een andere kleur
   set_knmi_station_select <- function(id_select){
-    knmi_stations_reactive$statinfo[knmi_stations_reactive$statinfo$statcode == id_select, "selected"] <- TRUE 
-    
-      # Select een kleur en geef dit mee aan de station
-      
-      # Geef kleur aan de station
-      # sensor_reactive$statinfo[values$knmi$kit_id == id_select, "kleur"] <- kleur_sensor
+    knmi_stations_reactive$statinfo[knmi_stations_reactive$statinfo$nummer == id_select, "selected"] <- TRUE 
+    knmi_stations_reactive$statinfo[knmi_stations_reactive$statinfo$nummer == id_select, "name_icon"] <- 'knmi_white'
   }
   
   # Functie: plaats sensoren met juiste kleur op de kaart  
@@ -133,26 +120,42 @@ function(input, output, session){
   # TODO: Universele namen voor de statcode etc van lml en knmi, nu in lmldata anders dan in lml idem knmi  
   # TODO: ook de labels van KNMi en LML stations mooi maken, met eigenaar erbij etc.
   add_knmistat_map <- function(){
-    # Regenerate the knmi stations for the markers
-    station_loc <- knmi_stations_reactive$statinfo[which(knmi_stations_reactive$statinfo$hasdata==T),]
+    # Check of er al sensoren met data zijn
+    if(TRUE %in% knmi_stations_all$hasdata){
+      # Toon alleen de stations die al data hebben
+      station_loc <- knmi_stations_reactive$statinfo[which(knmi_stations_reactive$statinfo$hasdata==T),]
+    }else{
+      # Toon alle stations
+      station_loc <- knmi_stations_reactive$statinfo
+    }
+    
     print(paste0("stations op kaart: ", station_loc))
     print(names(station_loc))
+
     # Update map with new markers to show selected
     proxy <- leafletProxy('map') # set up proxy map
     proxy %>% clearGroup("knmistations") # Clear sensor markers
     proxy %>% addMarkers(data = station_loc, ~lon, ~lat, layerId = ~nummer, label = lapply(as.list(paste0('KNMI: ',station_loc$nummer)), HTML),
-                         icon = icons_stations["knmi_black"], group = "knmistations")}
+                         icon = ~icons_stations[name_icon], group = "knmistations")}
 
   # Functie: plaats lml stations  op de kaart  
   add_lmlstat_map <- function(){ 
-    # Regenerate the lml stations for the markers
-    station_loc <- lml_stations_reactive$statinfo[which(lml_stations_reactive$statinfo$hasdata==T),]
+    # Check of er al sensoren met data zijn
+    if(TRUE %in% lml_stations_all$hasdata){
+      # Toon alleen de stations die al data hebben
+      station_loc <- lml_stations_reactive$statinfo[which(lml_stations_reactive$statinfo$hasdata==T),]
+    }else{
+      # Toon alle stations
+      station_loc <- lml_stations_reactive$statinfo
+    }
+
     print(paste0("stations op kaart: ", station_loc))
+    print(station_loc$name_icon)
     # Update map with new markers to show selected 
     proxy <- leafletProxy('map') # set up proxy map
     proxy %>% clearGroup("luchtmeetnetstations") # Clear sensor markers
     proxy %>% addMarkers(data = station_loc, ~lon, ~lat, layerId = ~statcode, label = lapply(as.list(station_loc$statcode), HTML),
-                               icon = icons_stations["lml_black"], group = "luchtmeetnetstations")}
+                               icon = ~icons_stations[name_icon], group = "luchtmeetnetstations")}
   
   # Functie om de zoom/view te centreren rond de sensoren
   set_view_map <- function(lat, lon){
@@ -574,26 +577,21 @@ function(input, output, session){
   #Observe of de luchtmeetnetstations moeten worden getoond----
   observeEvent({input$show_luchtmeetnet},{
     print('laad zien')
-    # Update map with new markers to show selected 
-    proxy <- leafletProxy('map') # set up proxy map
-    proxy %>% clearGroup("luchtmeetnetstations")  # Clear sensor markers
-    proxy %>% addMarkers(icon = icons_stations["lml_black"], data = lml_stations_reactive$statinfo, 
-                         ~lon, ~lat, layerId = ~statcode, label = lapply(lml_labels, HTML),
-                         group = 'luchtmeetnetstations')
-    proxy %>% setView(5.12446,52.105, zoom = 6)
+    add_lmlstat_map()
     print("op kaart getoond")
     })
   
   # #Observe of de knmi-stations moeten worden getoond----
   observeEvent({input$show_knmi},{
     print('laad zien')
-    # Update map with new markers to show selected
-    proxy <- leafletProxy('map') # set up proxy map
-    proxy %>% clearGroup("knmistations")  # Clear sensor markers
-    proxy %>% addMarkers(icon = icons_stations["knmi_black"], data = knmi_stations_reactive$statinfo,
-                         ~lon, ~lat, layerId = ~statcode, label = lapply(knmi_labels, HTML),
-                         group = 'knmistations')
-    proxy %>% setView(5.12446,52.105, zoom = 6)
+    add_knmistat_map()
+    # # Update map with new markers to show selected
+    # proxy <- leafletProxy('map') # set up proxy map
+    # proxy %>% clearGroup("knmistations")  # Clear sensor markers
+    # proxy %>% addMarkers(icon = icons_stations["knmi_black"], data = knmi_stations_reactive$statinfo,
+    #                      ~lon, ~lat, layerId = ~statcode, label = lapply(knmi_labels, HTML),
+    #                      group = 'knmistations')
+    # proxy %>% setView(5.12446,52.105, zoom = 6)
     print("op kaart getoond")
   })
   
@@ -622,9 +620,9 @@ function(input, output, session){
   observeEvent({input$map_marker_click$id}, {
     id_select <- input$map_marker_click$id
     print(id_select)
-    #TODO hier wil iets dat het per tabblad uitmaakt wat er gebeurd? Of niet?
-    # Wanneer er op een Luchtmeetnet of KNMI station marker geklikt wordt, gebeurt er niks
-    if (is_empty(grep("^knmi|^NL", id_select)) ){
+    # Bepaal of er op een sensr wordt geklikt, dus niet op lml station of knmi station.
+    # Het lml station begint met 'NL', het knmi station is een numeric
+    if (is_empty(grep("^knmi|^NL", id_select)) & !is.numeric(id_select) ){
       # Check if sensor id already selected -> unselect sensor
       if((sensor_reactive$statinfo$selected[which(sensor_reactive$statinfo$kit_id == id_select)][1])){
         set_sensor_deselect(id_select)
@@ -636,25 +634,29 @@ function(input, output, session){
       # Laad de sensoren op de kaart zien
       add_sensors_map()
       # Bij elke selectie of deselectie moet de gemiddelde voor de groep herberekend worden
-    }else{ 
-      # Check of het een lml station is:
+    }else{
+    # Check of het een lml station is:
       if(!is_empty(grep("^NL", id_select))){
         # Check if station id already selected -> unselect station
         if((lml_stations_reactive$statinfo$selected[which(lml_stations_reactive$statinfo$statcode == id_select)])){
           set_lml_station_deselect(id_select)
+          add_lmlstat_map()
         }
         # If station is not yet present -> select station
         else{
           set_lml_station_select(id_select)
+          add_lmlstat_map()
         }
-      }else if(!is_empty(grep("^knmi", id_select))){ # Als het een KNMI station is
+      }else{ # Als het een KNMI station is
         # Check if station id already selected -> unselect station
-        if((knmi_stations_reactive$statinfo$selected[which(knmi_stations_reactive$statinfo$statcode == id_select)])){
+        if((knmi_stations_reactive$statinfo$selected[which(knmi_stations_reactive$statinfo$nummer == id_select)])){
           set_knmi_station_deselect(id_select)
+          add_knmistat_map()
         }
         # If station is not yet present -> select station
         else{
           set_knmi_station_select(id_select)
+          add_knmistat_map()
         }
       }
       }
@@ -674,12 +676,14 @@ function(input, output, session){
   # Observe of de alle geselecteerde sensoren moet worden gereset----
   # De values selected worden weer FALSE en de markers kleur_sensor_marker gekleurd, groepen verwijderd
   observeEvent(input$reset_all, {
-    sensor_reactive$statinfo[, "selected"] <- FALSE 
-    sensor_reactive$statinfo[, "kleur"] <- kleur_marker_sensor
-    sensor_reactive$statinfo[, "groep"] <- geen_groep
-    sensor_reactive$statinfo[, "huidig"] <- FALSE 
-    # Laad de sensoren op de kaart zien
-    add_sensors_map()
+    if (!is_empty(sensor_reactive$statinfo)){
+      sensor_reactive$statinfo[, "selected"] <- FALSE 
+      sensor_reactive$statinfo[, "kleur"] <- kleur_marker_sensor
+      sensor_reactive$statinfo[, "groep"] <- geen_groep
+      sensor_reactive$statinfo[, "huidig"] <- FALSE 
+      # Laad de sensoren op de kaart zien
+      add_sensors_map()
+      }
   })
   
   # Observe of de selectie moet worden toegevoegd aan de groep----
