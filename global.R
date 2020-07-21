@@ -104,3 +104,7 @@ overzicht_gemeente <- read.csv('./overzicht_code_gemeentes.csv',header=F)
 # Sorteer de gemeentes per naam
 overzicht_gemeente <- overzicht_gemeente[order(overzicht_gemeente$V2),]
 gemeente_choices = setNames(overzicht_gemeente$V1,overzicht_gemeente$V2)
+
+# Voor het selecteren van de component
+overzicht_component <- data.frame('component' = c("pm10","pm10_kal","pm25","pm25_kal"), 'label'=c("PM10","PM10 - gekalibreerd","PM2.5" ,"PM2.5 - gekalibreerd" ))
+component_choices = setNames(overzicht_component$component, overzicht_component$label)

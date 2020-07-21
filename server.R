@@ -363,6 +363,8 @@ function(input, output, session){
   }
   
   # Ophalen van de KNMI data vanuit een API
+  # TODO: als er een niet bekend station of NA wordt meegegeven, dan is er een oneindige 
+  # call. Dus check in de knmi_stats echte nummers zijn
   get_knmi_data_api <- function(){
     # Deze functie roept de API functies aan om de gegevens uit de API op te halen.
     # Tevens zit hier een progress bar in verwerkt met een update functie
@@ -812,7 +814,7 @@ function(input, output, session){
   # Create time plot vanuit openair ----
   output$timeplot <- renderPlot({
     
-    comp <- selectReactiveComponent(input)
+    comp <- input$Component
     selected_id <- sensor_reactive$statinfo[which(sensor_reactive$statinfo$selected & sensor_reactive$statinfo$groep == geen_groep),'kit_id']
     show_input <-sensor_reactive$sensor_data[which(sensor_reactive$sensor_data$kit_id %in% selected_id),]
     
@@ -842,7 +844,7 @@ function(input, output, session){
   # Create kalender plot vanuit openair ----
   output$calendar <- renderPlot({
     
-    comp <- selectReactiveComponent(input)
+    comp <- input$Component
     selected_id <- sensor_reactive$statinfo[which(sensor_reactive$statinfo$selected & sensor_reactive$statinfo$groep == geen_groep),'kit_id']
     show_input <-sensor_reactive$sensor_data[which(sensor_reactive$sensor_data$kit_id %in% selected_id),]
     
@@ -859,7 +861,7 @@ function(input, output, session){
   # Create timevariation functie vanuit openair ----
   output$timevariation <- renderPlot({
     
-    comp <- selectReactiveComponent(input)
+    comp <- input$Component
     selected_id <- sensor_reactive$statinfo[which(sensor_reactive$statinfo$selected & sensor_reactive$statinfo$groep == geen_groep),'kit_id']
     show_input <-sensor_reactive$sensor_data[which(sensor_reactive$sensor_data$kit_id %in% selected_id),]
     
@@ -894,15 +896,19 @@ function(input, output, session){
   # Create pollutionrose functie vanuit openair ----
   output$pollutionplot <- renderPlot({
     
-    comp <- selectReactiveComponent(input)
+    comp <- input$Component
     selected_id <- sensor_reactive$statinfo[which(sensor_reactive$statinfo$selected & sensor_reactive$statinfo$groep == geen_groep),'kit_id']
-    show_input <-sensor_reactive$sensor_data[which(sensor_reactive$sensor_data$kit_id %in% selected_id),]    
-    
+    show_input <- sensor_reactive$sensor_data[which(sensor_reactive$sensor_data$kit_id %in% selected_id),]    
+    print(head(show_input))
+    print(head(knmi_stations_reactive$knmi_data))
     # Als er groepen zijn geselecteerd, bereken dan het gemiddelde
     if (length(unique(sensor_reactive$statinfo$groep))>1){
       calc_groep_mean() # berekent groepsgemiddeldes
-      show_input <- merge(show_input,groepering_reactive$df_gem, all = T) }
+      show_input <- merge(show_input,groepering_reactive$df_gem, all = T) } 
     
+    print(head(show_input))
+    show_input <- merge(show_input, knmi_stations_reactive$knmi_data, all.x=T, by.x='date', by.y='date')
+    print(head(show_input))
     
     try(pollutionRose(selectByDate(mydata = show_input,start = tijdreeks_reactive$startdatum, end = tijdreeks_reactive$einddatum),
                       pollutant = comp, wd = 'wd', ws = 'ws', type = 'kit_id' , local.tz="Europe/Amsterdam", cols = "Purples", statistic = 'prop.mean',breaks=c(0,20,60,100))) 
@@ -913,7 +919,7 @@ function(input, output, session){
   # Create windrose vanuit openair---- 
   output$windplot <- renderPlot({
     
-    comp <- selectReactiveComponent(input)
+    comp <- input$Component
     selected_id <- sensor_reactive$statinfo[which(sensor_reactive$statinfo$selected & sensor_reactive$statinfo$groep == geen_groep),'kit_id']
     show_input <-sensor_reactive$sensor_data[which(sensor_reactive$sensor_data$kit_id %in% selected_id),]    
     
@@ -932,7 +938,7 @@ function(input, output, session){
   # Create percentilerose functie vanuit openair ----
   output$percentileplot <- renderPlot({
     
-    comp <- selectReactiveComponent(input)
+    comp <- input$Component
     selected_id <- sensor_reactive$statinfo[which(sensor_reactive$statinfo$selected & sensor_reactive$statinfo$groep == geen_groep),'kit_id']
     show_input <-sensor_reactive$sensor_data[which(sensor_reactive$sensor_data$kit_id %in% selected_id),]    
     
@@ -940,6 +946,8 @@ function(input, output, session){
     if (length(unique(sensor_reactive$statinfo$groep))>1){
       calc_groep_mean() # berekent groepsgemiddeldes
       show_input <- merge(show_input,groepering_reactive$df_gem, all = T) }
+    
+    show_input <- merge(show_input, knmi_stations_reactive$knmi_data, all.x=T, by.x='date', by.y='date')
     
     try(percentileRose(selectByDate(mydata = show_input,start = tijdreeks_reactive$startdatum, end = tijdreeks_reactive$einddatum),
                        pollutant = comp, wd = 'wd', type = 'kit_id', local.tz="Europe/Amsterdam", percentile = NA)) 

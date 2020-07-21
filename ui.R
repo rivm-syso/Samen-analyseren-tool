@@ -93,7 +93,7 @@ htmlTemplate("./www/template_samenmeten.wide.html",
       actionButton("reset_all", "Reset alle sensoren"),
       br(),
       # Input: Selecteer de component uit de choices lijst
-      selectInput(inputId = "Var", label = "Kies component:", choices = choices, selected = NULL, multiple = FALSE,
+      selectInput(inputId = "Component", label = "Kies component:", choices = component_choices, selected = NULL, multiple = FALSE,
                 selectize = TRUE, width = NULL, size = NULL),
       
       # Input: Blokjes voor de datum
