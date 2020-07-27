@@ -35,7 +35,7 @@ function(input, output, session){
   # Zet reactive values op----
   groepering_reactive <- reactiveValues(groepsnaam = geen_groep, df_gem = data.frame())
   tijdreeks_reactive <- reactiveValues(startdatum = 0, einddatum=0)
-  overig_reactive <- reactiveValues(data_set = 'voorbeeld', toon_all_knmi = FALSE, toon_all_lml = FALSE)
+  overig_reactive <- reactiveValues(data_set = 'voorbeeld')
   overzicht_shapes <- reactiveValues(add = 0, delete = 0) # nodig om selectie ongedaan te maken
   choices_api_reactive <- reactiveValues(choices=gemeente_choices)
   
@@ -86,7 +86,10 @@ function(input, output, session){
   # Functie: Set the LML stations as deselect and change color to base color
   set_lml_station_deselect <- function(id_select){
     lml_stations_reactive$statinfo[lml_stations_reactive$statinfo$statcode == id_select, "selected"] <- FALSE 
-    lml_stations_reactive$statinfo[lml_stations_reactive$statinfo$statcode == id_select, "name_icon"] <- 'lml_black'
+    lml_stations_reactive$statinfo[lml_stations_reactive$statinfo$statcode == id_select& 
+                                     lml_stations_reactive$statinfo$hasdata == TRUE, "name_icon"]  <- 'lml_grey'
+    lml_stations_reactive$statinfo[lml_stations_reactive$statinfo$statcode == id_select& 
+                                     lml_stations_reactive$statinfo$hasdata == FALSE, "name_icon"]  <- 'lml_black'
   }
   
   # Functie: Set station as select and specify color
@@ -98,8 +101,12 @@ function(input, output, session){
   # Functie: Set the stations as deselect and change color to base color
   set_knmi_station_deselect <- function(id_select){
     knmi_stations_reactive$statinfo[knmi_stations_reactive$statinfo$station_nummer == id_select, "selected"] <- FALSE 
-    knmi_stations_reactive$statinfo[knmi_stations_reactive$statinfo$station_nummer == id_select, "name_icon"] <- 'knmi_black'
-  }
+    knmi_stations_reactive$statinfo[knmi_stations_reactive$statinfo$station_nummer == id_select & 
+                                      knmi_stations_reactive$statinfo$hasdata == TRUE, "name_icon"] <- 'knmi_grey'
+    knmi_stations_reactive$statinfo[knmi_stations_reactive$statinfo$station_nummer == id_select& 
+                                      knmi_stations_reactive$statinfo$hasdata == FALSE, "name_icon"] <- 'knmi_black'
+    
+      }
   
   # Functie: Set station as select and specify color
   set_knmi_station_select <- function(id_select){
@@ -111,33 +118,21 @@ function(input, output, session){
   add_sensors_map <- function(){ 
     # Regenerate the sensors for the markers
     sensor_loc <- unique(select(sensor_reactive$statinfo, kit_id, lat, lon, kleur, selected))
+    sensor_labels <- as.list(levels(sensor_loc$kit_id)) # labels to use for hoover info
     
     # Update map with new markers to show selected 
     proxy <- leafletProxy('map') # set up proxy map
     proxy %>% clearGroup("sensoren") # Clear sensor markers
-    proxy %>% addCircleMarkers(data = sensor_loc, ~lon, ~lat, layerId = ~kit_id, label = lapply(as.list(sensor_loc$kit_id), HTML),
+    proxy %>% addCircleMarkers(data = sensor_loc, ~lon, ~lat, layerId = ~kit_id, label = sensor_labels,
                                radius = 8, color = ~kleur, fillOpacity = 1,stroke = ~selected, group = "sensoren")}
   
   # TODO: Universele namen voor de statcode etc van lml en knmi, nu in lmldata anders dan in lml idem knmi  
   # TODO: ook de labels van KNMi en LML stations mooi maken, met eigenaar erbij etc.
   add_knmistat_map <- function(){
-    if(overig_reactive$toon_all_knmi){
-      print('Toon alle KNMI-stations')
-      # Toon alle stations
-      station_loc <- knmi_stations_reactive$statinfo
-    }
-    # Check of er al sensoren met data zijn
-    else{
-      print('Zoek de knmi stations die data hebben: ')
-      # Toon alleen de stations die al data hebben
-      station_loc <- knmi_stations_reactive$statinfo[which(knmi_stations_reactive$statinfo$hasdata==T),]
-    }
-    
+    station_loc <- knmi_stations_reactive$statinfo
     print(paste0("stations op kaart: ", station_loc$station_nummer))
     print(names(station_loc))
 
-    overig_reactive$toon_all_knmi <- FALSE
-    
     # Update map with new markers to show selected
     proxy <- leafletProxy('map') # set up proxy map
     proxy %>% clearGroup("knmistations") # Clear sensor markers
@@ -146,20 +141,9 @@ function(input, output, session){
 
   # Functie: plaats lml stations  op de kaart  
   add_lmlstat_map <- function(){ 
-    if(overig_reactive$toon_all_lml){
-      # Toon alle stations
-      station_loc <- lml_stations_reactive$statinfo
-    }
-    # Check of er al sensoren met data zijn
-    else{
-      # Toon alleen de stations die al data hebben
-      station_loc <- lml_stations_reactive$statinfo[which(lml_stations_reactive$statinfo$hasdata==T),]
-    }
-
+    station_loc <- lml_stations_reactive$statinfo
     print(paste0("stations op kaart: ", station_loc))
     print(station_loc$name_icon)
-    
-    overig_reactive$toon_all_lml <- FALSE
     
     # Update map with new markers to show selected 
     proxy <- leafletProxy('map') # set up proxy map
@@ -223,8 +207,8 @@ function(input, output, session){
     sensor_unique$huidig <- FALSE
     sensor_unique$groep <- geen_groep
     sensor_unique$kleur <- kleur_marker_sensor
-    sensor_labels <- as.list(sensor_unique$kit_id) # labels to use for hoover info
-
+    
+    print(paste0('insert_nieuwe_data_sensor: ', sensor_labels))
     # Als de sensor geen coordinaten heeft, zet dan op 0,0 (anders werkt spatialpointsdataframe niet)
     sensor_unique$lat[which(is.na(sensor_unique$lat))] <- 0
     sensor_unique$lon[which(is.na(sensor_unique$lon))] <- 0
@@ -281,6 +265,8 @@ function(input, output, session){
     # Geef aan van welke stations nu databeschikbaar is:
     station_metdata <- unique(lml_stations_reactive$lml_data$station_number)
     lml_stations_reactive$statinfo$hasdata[which(lml_stations_reactive$statinfo$statcode %in% station_metdata)] <- TRUE
+    lml_stations_reactive$statinfo$name_icon[which(lml_stations_reactive$statinfo$statcode %in% station_metdata)] <- 'lml_grey'
+    
     # Laat vervolgens alleen de stations zien waarvan ook data beschikbaar is:
     add_lmlstat_map()
   }
@@ -319,6 +305,7 @@ function(input, output, session){
      # Geef aan van welke stations nu databeschikbaar is:
      station_metdata <- unique(knmi_stations_reactive$knmi_data$station_nummer)
      knmi_stations_reactive$statinfo$hasdata[which(knmi_stations_reactive$statinfo$station_nummer %in% station_metdata)] <- TRUE
+     knmi_stations_reactive$statinfo$name_icon[which(knmi_stations_reactive$statinfo$station_nummer %in% station_metdata)] <- 'knmi_grey'
      # Laat vervolgens alleen de stations zien waarvan ook data beschikbaar is:
      add_knmistat_map()
  }
@@ -606,7 +593,6 @@ function(input, output, session){
   #Observe of de luchtmeetnetstations moeten worden getoond----
   observeEvent({input$show_luchtmeetnet},{
     print('laad zien')
-    overig_reactive$toon_all_lml <- TRUE
     add_lmlstat_map()
     print("op kaart getoond")
     })
@@ -614,7 +600,6 @@ function(input, output, session){
   # #Observe of de knmi-stations moeten worden getoond----
   observeEvent({input$show_knmi},{
     print('laad zien')
-    overig_reactive$toon_all_knmi <- TRUE
     add_knmistat_map()
     print("op kaart getoond")
   })
@@ -890,6 +875,8 @@ function(input, output, session){
   output$calendar <- renderPlot({
     
     show_input <- filter_data_plot()
+    validate(need(!is_empty(show_input),"Selecteer een sensor."))
+    
     try(calendarPlot(show_input,
                      pollutant = input$Component, limits= c(0,150), cols = 'Purples', local.tz="Europe/Amsterdam")) 
     # Call in try() zodat er geen foutmelding wordt getoond als er geen enkele sensor is aangeklikt 
@@ -934,11 +921,13 @@ function(input, output, session){
   
   # Create windrose vanuit openair---- 
   output$windplot <- renderPlot({
-    # TODO hier wil je gewoon 1 windroos van de knmi stations, maar wel geknipt op de tijdselectie
-    try(windRose(knmi_stations_reactive$knmi_data,
-                 wd = 'wd', ws = 'ws', type = 'station_nummer' , local.tz="Europe/Amsterdam", cols = "Purples")) 
-    # Call in try() zodat er geen foutmelding wordt getoond als er geen enkele sensor is aangeklikt 
+    selected_id <- knmi_stations_reactive$statinfo[which(knmi_stations_reactive$statinfo$selected),'station_nummer']
+    show_input <- knmi_stations_reactive$knmi_data[which(knmi_stations_reactive$knmi_data$station_nummer %in% selected_id),]    
     
+    show_input <- selectByDate(mydata = show_input,start = tijdreeks_reactive$startdatum, end = tijdreeks_reactive$einddatum)
+    print(head(show_input))
+    # TODO Check of er wel data is, of dat ws en wd NA zijn.
+    try(windRose(show_input, wd = 'wd', ws = 'ws', type = 'station_nummer' , local.tz="Europe/Amsterdam", cols = "Purples")) 
   })
   
   # Create percentilerose functie vanuit openair ----

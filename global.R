@@ -52,10 +52,12 @@ geen_groep <- "" # default waarde als de sensor niet in een groep zit
 
 icons_stations <- iconList(
   # knmi = makeIcon("ionicons_compass.svg", 18, 18),
-  knmi_black = makeIcon("symbol_knmi_black.svg", 40, 40),
-  lml_white = makeIcon("symbol_lml_white.svg", 30, 30),
-  knmi_white = makeIcon("symbol_knmi_white.svg", 40, 40),
-  lml_black = makeIcon("symbol_lml_black.svg", 30, 30))
+  knmi_black = makeIcon("symbol_knmi_black.svg", 50, 50),
+  lml_white = makeIcon("symbol_lml_white.svg", 40, 40),
+  knmi_white = makeIcon("symbol_knmi_white.svg", 50, 50),
+  lml_black = makeIcon("symbol_lml_black.svg", 40, 40),
+  knmi_grey = makeIcon("symbol_knmi_grey.svg", 50, 50),
+  lml_grey = makeIcon("symbol_lml_grey.svg", 40, 40))
   # lml = makeIcon("ionicons_analytics.svg", 15, 15))
 
 input_df <- NULL
