@@ -188,8 +188,8 @@ GetSamenMetenAPI <- function(projectnaam, ymd_vanaf, ymd_tot, data_opslag = data
     if(! is.character(content_loc_data)){
       content_loc_data_df <- content_loc_data$value
       # Extract de gegevens die je wilt gebruiken
-      lat <- content_loc_data_df$location$coordinates[[1]][1]
-      lon <- content_loc_data_df$location$coordinates[[1]][2]   
+      lon <- content_loc_data_df$location$coordinates[[1]][1]
+      lat <- content_loc_data_df$location$coordinates[[1]][2]   
       # Voeg ze toe aan output
       locatie_df <- data.frame('lat' = lat, 'lon' = lon, 'kit_id' = kit_id)
     }else{
@@ -476,7 +476,7 @@ GetSamenMetenAPI <- function(projectnaam, ymd_vanaf, ymd_tot, data_opslag = data
 GetKNMIAPI <- function(stations, ymd_vanaf, ymd_tot){
   # Deze functie haalt de uurgemiddelde gegevens op van de KNMI stations:
   # windrichting, windsnelheid, temperatuur en relatieve luchtvochtigheid
-  # Voorbeeld: TEST_API_KNMI <- GetKNMIAPI('260','2019121401','2019121524')
+  # Voorbeeld: TEST_API_KNMI <- GetKNMIAPI('260','20191214','20191215')
   #input: 
   # stations: lijstje met de stationnummers as character Bijv: c("235","280")
   # ymd_vanaf: string "yyyymmdd" 
