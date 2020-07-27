@@ -44,6 +44,7 @@ function(input, output, session){
   lml_stations_reactive <- reactiveValues(statinfo=lml_stations_all, lml_data = input_df_lml)
   knmi_stations_reactive <- reactiveValues(statinfo=knmi_stations_all, knmi_data = input_df_knmi)
   
+  
   ## FUNCTIES ----
   
   # Functie: Set the sensor as deselect and change color to base color
@@ -96,14 +97,14 @@ function(input, output, session){
   
   # Functie: Set the stations as deselect and change color to base color
   set_knmi_station_deselect <- function(id_select){
-    knmi_stations_reactive$statinfo[knmi_stations_reactive$statinfo$nummer == id_select, "selected"] <- FALSE 
-    knmi_stations_reactive$statinfo[knmi_stations_reactive$statinfo$nummer == id_select, "name_icon"] <- 'knmi_black'
+    knmi_stations_reactive$statinfo[knmi_stations_reactive$statinfo$station_nummer == id_select, "selected"] <- FALSE 
+    knmi_stations_reactive$statinfo[knmi_stations_reactive$statinfo$station_nummer == id_select, "name_icon"] <- 'knmi_black'
   }
   
   # Functie: Set station as select and specify color
   set_knmi_station_select <- function(id_select){
-    knmi_stations_reactive$statinfo[knmi_stations_reactive$statinfo$nummer == id_select, "selected"] <- TRUE 
-    knmi_stations_reactive$statinfo[knmi_stations_reactive$statinfo$nummer == id_select, "name_icon"] <- 'knmi_white'
+    knmi_stations_reactive$statinfo[knmi_stations_reactive$statinfo$station_nummer == id_select, "selected"] <- TRUE 
+    knmi_stations_reactive$statinfo[knmi_stations_reactive$statinfo$station_nummer == id_select, "name_icon"] <- 'knmi_white'
   }
   
   # Functie: plaats sensoren met juiste kleur op de kaart  
@@ -132,7 +133,7 @@ function(input, output, session){
       station_loc <- knmi_stations_reactive$statinfo[which(knmi_stations_reactive$statinfo$hasdata==T),]
     }
     
-    print(paste0("stations op kaart: ", station_loc$nummer))
+    print(paste0("stations op kaart: ", station_loc$station_nummer))
     print(names(station_loc))
 
     overig_reactive$toon_all_knmi <- FALSE
@@ -140,7 +141,7 @@ function(input, output, session){
     # Update map with new markers to show selected
     proxy <- leafletProxy('map') # set up proxy map
     proxy %>% clearGroup("knmistations") # Clear sensor markers
-    proxy %>% addMarkers(data = station_loc, ~lon, ~lat, layerId = ~nummer, label = lapply(as.list(paste0('KNMI: ',station_loc$nummer)), HTML),
+    proxy %>% addMarkers(data = station_loc, ~lon, ~lat, layerId = ~station_nummer, label = lapply(as.list(paste0('KNMI: ',station_loc$station_nummer)), HTML),
                          icon = ~icons_stations[name_icon], group = "knmistations")}
 
   # Functie: plaats lml stations  op de kaart  
@@ -242,7 +243,7 @@ function(input, output, session){
   } 
   
   # Functie om de luchtmeetnet data in te laden
-  insert_nieuwe_data_lml<- function(){ 
+  insert_nieuwe_data_lml <- function(){ 
     # Deze functie laadt de luchtmeentnet data, dat kan op 2 manieren:
     # data ophalen van de API, data ophalen uit een csv bestand
     # Wanneer op een van de manieren de data is ingeladen, worden de gegevens in de 
@@ -317,7 +318,7 @@ function(input, output, session){
     }
      # Geef aan van welke stations nu databeschikbaar is:
      station_metdata <- unique(knmi_stations_reactive$knmi_data$station_nummer)
-     knmi_stations_reactive$statinfo$hasdata[which(knmi_stations_reactive$statinfo$nummer %in% station_metdata)] <- TRUE
+     knmi_stations_reactive$statinfo$hasdata[which(knmi_stations_reactive$statinfo$station_nummer %in% station_metdata)] <- TRUE
      # Laat vervolgens alleen de stations zien waarvan ook data beschikbaar is:
      add_knmistat_map()
  }
@@ -400,7 +401,7 @@ function(input, output, session){
     #Maak een dataframe waar het in past
     station_data_all <- data.frame()
     #Maak een string van de statcodes die je wilt ophalen
-    knmi_stats <- knmi_stations_reactive$statinfo$nummer[which(knmi_stations_reactive$statinfo$selected==T)]
+    knmi_stats <- knmi_stations_reactive$statinfo$station_nummer[which(knmi_stations_reactive$statinfo$selected==T)]
     print(paste0('API ophalen: ',knmi_stats))
     
     # Voor de progress message
@@ -501,15 +502,22 @@ function(input, output, session){
     comp <- input$Component
     selected_id <- sensor_reactive$statinfo[which(sensor_reactive$statinfo$selected & sensor_reactive$statinfo$groep == geen_groep),'kit_id']
     show_input <- sensor_reactive$sensor_data[which(sensor_reactive$sensor_data$kit_id %in% selected_id),]    
-    print(head(show_input))
-    print(head(knmi_stations_reactive$knmi_data))
+
+    
     # Als er groepen zijn geselecteerd, bereken dan het gemiddelde
     if (length(unique(sensor_reactive$statinfo$groep))>1){
       calc_groep_mean() # berekent groepsgemiddeldes
       show_input <- merge(show_input,groepering_reactive$df_gem, all = T) } 
     
+    # Bepaal van welk knmi-stations de winddata wordt gebruikt:
+    stat_wdws <- input$knmi_stat_wdws
+    knmi_data_wdws <- knmi_stations_reactive$knmi_data[which(knmi_stations_reactive$knmi_data$station_nummer == stat_wdws),]
+    
+    # TODO wil je hier nog een waarschuwing als het knmi station geen winddata heeft? Dus alleen maar NA?
+    
+    print(head(knmi_data_wdws))
     print(head(show_input))
-    show_input <- merge(show_input, knmi_stations_reactive$knmi_data, all.x=T, by.x='date', by.y='date')
+    show_input <- merge(show_input,knmi_data_wdws , all.x=T, by.x='date', by.y='date')
     print(head(show_input))
     show_input <- selectByDate(mydata = show_input,start = tijdreeks_reactive$startdatum, end = tijdreeks_reactive$einddatum)
     return(show_input)
@@ -530,6 +538,19 @@ function(input, output, session){
   observe({
     updateSelectInput(session, "sensor_specificeer",choices = choices_api_reactive$choices
     )})
+  
+  
+  # Haal de choices in de SelectInput voor de KNMI stations die data hebben voor de plots----
+  observe({
+    print('Observe knmi wdws')
+    choices_knmi <- knmi_stations_reactive$statinfo$station_nummer[which(knmi_stations_reactive$statinfo$hasdata==TRUE)]
+    print(paste0('choices_knmi: ', choices_knmi))
+    if(is_empty(choices_knmi)){
+      choices_knmi <- c('Geen knmi data beschikbaar.')
+    }
+    updateSelectInput(session, "knmi_stat_wdws", choices = choices_knmi
+    )})
+  
   #Print welke datagroep bij samenmeten api wordt opgevraagd
   observeEvent({input$sensor_specificeer},{
     print(input$sensor_specificeer)
@@ -652,7 +673,7 @@ function(input, output, session){
         }
       }else{ # Als het een KNMI station is
         # Check if station id already selected -> unselect station
-        if((knmi_stations_reactive$statinfo$selected[which(knmi_stations_reactive$statinfo$nummer == id_select)])){
+        if((knmi_stations_reactive$statinfo$selected[which(knmi_stations_reactive$statinfo$station_nummer == id_select)])){
           set_knmi_station_deselect(id_select)
           add_knmistat_map()
         }
@@ -835,7 +856,7 @@ function(input, output, session){
   })
   # Create tabel geselecteerde stations voor de download pagina ----
   output$stations_knmi <- renderTable({
-    stations_df <- data.frame('Selectie' = as.character(knmi_stations_reactive$statinfo[which(knmi_stations_reactive$statinfo$selected),'nummer']))
+    stations_df <- data.frame('Selectie' = as.character(knmi_stations_reactive$statinfo[which(knmi_stations_reactive$statinfo$selected),'station_nummer']))
   })
   
   # Create time plot vanuit openair ----

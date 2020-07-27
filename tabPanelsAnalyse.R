@@ -14,9 +14,9 @@ tpAnalyse <- function(){
   
   tp <-  tabPanel("Visualisatie en Analyse",
                   tabsetPanel(
-                    tpTimeplot(),
-                    tpKalender(),
-                    tpTimevariation(),
+                    # tpTimeplot(),
+                    # tpKalender(),
+                    # tpTimevariation(),
                     tpPercentileRose(),
                     tpPollutionRose(),
                     tpWindRose()
@@ -85,7 +85,7 @@ tpWindRose<- function(){
   
   tp <-  tabPanel("Windroos",
                   helpText("Deze grafiek toont per windrichting hoe vaak en hoe hard de wind waaide per sensor of sensorgroep."),
-                      plotOutput("windplot"),
+                  plotOutput("windplot"),
                       h4("Toelichting"),
                       p("Als je een sensor aanklikt, wordt een windroos getoond.
                         Deze windroos laat de windsnelheid en -richting zien van het dichtstbijzijnde KNMI-station. Voor elke windsector toont de 
@@ -106,6 +106,7 @@ tpPercentileRose<- function(){
   
   tp <-  tabPanel("Pollutieroos",
                   helpText("Deze grafiek toont de gemiddelde concentratie per windrichting per sensor of sensorgroep."),
+
                   plotOutput("percentileplot"),
                       h4("Toelichting"),
                       p("Als je een sensor aanklikt, wordt een pollutieroos getoond. 
@@ -123,7 +124,8 @@ tpPollutionRose<- function(){
   
   tp <-  tabPanel("Pollutieroos (%)",
                   helpText("Deze grafiek toont per windrichting de relatieve bijdrage aan de totale gemiddelde concentratie per sensor of sensorgroep."),
-                      plotOutput("pollutionplot"),
+    
+                  plotOutput("pollutionplot"),
                       h4("Toelichting"),
                       p("Als je een sensor aanklikt, wordt een gewogen pollutieroos getoond. 
                                    Deze berekent per windsector het aandeel (in %) van deze sector in de totale gemiddelde concentratie.

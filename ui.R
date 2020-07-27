@@ -101,7 +101,9 @@ htmlTemplate("./www/template_samenmeten.wide.html",
                 ),
       dateInput("DateEind", label="Selecteer einde tijdreeks:", format='dd-mm-yyyy', value = '2019-04-07' 
                 ),
-      
+      # Input: Selecteer het knmi station waarvan de windriching en snelheid wordt gebruikt
+      selectInput(inputId = "knmi_stat_wdws", label = "Kies KNMI-station voor de windsnelheid en windrichting:", choices = '', selected = NULL, multiple = FALSE,
+                  selectize = TRUE, width = NULL, size = NULL), 
       br(),
 
       # Input: Tekst voor de groepselectie
