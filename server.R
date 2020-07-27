@@ -35,7 +35,7 @@ function(input, output, session){
   # Zet reactive values op----
   groepering_reactive <- reactiveValues(groepsnaam = geen_groep, df_gem = data.frame())
   tijdreeks_reactive <- reactiveValues(startdatum = 0, einddatum=0)
-  overig_reactive <- reactiveValues(data_set = 'voorbeeld')
+  overig_reactive <- reactiveValues(data_set = 'voorbeeld', toon_all_knmi = FALSE, toon_all_lml = FALSE)
   overzicht_shapes <- reactiveValues(add = 0, delete = 0) # nodig om selectie ongedaan te maken
   choices_api_reactive <- reactiveValues(choices=gemeente_choices)
   
@@ -120,18 +120,23 @@ function(input, output, session){
   # TODO: Universele namen voor de statcode etc van lml en knmi, nu in lmldata anders dan in lml idem knmi  
   # TODO: ook de labels van KNMi en LML stations mooi maken, met eigenaar erbij etc.
   add_knmistat_map <- function(){
-    # Check of er al sensoren met data zijn
-    if(TRUE %in% knmi_stations_all$hasdata){
-      # Toon alleen de stations die al data hebben
-      station_loc <- knmi_stations_reactive$statinfo[which(knmi_stations_reactive$statinfo$hasdata==T),]
-    }else{
+    if(overig_reactive$toon_all_knmi){
+      print('Toon alle KNMI-stations')
       # Toon alle stations
       station_loc <- knmi_stations_reactive$statinfo
     }
+    # Check of er al sensoren met data zijn
+    else{
+      print('Zoek de knmi stations die data hebben: ')
+      # Toon alleen de stations die al data hebben
+      station_loc <- knmi_stations_reactive$statinfo[which(knmi_stations_reactive$statinfo$hasdata==T),]
+    }
     
-    print(paste0("stations op kaart: ", station_loc))
+    print(paste0("stations op kaart: ", station_loc$nummer))
     print(names(station_loc))
 
+    overig_reactive$toon_all_knmi <- FALSE
+    
     # Update map with new markers to show selected
     proxy <- leafletProxy('map') # set up proxy map
     proxy %>% clearGroup("knmistations") # Clear sensor markers
@@ -140,17 +145,21 @@ function(input, output, session){
 
   # Functie: plaats lml stations  op de kaart  
   add_lmlstat_map <- function(){ 
-    # Check of er al sensoren met data zijn
-    if(TRUE %in% lml_stations_all$hasdata){
-      # Toon alleen de stations die al data hebben
-      station_loc <- lml_stations_reactive$statinfo[which(lml_stations_reactive$statinfo$hasdata==T),]
-    }else{
+    if(overig_reactive$toon_all_lml){
       # Toon alle stations
       station_loc <- lml_stations_reactive$statinfo
+    }
+    # Check of er al sensoren met data zijn
+    else{
+      # Toon alleen de stations die al data hebben
+      station_loc <- lml_stations_reactive$statinfo[which(lml_stations_reactive$statinfo$hasdata==T),]
     }
 
     print(paste0("stations op kaart: ", station_loc))
     print(station_loc$name_icon)
+    
+    overig_reactive$toon_all_lml <- FALSE
+    
     # Update map with new markers to show selected 
     proxy <- leafletProxy('map') # set up proxy map
     proxy %>% clearGroup("luchtmeetnetstations") # Clear sensor markers
@@ -183,37 +192,6 @@ function(input, output, session){
     groepering_reactive$df_gem <- gemiddeld_all
   }
 
-  # Functie om de voorbeeld data in te laden
-  insert_voorbeeld_data <- function(){
-    # Deze functie haalt de voorbeelddataset op en laat deze zien op de kaart
-    # TODO maak die in het format van de data zoals ook de rest, dus in 3 delen.
-    print('voorbeeld')
-    sensor_reactive$sensor_data <- readRDS(file)
-    
-    ## Default locatie, kleur en label opzetten
-    sensor_reactive$sensor_data$kit_id <- gsub('HLL_hl_', '', sensor_reactive$sensor_data$kit_id) #remove HLL-string from sensor_reactive$sensor_data for shorter label
-    # Voor de sensormarkers: locatie, label en kleur etc. Per sensor één unieke locatie
-    sensor_unique <- aggregate(sensor_reactive$sensor_data[,c('lat','lon')], list(sensor_reactive$sensor_data$kit_id), FUN = mean) # gemiddelde om per sensor een latlon te krijgen
-    names(sensor_unique)[names(sensor_unique)=='Group.1'] <-'kit_id'
-    sensor_unique$selected <-FALSE
-    sensor_unique$huidig <- FALSE
-    sensor_unique$groep <- geen_groep
-    sensor_unique$kleur <- kleur_marker_sensor
-    sensor_labels <- as.list(sensor_unique$kit_id) # labels to use for hoover info
-    
-    # Voor de multiselect tool: omzetten lat/lon naar spatialpoints
-    ms_coordinates <- SpatialPointsDataFrame(sensor_unique[,c('lon','lat')],sensor_unique)
-    
-    # Voeg de sensor locaties ed toe aan interactive dataframe
-    sensor_reactive$statinfo <- sensor_unique
-    # voeg de sensoren toe aan de kaart
-    add_sensors_map()
-    # zoom naar de nieuwe sensoren
-    mean_lat <- mean(sensor_unique$lat)
-    mean_lon <- mean(sensor_unique$lon)
-    set_view_map(mean_lat, mean_lon)
-  }
-  
   # Functie om de sensor data in te laden
   insert_nieuwe_data_sensor <- function(){
     # Deze functie laadt de sensor data, dat kan op 2 manieren:
@@ -229,27 +207,37 @@ function(input, output, session){
       sensor_reactive$sensor_data <- read.csv(input$eigen_datafile_sensoren$datapath, sep=",")
       # Zet de date naar een posixct
       sensor_reactive$sensor_data$date <- as.POSIXct(sensor_reactive$sensor_data$date, tryFormat=c("%d/%m/%Y %H:%M","%Y-%m-%d %H:%M:%S"), tz='UTC')
+    }else if(overig_reactive$data_set=='voorbeeld'){
+      # Lees de csv uit en sla de gegevens op in interactive
+      sensor_reactive$sensor_data <- read.csv(sensor_file, sep=",")
+      # Zet de date naar een posixct
+      sensor_reactive$sensor_data$date <- as.POSIXct(sensor_reactive$sensor_data$date, tryFormat=c("%d/%m/%Y %H:%M","%Y-%m-%d %H:%M:%S"), tz='UTC')
     }
 
     # Voor de sensormarkers: locatie, label en kleur etc. Per sensor één unieke locatie
-    sensor_unique <- aggregate(sensor_reactive$sensor_data[,c('lat','lon')], list(sensor_reactive$sensor_data$kit_id), FUN = mean) # gemiddelde om per sensor een latlon te krijgen
-    names(sensor_unique)[names(sensor_unique)=='Group.1'] <-'kit_id'
-    sensor_unique$selected <-FALSE
+    sensor_unique <- unique(sensor_reactive$sensor_data[,c('kit_id','lat','lon')])
+    print('sensor Unique gemaakt')
+    print(head(sensor_unique))
+    sensor_unique$selected <- FALSE
     sensor_unique$huidig <- FALSE
     sensor_unique$groep <- geen_groep
     sensor_unique$kleur <- kleur_marker_sensor
     sensor_labels <- as.list(sensor_unique$kit_id) # labels to use for hoover info
 
-      # Voor de multiselect tool: omzetten lat/lon naar spatialpoints
-      ms_coordinates <- SpatialPointsDataFrame(sensor_unique[,c('lon','lat')],sensor_unique)
+    # Als de sensor geen coordinaten heeft, zet dan op 0,0 (anders werkt spatialpointsdataframe niet)
+    sensor_unique$lat[which(is.na(sensor_unique$lat))] <- 0
+    sensor_unique$lon[which(is.na(sensor_unique$lon))] <- 0
+    
+    # Voor de multiselect tool: omzetten lat/lon naar spatialpoints
+    ms_coordinates <- SpatialPointsDataFrame(sensor_unique[,c('lon','lat')],sensor_unique)
 
     # Voeg de sensor locaties ed toe aan interactive dataframe
     sensor_reactive$statinfo <- sensor_unique
     # voeg de sensoren toe aan de kaart
     add_sensors_map()
     # zoom naar de nieuwe sensoren
-    mean_lat <- mean(sensor_unique$lat)
-    mean_lon <- mean(sensor_unique$lon)
+    mean_lat <- mean(sensor_unique$lat[which(sensor_unique$lat>0)])
+    mean_lon <- mean(sensor_unique$lon[which(sensor_unique$lon>0)])
     set_view_map(mean_lat, mean_lon)
   } 
   
@@ -269,8 +257,8 @@ function(input, output, session){
       lml_stations_reactive$lml_data <- get_lml_data_api()
       
     }else if(overig_reactive$data_set=='eigen_dataset_lml'){
-       # Haal de gegevens op van de stations via de luchtmeetnet API
-       print('ophalen api luchtmeetnet')
+       # Haal de gegevens op van de stations via een ingeladen csv
+       print('ophalen csv luchtmeetnet')
 
        # Lees de csv uit en sla de gegevens op in interactive
        lml_stations_reactive$lml_data <- read.csv(input$eigen_datafile_lml$datapath, sep=",")
@@ -278,7 +266,16 @@ function(input, output, session){
        # Zet de date naar een posixct
        lml_stations_reactive$lml_data$date <- as.POSIXct(lml_stations_reactive$lml_data$timestamp_measured , tryFormat=c("%d/%m/%Y %H:%M","%Y-%m-%d %H:%M:%S"), tz='UTC')
        print(summary(lml_stations_reactive$lml_data))
-       }
+    }else if(overig_reactive$data_set=='voorbeeld'){
+      # Haal de gegevens op van de stations via de voorbeeld csv
+      print('ophalen voorbeeld csv luchtmeetnet')
+      # Lees de csv uit en sla de gegevens op in interactive
+      lml_stations_reactive$lml_data <- read.csv(lml_file, sep=",")
+      print(head(lml_stations_reactive$lml_data))
+      # Zet de date naar een posixct
+      lml_stations_reactive$lml_data$date <- as.POSIXct(lml_stations_reactive$lml_data$timestamp_measured , tryFormat=c("%d/%m/%Y %H:%M","%Y-%m-%d %H:%M:%S"), tz='UTC')
+      print(summary(lml_stations_reactive$lml_data))
+    }
 
     # Geef aan van welke stations nu databeschikbaar is:
     station_metdata <- unique(lml_stations_reactive$lml_data$station_number)
@@ -308,10 +305,18 @@ function(input, output, session){
       # Zet de date naar een posixct
       knmi_stations_reactive$knmi_data$date <- as.POSIXct(knmi_stations_reactive$knmi_data$date , tryFormat=c("%d/%m/%Y %H:%M","%Y-%m-%d %H:%M:%S"), tz='UTC')
       print(summary(knmi_stations_reactive$knmi_data))
+    }else if(overig_reactive$data_set=='voorbeeld'){
+      # Haal de gegevens op van de stations vanuit het voorbeeld bestand
+      print('ophalen uit voorbeeldbestand KNMI')
+      # Lees de csv uit en sla de gegevens op in interactive
+      knmi_stations_reactive$knmi_data <- read.csv(knmi_file, sep=",")
+      print(head(knmi_stations_reactive$knmi_data))
+      # Zet de date naar een posixct
+      knmi_stations_reactive$knmi_data$date <- as.POSIXct(knmi_stations_reactive$knmi_data$date , tryFormat=c("%d/%m/%Y %H:%M","%Y-%m-%d %H:%M:%S"), tz='UTC')
+      print(summary(knmi_stations_reactive$knmi_data))
     }
      # Geef aan van welke stations nu databeschikbaar is:
      station_metdata <- unique(knmi_stations_reactive$knmi_data$station_nummer)
-     print(station_metdata)
      knmi_stations_reactive$statinfo$hasdata[which(knmi_stations_reactive$statinfo$nummer %in% station_metdata)] <- TRUE
      # Laat vervolgens alleen de stations zien waarvan ook data beschikbaar is:
      add_knmistat_map()
@@ -491,7 +496,8 @@ function(input, output, session){
   # Functie om de data klaar te maken voor de visualisatie
   filter_data_plot <- function(){
     # Deze functie maakt/filtert de data voor de visualisatie. De juiste component tijdreeks etc.
-    
+    # TODO hier wil je een input$knmistation waar de gebruiker een knmi station heeft gekozen voor de rozen
+    # TODO  iets voor de lml data in timeplot ggplot
     comp <- input$Component
     selected_id <- sensor_reactive$statinfo[which(sensor_reactive$statinfo$selected & sensor_reactive$statinfo$groep == geen_groep),'kit_id']
     show_input <- sensor_reactive$sensor_data[which(sensor_reactive$sensor_data$kit_id %in% selected_id),]    
@@ -554,7 +560,9 @@ function(input, output, session){
   # Observe of de voorbeeld dataset weer ingeladen moet worden----
   observeEvent({input$voorbeeld_data},{
     overig_reactive$data_set <- 'voorbeeld'
-    insert_voorbeeld_data()})
+    insert_nieuwe_data_sensor()
+    insert_nieuwe_data_lml()
+    insert_nieuwe_data_knmi()})
   
   # Observe of de specifieke sensor dataset opgehaald en ingeladen moet worden----
   observeEvent({input$API_samenmeten},{
@@ -577,6 +585,7 @@ function(input, output, session){
   #Observe of de luchtmeetnetstations moeten worden getoond----
   observeEvent({input$show_luchtmeetnet},{
     print('laad zien')
+    overig_reactive$toon_all_lml <- TRUE
     add_lmlstat_map()
     print("op kaart getoond")
     })
@@ -584,14 +593,8 @@ function(input, output, session){
   # #Observe of de knmi-stations moeten worden getoond----
   observeEvent({input$show_knmi},{
     print('laad zien')
+    overig_reactive$toon_all_knmi <- TRUE
     add_knmistat_map()
-    # # Update map with new markers to show selected
-    # proxy <- leafletProxy('map') # set up proxy map
-    # proxy %>% clearGroup("knmistations")  # Clear sensor markers
-    # proxy %>% addMarkers(icon = icons_stations["knmi_black"], data = knmi_stations_reactive$statinfo,
-    #                      ~lon, ~lat, layerId = ~statcode, label = lapply(knmi_labels, HTML),
-    #                      group = 'knmistations')
-    # proxy %>% setView(5.12446,52.105, zoom = 6)
     print("op kaart getoond")
   })
   
@@ -840,6 +843,10 @@ function(input, output, session){
     
     show_input <- filter_data_plot()
     comp <- input$Component
+    
+    # TODO: Maak hier ook de selectie van de geselecteerde lml stataion en merge die met de andere data
+    # misschien dan ook een lijn dikte of kleur meegeven. Nog over nadenken hoe of wat precies.
+    
     # if / else statement om correctie lml data toe te voegen  
     if(comp == "pm10" || comp == "pm10_kal"){
       # Bepaal de max voor de ylim
