@@ -141,21 +141,17 @@ function(input, output, session){
   # Functie: plaats sensoren met juiste kleur op de kaart  
   add_sensors_map <- function(){ 
     # Regenerate the sensors for the markers
-    sensor_loc <- unique(select(sensor_reactive$statinfo, kit_id, lat, lon, kleur, selected))
-    sensor_labels <- as.list(levels(sensor_loc$kit_id)) # labels to use for hoover info
-    
+    sensor_loc <- unique(dplyr::select(sensor_reactive$statinfo, kit_id, lat, lon, kleur, selected))
     # Update map with new markers to show selected 
     proxy <- leafletProxy('map') # set up proxy map
     proxy %>% clearGroup("sensoren") # Clear sensor markers
-    proxy %>% addCircleMarkers(data = sensor_loc, ~lon, ~lat, layerId = ~kit_id, label = sensor_labels,
-                               radius = 8, color = ~kleur, fillOpacity = 1,stroke = ~selected, group = "sensoren")}
+    proxy %>% addCircleMarkers(data = sensor_loc, ~lon, ~lat, layerId = ~kit_id, label = lapply(as.list(sensor_loc$kit_id), HTML),
+                               radius = 8, color = ~kleur, fillOpacity = 1, stroke = ~selected, group = "sensoren")}
   
   # TODO: Universele namen voor de statcode etc van lml en knmi, nu in lmldata anders dan in lml idem knmi  
   # TODO: ook de labels van KNMi en LML stations mooi maken, met eigenaar erbij etc.
   add_knmistat_map <- function(){
     station_loc <- knmi_stations_reactive$statinfo
-    print(paste0("stations op kaart: ", station_loc$station_nummer))
-    print(names(station_loc))
 
     # Update map with new markers to show selected
     proxy <- leafletProxy('map') # set up proxy map
@@ -166,9 +162,7 @@ function(input, output, session){
   # Functie: plaats lml stations  op de kaart  
   add_lmlstat_map <- function(){ 
     station_loc <- lml_stations_reactive$statinfo
-    print(paste0("stations op kaart: ", station_loc))
-    print(station_loc$name_icon)
-    
+
     # Update map with new markers to show selected 
     proxy <- leafletProxy('map') # set up proxy map
     proxy %>% clearGroup("luchtmeetnetstations") # Clear sensor markers
@@ -208,15 +202,17 @@ function(input, output, session){
     # Wanneer op een van de manieren de data is ingeladen, worden de gegevens in de 
     # reactive values opgeslagen en getoond op de kaart
     if(overig_reactive$data_set=='API_samenmeten'){
+      print('Sensor data inladen via API')
       # Haal de gegevens op van de sensoren via de samenmeten API
       sensor_reactive$sensor_data <- get_sensor_data_api()
-
     }else if(overig_reactive$data_set=='eigen_dataset_sensoren'){
+      print('Sensor data inladen via eigen dataset csv')
       # Lees de csv uit en sla de gegevens op in interactive
       sensor_reactive$sensor_data <- read.csv(input$eigen_datafile_sensoren$datapath, sep=",")
       # Zet de date naar een posixct
       sensor_reactive$sensor_data$date <- as.POSIXct(sensor_reactive$sensor_data$date, tryFormat=c("%d/%m/%Y %H:%M","%Y-%m-%d %H:%M:%S"), tz='UTC')
     }else if(overig_reactive$data_set=='voorbeeld'){
+      print('Sensor data inladen via voorbeeld dataset csv')
       # Lees de csv uit en sla de gegevens op in interactive
       sensor_reactive$sensor_data <- read.csv(sensor_file, sep=",")
       # Zet de date naar een posixct
@@ -225,15 +221,12 @@ function(input, output, session){
 
     # Voor de sensormarkers: locatie, label en kleur etc. Per sensor één unieke locatie
     sensor_unique <- unique(sensor_reactive$sensor_data[,c('kit_id','lat','lon')])
-    print('sensor Unique gemaakt')
-    print(head(sensor_unique))
     sensor_unique$selected <- FALSE
     sensor_unique$huidig <- FALSE
     sensor_unique$groep <- geen_groep
     sensor_unique$kleur <- kleur_marker_sensor
     sensor_unique$lijn <- 1
     
-    print(paste0('insert_nieuwe_data_sensor: ', sensor_labels))
     # Als de sensor geen coordinaten heeft, zet dan op 0,0 (anders werkt spatialpointsdataframe niet)
     sensor_unique$lat[which(is.na(sensor_unique$lat))] <- 0
     sensor_unique$lon[which(is.na(sensor_unique$lon))] <- 0
@@ -272,19 +265,18 @@ function(input, output, session){
 
        # Lees de csv uit en sla de gegevens op in interactive
        lml_stations_reactive$lml_data <- read.csv(input$eigen_datafile_lml$datapath, sep=",", stringsAsFactors = F)
-       print(head(lml_stations_reactive$lml_data))
+       
        # Zet de date naar een posixct
        lml_stations_reactive$lml_data$date <- as.POSIXct(lml_stations_reactive$lml_data$timestamp_measured , tryFormat=c("%d/%m/%Y %H:%M","%Y-%m-%d %H:%M:%S"), tz='UTC')
-       print(summary(lml_stations_reactive$lml_data))
+       
     }else if(overig_reactive$data_set=='voorbeeld'){
       # Haal de gegevens op van de stations via de voorbeeld csv
       print('ophalen voorbeeld csv luchtmeetnet')
       # Lees de csv uit en sla de gegevens op in interactive
       lml_stations_reactive$lml_data <- read.csv(lml_file, sep=",", stringsAsFactors = F)
-      print(head(lml_stations_reactive$lml_data))
+      
       # Zet de date naar een posixct
       lml_stations_reactive$lml_data$date <- as.POSIXct(lml_stations_reactive$lml_data$timestamp_measured , tryFormat=c("%d/%m/%Y %H:%M","%Y-%m-%d %H:%M:%S"), tz='UTC')
-      print(summary(lml_stations_reactive$lml_data))
     }
 
     # Zet de namen van de componenten PM10 en PM25 naar kleine letters (dan is het hetzelfde als de sensordata)
@@ -317,19 +309,15 @@ function(input, output, session){
       print('ophalen uit bestand KNMI')
       # Lees de csv uit en sla de gegevens op in interactive
       knmi_stations_reactive$knmi_data <- read.csv(input$eigen_datafile_knmi$datapath, sep=",")
-      print(head(knmi_stations_reactive$knmi_data))
       # Zet de date naar een posixct
       knmi_stations_reactive$knmi_data$date <- as.POSIXct(knmi_stations_reactive$knmi_data$date , tryFormat=c("%d/%m/%Y %H:%M","%Y-%m-%d %H:%M:%S"), tz='UTC')
-      print(summary(knmi_stations_reactive$knmi_data))
     }else if(overig_reactive$data_set=='voorbeeld'){
       # Haal de gegevens op van de stations vanuit het voorbeeld bestand
       print('ophalen uit voorbeeldbestand KNMI')
       # Lees de csv uit en sla de gegevens op in interactive
       knmi_stations_reactive$knmi_data <- read.csv(knmi_file, sep=",")
-      print(head(knmi_stations_reactive$knmi_data))
       # Zet de date naar een posixct
       knmi_stations_reactive$knmi_data$date <- as.POSIXct(knmi_stations_reactive$knmi_data$date , tryFormat=c("%d/%m/%Y %H:%M","%Y-%m-%d %H:%M:%S"), tz='UTC')
-      print(summary(knmi_stations_reactive$knmi_data))
     }
      # Geef aan van welke stations nu databeschikbaar is:
      station_metdata <- unique(knmi_stations_reactive$knmi_data$station_nummer)
@@ -380,7 +368,7 @@ function(input, output, session){
       station_data_ruw <- GetLMLAPI(stat, format(tijdreeks_reactive$startdatum, '%Y%m%d'), format(tijdreeks_reactive$einddatum, '%Y%m%d'))
       # Voeg alle meetwaardes vam de stations samen
       station_data_all <- rbind(station_data_all, station_data_ruw$data)}
-    print(names(station_data_all))
+
     # Alle gegevens zijn van de api opgehaald, retun de totale set
     updateProgress(value = 0.90 ,detail = "Alle data van Luchtmeetnet opgehaald.")
     #return de totale dataset
@@ -430,7 +418,7 @@ function(input, output, session){
     station_all_data <- station_all_data$data
     
     # hernoem de kolommen en gooi overige kolommen weg
-    station_all_data <- select(station_all_data, -c('YYYYMMDD', 'HH'))
+    station_all_data <- dplyr::select(station_all_data, -c('YYYYMMDD', 'HH'))
     station_all_data <- plyr::rename(station_all_data, c('STNS'= 'station_nummer', 'DD' = 'wd', 'FF'='ws', 'TEMP'='temp','U' = 'rh', 'tijd'='date'))
 
     station_all_data$station_code <- paste0('KNMI', station_all_data$station_nummer)
@@ -481,26 +469,34 @@ function(input, output, session){
       projectnaam <- paste0("codegemeente eq'",input$sensor_specificeer,"'")}
     
     print('aanroepen api')
+    print(paste0('projectnaam: ', projectnaam, ' startdatum: ',tijdreeks_reactive$startdatum, ' einddatum: ', tijdreeks_reactive$einddatum))
     # Aanroepen van de API
     sensor_data_ruw <- GetSamenMetenAPI(projectnaam, format(tijdreeks_reactive$startdatum, '%Y%m%d'), 
                                         format(tijdreeks_reactive$einddatum, '%Y%m%d'), data_opslag_list,
                                         updateProgress) 
     print('api opgehaald:')
+    print('summary(sensor_data_ruw)')
     print(summary(sensor_data_ruw))
+    print('head(sensor_data_ruw$sensordata)')
+    print(head(sensor_data_ruw$sensordata))
     # Dit bestaat uit 2 delen: 
     # sensordata die kan worden gebruikt voor de markers(sensor_reactive$statinfo) 
     # metingen met de meetwaardes voor de grafieken (alleen de sensormetingen) dus deel van input_df
     # Deze worden samengevoegd in 1 wide tabel
-    sensor_data_metingen <- distinct(sensor_data_ruw$metingen)
-    sensor_data_all <- merge(sensor_data_metingen, sensor_data_ruw$sensordata[,c('kit_id','lat','lon')],
+    sensor_data_metingen <- dplyr::distinct(sensor_data_ruw$metingen)
+    print('head(sensor_data_metingen)')
+    print(head(sensor_data_metingen))
+    print('net voor de error')
+    sensor_data_all <- sp::merge(sensor_data_metingen, sensor_data_ruw$sensordata[,c('kit_id','lat','lon')],
                              all.x, by.x='kit_id', by.y='kit_id')
     
     print('data samenvoegen:')
   
     # Omzetten naar een wide dataframe, dat er per kit_id en timestamp 1 rij data is
-    sensor_data_all_wide <- pivot_wider(distinct(sensor_data_all),names_from = 'grootheid', values_from='waarde')
-    
+    sensor_data_all_wide <- tidyr::pivot_wider(dplyr::distinct(sensor_data_all),names_from = 'grootheid', values_from='waarde')
+    print('head(sensor_data_all_wide)')
     print(head(sensor_data_all_wide))
+    print('tail(sensor_data_all_wide)')
     print(tail(sensor_data_all_wide))
     
     # Hernoemen van de tijd, zodat hetzelfde is als de input_df
@@ -518,12 +514,11 @@ function(input, output, session){
     comp <- input$Component
     selected_id <- sensor_reactive$statinfo[which(sensor_reactive$statinfo$selected & sensor_reactive$statinfo$groep == geen_groep),'kit_id']
     show_input <- sensor_reactive$sensor_data[which(sensor_reactive$sensor_data$kit_id %in% selected_id),]    
-
     
     # Als er groepen zijn geselecteerd, bereken dan het gemiddelde
     if (length(unique(sensor_reactive$statinfo$groep))>1){
       calc_groep_mean() # berekent groepsgemiddeldes
-      show_input <- merge(show_input,groepering_reactive$df_gem, all = T) } 
+      show_input <- sp::merge(show_input,groepering_reactive$df_gem, all = T) } 
     
     # Bepaal van welk knmi-stations de winddata wordt gebruikt:
     stat_wdws <- input$knmi_stat_wdws
@@ -531,11 +526,9 @@ function(input, output, session){
     
     # TODO wil je hier nog een waarschuwing als het knmi station geen winddata heeft? Dus alleen maar NA?
     
-    print(head(knmi_data_wdws))
-    print(head(show_input))
-    show_input <- merge(show_input,knmi_data_wdws , all.x=T, by.x='date', by.y='date')
-    print(head(show_input))
-    show_input <- selectByDate(mydata = show_input,start = tijdreeks_reactive$startdatum, end = tijdreeks_reactive$einddatum)
+    show_input <- sp::merge(show_input, knmi_data_wdws, all.x=T, by.x='date', by.y='date')
+
+    show_input <- openair::selectByDate(mydata = show_input,start = tijdreeks_reactive$startdatum, end = tijdreeks_reactive$einddatum)
     return(show_input)
   }
 
@@ -558,9 +551,7 @@ function(input, output, session){
   
   # Haal de choices in de SelectInput voor de KNMI stations die data hebben voor de plots----
   observe({
-    print('Observe knmi wdws')
     choices_knmi <- knmi_stations_reactive$statinfo$station_nummer[which(knmi_stations_reactive$statinfo$hasdata==TRUE)]
-    print(paste0('choices_knmi: ', choices_knmi))
     if(is_empty(choices_knmi)){
       choices_knmi <- c('Geen knmi data beschikbaar.')
     }
@@ -577,21 +568,18 @@ function(input, output, session){
   observeEvent({req(input$eigen_datafile_sensoren)},{
     overig_reactive$data_set <- input$eigen_datafile_sensoren$datapath  
     overig_reactive$data_set <- 'eigen_dataset_sensoren'
-    print("databestand sensoren geladen")
     insert_nieuwe_data_sensor()})
   
   # observe of er een eigen data set is ingeladen voor de luchtmeetnetmetingen:----
   observeEvent({req(input$eigen_datafile_lml)},{
     overig_reactive$data_set <- input$eigen_datafile_lml$datapath  
     overig_reactive$data_set <- 'eigen_dataset_lml'
-    print("databestand lml geladen")
     insert_nieuwe_data_lml()})
   
   # observe of er een eigen data set is ingeladen voor de knmi metingen:----
   observeEvent({req(input$eigen_datafile_knmi)},{
     overig_reactive$data_set <- input$eigen_datafile_knmi$datapath  
     overig_reactive$data_set <- 'eigen_dataset_knmi'
-    print("databestand knmi geladen")
     insert_nieuwe_data_knmi()})  
   
   # Observe of de voorbeeld dataset weer ingeladen moet worden----
@@ -621,16 +609,12 @@ function(input, output, session){
   
   #Observe of de luchtmeetnetstations moeten worden getoond----
   observeEvent({input$show_luchtmeetnet},{
-    print('laad zien')
     add_lmlstat_map()
-    print("op kaart getoond")
     })
   
   # #Observe of de knmi-stations moeten worden getoond----
   observeEvent({input$show_knmi},{
-    print('laad zien')
     add_knmistat_map()
-    print("op kaart getoond")
   })
   
   # Observe of de tekst wordt aangepast ----
@@ -657,6 +641,7 @@ function(input, output, session){
   # Observe if user selects a sensor ----
   observeEvent({input$map_marker_click$id}, {
     id_select <- input$map_marker_click$id
+    print('inputmarker select: id_select')
     print(id_select)
     # Bepaal of er op een sensr wordt geklikt, dus niet op lml station of knmi station.
     # Het lml station begint met 'NL', het knmi station is een numeric
@@ -899,7 +884,6 @@ function(input, output, session){
 
     # Check of er een luchtmeetnet station geselecteerd is:
     if(TRUE %in% lml_stations_reactive$statinfo$selected){
-      print('Er zijn ook lml stations geselecteerd')
       # Geef aan welke stations zijn geselecteerd
       lml_selected_id <- lml_stations_reactive$statinfo[which(lml_stations_reactive$statinfo$selected),'statcode']
       # Zoek daarbij de gegevens op
@@ -907,12 +891,6 @@ function(input, output, session){
       # De gegevens zijn in long format, zet om naar wide : let op remove duplicates!
       lml_show_input <- dplyr::distinct(lml_show_input)
       
-      print('head lml_show_input')
-      print(head(lml_show_input))
-      print('names lml_show_input')
-      print(names(lml_show_input))
-      print('lml_selected id')
-      print(lml_selected_id)
       lml_show_input <- tidyr::pivot_wider(lml_show_input, names_from='formula', values_from='value')
       lml_show_input <- openair::selectByDate(mydata = lml_show_input,start = tijdreeks_reactive$startdatum, end = tijdreeks_reactive$einddatum)
       lml_show_input$kit_id <- lml_show_input$station_number
@@ -920,28 +898,14 @@ function(input, output, session){
       # [1] "ggplot_lml: date"               "ggplot_lml: station_number"     "ggplot_lml: value"              "ggplot_lml: timestamp_measured"
       # [5] "ggplot_lml: formula"  
       # Pas dit toe in de ggplot
-      
-      # linetype: “blank”, “solid”, “dashed”, “dotted”, “dotdash”, “longdash”, “twodash”. 0123456
 
-      # Voeg de variabele toe zoals ook de sensoren hebben
-      # lml_kit_kleur$kit_id <- lml_selected_id
-      # lml_kit_kleur$kleur <- '#000000'
-      # lml_kit_kleur$lijn <- 2 
-      # lml_kit_kleur$groep <- geen_groep
-      
       lml_kit_kleur <- unique(lml_stations_reactive$statinfo[which(lml_stations_reactive$statinfo$selected),c('statcode','kleur','groep', 'lijn')])
       names(lml_kit_kleur)[names(lml_kit_kleur)=="statcode"] <- "kit_id"
       
       # Voeg de LML data aan de sensordata toe:
       show_input <- plyr::rbind.fill(show_input, lml_show_input)
       kit_kleur <- rbind(kit_kleur, lml_kit_kleur)
-      
-      print('head met lml data')
-      print(head(show_input))
     }
-    
-    print('kit_kleur met lml')
-    print(kit_kleur)
     
     # Sort by kit_id
     kit_kleur_sort <- kit_kleur[order(kit_kleur$kit_id),]
@@ -961,7 +925,6 @@ function(input, output, session){
       coord_cartesian(ylim = c(0, ylim_max)) + 
       theme_bw()
 
-    print('Plot alles ')
     plot(p_timeplot)
   })
   
@@ -1042,7 +1005,8 @@ function(input, output, session){
     selected_id <- knmi_stations_reactive$statinfo[which(knmi_stations_reactive$statinfo$selected),'station_nummer']
     show_input <- knmi_stations_reactive$knmi_data[which(knmi_stations_reactive$knmi_data$station_nummer %in% selected_id),]    
     # TODO of wil je dat je de windroos alleen kan maken via de dropdown knmi_stat_wdws? dat je ze sowieso niet kan selecteren?
-    show_input <- selectByDate(mydata = show_input,start = tijdreeks_reactive$startdatum, end = tijdreeks_reactive$einddatum)
+    show_input <- openair::selectByDate(mydata = show_input,start = tijdreeks_reactive$startdatum, end = tijdreeks_reactive$einddatum)
+    print('plot windrose met deze data: ')
     print(head(show_input))
     # TODO Check of er wel data is, of dat ws en wd NA zijn.
     try(windRose(show_input, wd = 'wd', ws = 'ws', type = 'station_nummer' , local.tz="Europe/Amsterdam", cols = "Purples")) 
