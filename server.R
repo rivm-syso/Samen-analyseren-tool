@@ -90,12 +90,35 @@ function(input, output, session){
                                      lml_stations_reactive$statinfo$hasdata == TRUE, "name_icon"]  <- 'lml_grey'
     lml_stations_reactive$statinfo[lml_stations_reactive$statinfo$statcode == id_select& 
                                      lml_stations_reactive$statinfo$hasdata == FALSE, "name_icon"]  <- 'lml_black'
+    lml_stations_reactive$statinfo[lml_stations_reactive$statinfo$statcode == id_select, "lijn"] <- 0 
   }
   
   # Functie: Set station as select and specify color
   set_lml_station_select <- function(id_select){
     lml_stations_reactive$statinfo[lml_stations_reactive$statinfo$statcode == id_select, "selected"] <- TRUE
     lml_stations_reactive$statinfo[lml_stations_reactive$statinfo$statcode == id_select, "name_icon"] <- 'lml_white'
+    # Select een lijntype en geef dit mee aan het station
+    # Kies de eerste type in de lijst lijn_cat die aanwezig is
+    count  <- 1
+    # Zorg ervoor dat je blijft zoeken tot station een lijntype heeft of dat de lijntype op zijn
+    while (lijn_stat == "leeg" & count < length(lijn_cat)){
+      for (lijn_code in lijn_cat){
+        if (lijn_code %in% unique(lml_stations_reactive$statinfo$lijn)){
+          count <- count + 1
+          next # Als de type al is toebedeeld, sla deze dan over
+        }else{ 
+          lijn_stat <- lijn_code # Vrije lijnstype voor de station
+        }
+      }
+    }
+    # Als alle kleuren gebruikt zijn: kies zwart
+    if (count == length(lijn_cat)){
+      lijn_stat <- 2
+    }
+    
+    # Geef lijntype aan het station
+    lml_stations_reactive$statinfo[lml_stations_reactive$statinfo$statcode == id_select, "lijn"] <- lijn_stat
+    lijn_stat <- "leeg"
   }
   
   # Functie: Set the stations as deselect and change color to base color
@@ -105,6 +128,7 @@ function(input, output, session){
                                       knmi_stations_reactive$statinfo$hasdata == TRUE, "name_icon"] <- 'knmi_grey'
     knmi_stations_reactive$statinfo[knmi_stations_reactive$statinfo$station_nummer == id_select& 
                                       knmi_stations_reactive$statinfo$hasdata == FALSE, "name_icon"] <- 'knmi_black'
+    
     
       }
   
@@ -207,6 +231,7 @@ function(input, output, session){
     sensor_unique$huidig <- FALSE
     sensor_unique$groep <- geen_groep
     sensor_unique$kleur <- kleur_marker_sensor
+    sensor_unique$lijn <- 1
     
     print(paste0('insert_nieuwe_data_sensor: ', sensor_labels))
     # Als de sensor geen coordinaten heeft, zet dan op 0,0 (anders werkt spatialpointsdataframe niet)
@@ -862,8 +887,7 @@ function(input, output, session){
     
     ## Create array for the colours
     # get the unique kit_id and the color
-    kit_kleur <- NULL
-    kit_kleur <- unique(sensor_reactive$statinfo[which(sensor_reactive$statinfo$selected),c('kit_id','kleur','groep')])
+    kit_kleur <- unique(sensor_reactive$statinfo[which(sensor_reactive$statinfo$selected),c('kit_id','kleur','groep', 'lijn')])
     
     # Als er een groep is, zorg voor 1 rij van de groep, zodat er maar 1 kleur is
     if (length(unique(kit_kleur$groep)>1)){
@@ -872,12 +896,9 @@ function(input, output, session){
     }
     
     kit_kleur <- taRifx::remove.factors(kit_kleur)
-    # Voeg ook lijntype toe aan de kit_kleur
-    kit_kleur$lijn <- 1 # 1 = solid line
 
     # Check of er een luchtmeetnet station geselecteerd is:
     if(TRUE %in% lml_stations_reactive$statinfo$selected){
-      lml_kit_kleur = NULL
       print('Er zijn ook lml stations geselecteerd')
       # Geef aan welke stations zijn geselecteerd
       lml_selected_id <- lml_stations_reactive$statinfo[which(lml_stations_reactive$statinfo$selected),'statcode']
@@ -903,11 +924,14 @@ function(input, output, session){
       # linetype: “blank”, “solid”, “dashed”, “dotted”, “dotdash”, “longdash”, “twodash”. 0123456
 
       # Voeg de variabele toe zoals ook de sensoren hebben
-      lml_kit_kleur$kit_id <- lml_selected_id
-      lml_kit_kleur$kleur <- '#000000'
-      lml_kit_kleur$lijn <- 2 
-      lml_kit_kleur$groep <- geen_groep
-
+      # lml_kit_kleur$kit_id <- lml_selected_id
+      # lml_kit_kleur$kleur <- '#000000'
+      # lml_kit_kleur$lijn <- 2 
+      # lml_kit_kleur$groep <- geen_groep
+      
+      lml_kit_kleur <- unique(lml_stations_reactive$statinfo[which(lml_stations_reactive$statinfo$selected),c('statcode','kleur','groep', 'lijn')])
+      names(lml_kit_kleur)[names(lml_kit_kleur)=="statcode"] <- "kit_id"
+      
       # Voeg de LML data aan de sensordata toe:
       show_input <- plyr::rbind.fill(show_input, lml_show_input)
       kit_kleur <- rbind(kit_kleur, lml_kit_kleur)

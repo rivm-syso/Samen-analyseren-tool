@@ -14,9 +14,9 @@ tpAnalyse <- function(){
   
   tp <-  tabPanel("Visualisatie en Analyse",
                   tabsetPanel(
-                    # tpTimeplot(),
-                    # tpKalender(),
-                    # tpTimevariation(),
+                    tpTimeplot(),
+                    tpKalender(),
+                    tpTimevariation(),
                     tpPercentileRose(),
                     tpPollutionRose(),
                     tpWindRose()

@@ -97,9 +97,9 @@ htmlTemplate("./www/template_samenmeten.wide.html",
                 selectize = TRUE, width = NULL, size = NULL),
       
       # Input: Blokjes voor de datum
-      dateInput("DateStart", label="Selecteer begin tijdreeks:", format='dd-mm-yyyy',value = '2019-04-04'
+      dateInput("DateStart", label="Selecteer begin tijdreeks:", format='dd-mm-yyyy',value = '2019-01-01'
                 ),
-      dateInput("DateEind", label="Selecteer einde tijdreeks:", format='dd-mm-yyyy', value = '2019-04-07' 
+      dateInput("DateEind", label="Selecteer einde tijdreeks:", format='dd-mm-yyyy', value = '2020-12-31' 
                 ),
       # Input: Selecteer het knmi station waarvan de windriching en snelheid wordt gebruikt
       selectInput(inputId = "knmi_stat_wdws", label = "Kies KNMI-station voor de windsnelheid en windrichting:", choices = '', selected = NULL, multiple = FALSE,

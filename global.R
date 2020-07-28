@@ -53,7 +53,8 @@ kleur_cat <- list('#42145f','#ffb612','#a90061','#777c00','#007bc7','#673327','#
 kleur_sensor <- "leeg"
 kleur_marker_sensor <- "#525252" # default kleur sensor
 geen_groep <- "" # default waarde als de sensor niet in een groep zit
-
+lijn_cat <- list(2,3,4,5,6)
+lijn_stat <- "leeg"
 icons_stations <- iconList(
   # knmi = makeIcon("ionicons_compass.svg", 18, 18),
   knmi_black = makeIcon("symbol_knmi_black.svg", 50, 50),
@@ -89,6 +90,9 @@ lml_stations_all <- readRDS('locaties_lml_all.RDS')
 lml_stations_all$selected <- FALSE
 lml_stations_all$hasdata <- FALSE
 lml_stations_all$name_icon <- 'lml_black'
+lml_stations_all$kleur <- '#000000'
+lml_stations_all$lijn <- 0
+lml_stations_all$groep <- geen_groep
 
 # Maak in de labelling onderscheid tussen de LML en GGD stations
 lml_labels <- vector("list", length(lml_stations_all$statcode))
