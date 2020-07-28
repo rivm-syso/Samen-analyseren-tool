@@ -15,24 +15,23 @@
 # 
 # Om het te publiceren op de shinyserver kan je pacman niet gebruiken. Dat werkt namelijk niet.
 library(openair)
-library(leaflet)
-library(leaflet.extras)
-library(dplyr)
-library(plyr)
-library(tidyr) # for pivot_wider
 library(shinythemes)
 library(shinyWidgets)
+library(leaflet)
+library(leaflet.extras)
+library(plyr)
+library(dplyr)
+library(tidyr) # for pivot_wider
 library(purrr)
 library(sp)
 library(devtools)
 library(geoshaper)
-library(ggplot2)
+
 library(DT) #for downlaod and datatable
 library(taRifx)
+library(ggplot2)
 # library(profvis)
 # profvis(runApp())
-
-stringsAsFactors=FALSE
 
 ## Load Functions ----
 # Functies voor het genereren van de inhoud van de tabpanels
