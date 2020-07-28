@@ -506,12 +506,9 @@ function(input, output, session){
     return(sensor_data_all_wide)
   }
 
-  # Functie om de data klaar te maken voor de visualisatie
-  filter_data_plot <- function(){
-    # Deze functie maakt/filtert de data voor de visualisatie. De juiste component tijdreeks etc.
-    # TODO hier wil je een input$knmistation waar de gebruiker een knmi station heeft gekozen voor de rozen
-    # TODO  iets voor de lml data in timeplot ggplot
-    comp <- input$Component
+  # Functie om de sensor data klaar te maken voor de visualisatie
+  filter_sensor_data_plot <- function(){
+    # Deze functie maakt/filtert de sensor data voor de visualisatie. De juiste component tijdreeks etc.
     selected_id <- sensor_reactive$statinfo[which(sensor_reactive$statinfo$selected & sensor_reactive$statinfo$groep == geen_groep),'kit_id']
     show_input <- sensor_reactive$sensor_data[which(sensor_reactive$sensor_data$kit_id %in% selected_id),]    
     
@@ -519,17 +516,44 @@ function(input, output, session){
     if (length(unique(sensor_reactive$statinfo$groep))>1){
       calc_groep_mean() # berekent groepsgemiddeldes
       show_input <- sp::merge(show_input,groepering_reactive$df_gem, all = T) } 
-    
-    # Bepaal van welk knmi-stations de winddata wordt gebruikt:
-    stat_wdws <- input$knmi_stat_wdws
-    knmi_data_wdws <- knmi_stations_reactive$knmi_data[which(knmi_stations_reactive$knmi_data$station_nummer == stat_wdws),]
-    
-    # TODO wil je hier nog een waarschuwing als het knmi station geen winddata heeft? Dus alleen maar NA?
-    
-    show_input <- sp::merge(show_input, knmi_data_wdws, all.x=T, by.x='date', by.y='date')
 
     show_input <- openair::selectByDate(mydata = show_input,start = tijdreeks_reactive$startdatum, end = tijdreeks_reactive$einddatum)
     return(show_input)
+  }
+  
+  # Functie om de knmi data klaar te maken voor de visualisatie
+  filter_knmi_data_plot <- function(){
+    # Deze functie maakt/filtert de knmi data voor de visualisatie. De juiste tijdreeks etc.
+    # LET OP deze data is voor het maken van de pollutierozen, dus in combinatie met de sensordata
+    # Bepaal van welk knmi-stations de winddata wordt gebruikt:
+    stat_wdws <- input$knmi_stat_wdws
+    knmi_data_wdws <- knmi_stations_reactive$knmi_data[which(knmi_stations_reactive$knmi_data$station_nummer == stat_wdws),]
+    show_input <- openair::selectByDate(mydata = knmi_data_wdws,start = tijdreeks_reactive$startdatum, end = tijdreeks_reactive$einddatum)
+    
+    # TODO wil je hier nog een waarschuwing als het knmi station geen winddata heeft? Dus alleen maar NA?
+    
+    return(show_input)
+  }
+  
+  # Functie om de lml data klaar te maken voor de visualisatie
+  filter_lml_data_plot <- function(){
+    # Deze functie maakt/filtert de lml data voor de visualisatie. De juiste component tijdreeks etc.
+    # Geef aan welke stations zijn geselecteerd
+    lml_selected_id <- lml_stations_reactive$statinfo[which(lml_stations_reactive$statinfo$selected),'statcode']
+    # Zoek daarbij de gegevens op
+    lml_show_input <- lml_stations_reactive$lml_data[which(lml_stations_reactive$lml_data$station_number %in% lml_selected_id),] 
+    # De gegevens zijn in long format, zet om naar wide : let op remove duplicates!
+    lml_show_input <- dplyr::distinct(lml_show_input)
+    lml_show_input <- tidyr::pivot_wider(lml_show_input, names_from='formula', values_from='value')
+    # Maak een selectie op de geselecteerde tijdreeks
+    lml_show_input <- openair::selectByDate(mydata = lml_show_input,start = tijdreeks_reactive$startdatum, end = tijdreeks_reactive$einddatum)
+    lml_show_input$kit_id <- lml_show_input$station_number
+    # de lml_data is zo opgebouwd:
+    # [1] "ggplot_lml: date"               "ggplot_lml: station_number"     "ggplot_lml: value"              "ggplot_lml: timestamp_measured"
+    # [5] "ggplot_lml: formula"  
+   
+    
+    return(lml_show_input)
   }
 
  
@@ -868,7 +892,7 @@ function(input, output, session){
     comp <- input$Component
     
     # Maak de plot input van de sensoren
-    show_input <- filter_data_plot()
+    show_input <- filter_sensor_data_plot()
     
     ## Create array for the colours
     # get the unique kit_id and the color
@@ -884,21 +908,9 @@ function(input, output, session){
 
     # Check of er een luchtmeetnet station geselecteerd is:
     if(TRUE %in% lml_stations_reactive$statinfo$selected){
-      # Geef aan welke stations zijn geselecteerd
-      lml_selected_id <- lml_stations_reactive$statinfo[which(lml_stations_reactive$statinfo$selected),'statcode']
-      # Zoek daarbij de gegevens op
-      lml_show_input <- lml_stations_reactive$lml_data[which(lml_stations_reactive$lml_data$station_number %in% lml_selected_id),] 
-      # De gegevens zijn in long format, zet om naar wide : let op remove duplicates!
-      lml_show_input <- dplyr::distinct(lml_show_input)
-      
-      lml_show_input <- tidyr::pivot_wider(lml_show_input, names_from='formula', values_from='value')
-      lml_show_input <- openair::selectByDate(mydata = lml_show_input,start = tijdreeks_reactive$startdatum, end = tijdreeks_reactive$einddatum)
-      lml_show_input$kit_id <- lml_show_input$station_number
-      # TODO: de lml_data is zo opgebouwd:
-      # [1] "ggplot_lml: date"               "ggplot_lml: station_number"     "ggplot_lml: value"              "ggplot_lml: timestamp_measured"
-      # [5] "ggplot_lml: formula"  
-      # Pas dit toe in de ggplot
-
+      # Filter de lml data op de juiste gegevens
+      lml_show_input <- filter_lml_data_plot()
+      # Zorg ook voor het kleur en lijntype overzicht
       lml_kit_kleur <- unique(lml_stations_reactive$statinfo[which(lml_stations_reactive$statinfo$selected),c('statcode','kleur','groep', 'lijn')])
       names(lml_kit_kleur)[names(lml_kit_kleur)=="statcode"] <- "kit_id"
       
@@ -931,7 +943,7 @@ function(input, output, session){
   
   # # Create time plot vanuit openair ----
   # output$timeplot <- renderPlot({
-  #   show_input <- filter_data_plot()
+  #   show_input <- filter_sensor_data_plot()
   #   comp <- input$Component
   #   
   #   # TODO: Maak hier ook de selectie van de geselecteerde lml stataion en merge die met de andere data
@@ -957,7 +969,7 @@ function(input, output, session){
   
   # Create kalender plot vanuit openair ----
   output$calendar <- renderPlot({
-    show_input <- filter_data_plot()
+    show_input <- filter_sensor_data_plot()
     validate(need(!is_empty(show_input),"Selecteer een sensor."))
     
     try(calendarPlot(show_input,
@@ -967,7 +979,7 @@ function(input, output, session){
   
   # Create timevariation functie vanuit openair ----
   output$timevariation <- renderPlot({
-    show_input <- filter_data_plot()
+    show_input <- filter_sensor_data_plot()
     
     ## Create array for the colours
     # get the unique kit_id and the color
@@ -994,7 +1006,14 @@ function(input, output, session){
   
   # Create pollutionrose functie vanuit openair ----
   output$pollutionplot <- renderPlot({
-    show_input <- filter_data_plot()
+    # Zorg voor de juiste gegevens van de sensoren
+    show_input <- filter_sensor_data_plot()
+    # Zorg voor de KNMI winddata
+    knmi_data_wdws <- filter_knmi_data_plot()
+    
+    # Voeg de winddata aan de sensordata toe
+    show_input <- sp::merge(show_input, knmi_data_wdws, all.x=T, by.x='date', by.y='date')
+    
     try(pollutionRose(show_input,
                       pollutant = input$Component, wd = 'wd', ws = 'ws', type = 'kit_id' , local.tz="Europe/Amsterdam", cols = "Purples", statistic = 'prop.mean',breaks=c(0,20,60,100))) 
   })
@@ -1014,7 +1033,14 @@ function(input, output, session){
   
   # Create percentilerose functie vanuit openair ----
   output$percentileplot <- renderPlot({
-    show_input <- filter_data_plot()
+    # Zorg voor de juiste gegevens van de sensoren
+    show_input <- filter_sensor_data_plot()
+    # Zorg voor de KNMI winddata
+    knmi_data_wdws <- filter_knmi_data_plot()
+    
+    # Voeg de winddata aan de sensordata toe
+    show_input <- sp::merge(show_input, knmi_data_wdws, all.x=T, by.x='date', by.y='date')
+    
     try(percentileRose(show_input,
                        pollutant = input$Component, wd = 'wd', type = 'kit_id', local.tz="Europe/Amsterdam", percentile = NA)) 
     
