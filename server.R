@@ -246,7 +246,7 @@ function(input, output, session){
        print('ophalen csv luchtmeetnet')
 
        # Lees de csv uit en sla de gegevens op in interactive
-       lml_stations_reactive$lml_data <- read.csv(input$eigen_datafile_lml$datapath, sep=",")
+       lml_stations_reactive$lml_data <- read.csv(input$eigen_datafile_lml$datapath, sep=",", stringsAsFactors = F)
        print(head(lml_stations_reactive$lml_data))
        # Zet de date naar een posixct
        lml_stations_reactive$lml_data$date <- as.POSIXct(lml_stations_reactive$lml_data$timestamp_measured , tryFormat=c("%d/%m/%Y %H:%M","%Y-%m-%d %H:%M:%S"), tz='UTC')
@@ -255,13 +255,17 @@ function(input, output, session){
       # Haal de gegevens op van de stations via de voorbeeld csv
       print('ophalen voorbeeld csv luchtmeetnet')
       # Lees de csv uit en sla de gegevens op in interactive
-      lml_stations_reactive$lml_data <- read.csv(lml_file, sep=",")
+      lml_stations_reactive$lml_data <- read.csv(lml_file, sep=",", stringsAsFactors = F)
       print(head(lml_stations_reactive$lml_data))
       # Zet de date naar een posixct
       lml_stations_reactive$lml_data$date <- as.POSIXct(lml_stations_reactive$lml_data$timestamp_measured , tryFormat=c("%d/%m/%Y %H:%M","%Y-%m-%d %H:%M:%S"), tz='UTC')
       print(summary(lml_stations_reactive$lml_data))
     }
 
+    # Zet de namen van de componenten PM10 en PM25 naar kleine letters (dan is het hetzelfde als de sensordata)
+    lml_stations_reactive$lml_data$formula[which(lml_stations_reactive$lml_data$formula=='PM10')] <- 'pm10'
+    lml_stations_reactive$lml_data$formula[which(lml_stations_reactive$lml_data$formula=='PM25')] <- 'pm25'
+    
     # Geef aan van welke stations nu databeschikbaar is:
     station_metdata <- unique(lml_stations_reactive$lml_data$station_number)
     lml_stations_reactive$statinfo$hasdata[which(lml_stations_reactive$statinfo$statcode %in% station_metdata)] <- TRUE
@@ -844,36 +848,128 @@ function(input, output, session){
     stations_df <- data.frame('Selectie' = as.character(knmi_stations_reactive$statinfo[which(knmi_stations_reactive$statinfo$selected),'station_nummer']))
   })
   
-  # Create time plot vanuit openair ----
+  
+  # TODO: Het gaat fout als je alleen de lml station wilt selecteren.
+  # TODO: het plotten gaat fout als een sensor geen data heeft, dan gaat de kleur mis.  
+  
+  # Create time plot met ggplot ----
   output$timeplot <- renderPlot({
-    
-    show_input <- filter_data_plot()
+    # Geef aan welk component geplot moet worden
     comp <- input$Component
     
-    # TODO: Maak hier ook de selectie van de geselecteerde lml stataion en merge die met de andere data
-    # misschien dan ook een lijn dikte of kleur meegeven. Nog over nadenken hoe of wat precies.
+    # Maak de plot input van de sensoren
+    show_input <- filter_data_plot()
     
-    # if / else statement om correctie lml data toe te voegen  
-    if(comp == "pm10" || comp == "pm10_kal"){
-      # Bepaal de max voor de ylim
-      ylim_max <- max(show_input$pm10)
-     
-      try(timePlot(show_input,
-                   pollutant = c(comp, "pm10_lml"), wd = "wd", type = "kit_id", local.tz="Europe/Amsterdam", ylim=c(0, ylim_max)))
-      # Call in try() zodat er geen foutmelding wordt getoond als er geen enkele sensor is aangeklikt 
+    ## Create array for the colours
+    # get the unique kit_id and the color
+    kit_kleur <- NULL
+    kit_kleur <- unique(sensor_reactive$statinfo[which(sensor_reactive$statinfo$selected),c('kit_id','kleur','groep')])
+    
+    # Als er een groep is, zorg voor 1 rij van de groep, zodat er maar 1 kleur is
+    if (length(unique(kit_kleur$groep)>1)){
+      kit_kleur[which(kit_kleur$groep != geen_groep),'kit_id'] <- kit_kleur[which(kit_kleur$groep != geen_groep),'groep']
+      kit_kleur <- unique(kit_kleur)
     }
-    else {
-      # Bepaal de max voor de ylim
-      ylim_max <- max(show_input$pm25)
-      try(timePlot(show_input,
-                   pollutant = c(comp, "pm25_lml"), wd = "wd", type = "kit_id", local.tz="Europe/Amsterdam", ylim=c(0, ylim_max)))
-      # Call in try() zodat er geen foutmelding wordt getoond als er geen enkele sensor is aangeklikt 
+    
+    kit_kleur <- taRifx::remove.factors(kit_kleur)
+    # Voeg ook lijntype toe aan de kit_kleur
+    kit_kleur$lijn <- 1 # 1 = solid line
+
+    # Check of er een luchtmeetnet station geselecteerd is:
+    if(TRUE %in% lml_stations_reactive$statinfo$selected){
+      lml_kit_kleur = NULL
+      print('Er zijn ook lml stations geselecteerd')
+      # Geef aan welke stations zijn geselecteerd
+      lml_selected_id <- lml_stations_reactive$statinfo[which(lml_stations_reactive$statinfo$selected),'statcode']
+      # Zoek daarbij de gegevens op
+      lml_show_input <- lml_stations_reactive$lml_data[which(lml_stations_reactive$lml_data$station_number %in% lml_selected_id),] 
+      # De gegevens zijn in long format, zet om naar wide : let op remove duplicates!
+      lml_show_input <- dplyr::distinct(lml_show_input)
+      
+      print('head lml_show_input')
+      print(head(lml_show_input))
+      print('names lml_show_input')
+      print(names(lml_show_input))
+      print('lml_selected id')
+      print(lml_selected_id)
+      lml_show_input <- tidyr::pivot_wider(lml_show_input, names_from='formula', values_from='value')
+      lml_show_input <- openair::selectByDate(mydata = lml_show_input,start = tijdreeks_reactive$startdatum, end = tijdreeks_reactive$einddatum)
+      lml_show_input$kit_id <- lml_show_input$station_number
+      # TODO: de lml_data is zo opgebouwd:
+      # [1] "ggplot_lml: date"               "ggplot_lml: station_number"     "ggplot_lml: value"              "ggplot_lml: timestamp_measured"
+      # [5] "ggplot_lml: formula"  
+      # Pas dit toe in de ggplot
+      
+      # linetype: “blank”, “solid”, “dashed”, “dotted”, “dotdash”, “longdash”, “twodash”. 0123456
+
+      # Voeg de variabele toe zoals ook de sensoren hebben
+      lml_kit_kleur$kit_id <- lml_selected_id
+      lml_kit_kleur$kleur <- '#000000'
+      lml_kit_kleur$lijn <- 2 
+      lml_kit_kleur$groep <- geen_groep
+
+      # Voeg de LML data aan de sensordata toe:
+      show_input <- plyr::rbind.fill(show_input, lml_show_input)
+      kit_kleur <- rbind(kit_kleur, lml_kit_kleur)
+      
+      print('head met lml data')
+      print(head(show_input))
     }
+    
+    print('kit_kleur met lml')
+    print(kit_kleur)
+    
+    # Sort by kit_id
+    kit_kleur_sort <- kit_kleur[order(kit_kleur$kit_id),]
+    # create colour array
+    kleur_array <- kit_kleur_sort$kleur
+    # Maak ook voor de lijntype een array
+    lijn_array <- kit_kleur_sort$lijn
+    
+    # Bepaal de max voor de ylim
+    ylim_max <- max(show_input$pm10, na.rm=T)
+  
+    p_timeplot <- ggplot(data = show_input, aes_string(x = "date", y = comp, group = "kit_id")) +
+      geom_line(aes(linetype= kit_id, col=kit_id)) +
+      scale_color_manual(values = kleur_array) +
+      scale_linetype_manual(values = lijn_array) +
+      labs(x = "Tijd", y = 'concentratie (ug/m3)') +
+      coord_cartesian(ylim = c(0, ylim_max)) + 
+      theme_bw()
+
+    print('Plot alles ')
+    plot(p_timeplot)
   })
+  
+  
+  # # Create time plot vanuit openair ----
+  # output$timeplot <- renderPlot({
+  #   show_input <- filter_data_plot()
+  #   comp <- input$Component
+  #   
+  #   # TODO: Maak hier ook de selectie van de geselecteerde lml stataion en merge die met de andere data
+  #   # misschien dan ook een lijn dikte of kleur meegeven. Nog over nadenken hoe of wat precies.
+  #   
+  #   # if / else statement om correctie lml data toe te voegen  
+  #   if(comp == "pm10" || comp == "pm10_kal"){
+  #     # Bepaal de max voor de ylim
+  #     ylim_max <- max(show_input$pm10)
+  #    
+  #     try(timePlot(show_input,
+  #                  pollutant = c(comp, "pm10_lml"), wd = "wd", type = "kit_id", local.tz="Europe/Amsterdam", ylim=c(0, ylim_max)))
+  #     # Call in try() zodat er geen foutmelding wordt getoond als er geen enkele sensor is aangeklikt 
+  #   }
+  #   else {
+  #     # Bepaal de max voor de ylim
+  #     ylim_max <- max(show_input$pm25)
+  #     try(timePlot(show_input,
+  #                  pollutant = c(comp, "pm25_lml"), wd = "wd", type = "kit_id", local.tz="Europe/Amsterdam", ylim=c(0, ylim_max)))
+  #     # Call in try() zodat er geen foutmelding wordt getoond als er geen enkele sensor is aangeklikt 
+  #   }
+  # })
   
   # Create kalender plot vanuit openair ----
   output$calendar <- renderPlot({
-    
     show_input <- filter_data_plot()
     validate(need(!is_empty(show_input),"Selecteer een sensor."))
     
@@ -884,7 +980,6 @@ function(input, output, session){
   
   # Create timevariation functie vanuit openair ----
   output$timevariation <- renderPlot({
-    
     show_input <- filter_data_plot()
     
     ## Create array for the colours
@@ -915,7 +1010,6 @@ function(input, output, session){
     show_input <- filter_data_plot()
     try(pollutionRose(show_input,
                       pollutant = input$Component, wd = 'wd', ws = 'ws', type = 'kit_id' , local.tz="Europe/Amsterdam", cols = "Purples", statistic = 'prop.mean',breaks=c(0,20,60,100))) 
-    
   })
   
   
@@ -923,7 +1017,7 @@ function(input, output, session){
   output$windplot <- renderPlot({
     selected_id <- knmi_stations_reactive$statinfo[which(knmi_stations_reactive$statinfo$selected),'station_nummer']
     show_input <- knmi_stations_reactive$knmi_data[which(knmi_stations_reactive$knmi_data$station_nummer %in% selected_id),]    
-    
+    # TODO of wil je dat je de windroos alleen kan maken via de dropdown knmi_stat_wdws? dat je ze sowieso niet kan selecteren?
     show_input <- selectByDate(mydata = show_input,start = tijdreeks_reactive$startdatum, end = tijdreeks_reactive$einddatum)
     print(head(show_input))
     # TODO Check of er wel data is, of dat ws en wd NA zijn.
