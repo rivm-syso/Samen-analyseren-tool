@@ -52,7 +52,8 @@ kleur_cat <- list('#42145f','#ffb612','#a90061','#777c00','#007bc7','#673327','#
 kleur_sensor <- "leeg"
 kleur_marker_sensor <- "#525252" # default kleur sensor
 geen_groep <- "" # default waarde als de sensor niet in een groep zit
-lijn_cat <- list(2,3,4,5,6)
+lijn_cat <- list(2,3,4,5,6) # linetype: “blank”, “solid”, “dashed”, “dotted”, “dotdash”, “longdash”, “twodash”. 0123456
+
 lijn_stat <- "leeg"
 icons_stations <- iconList(
   # knmi = makeIcon("ionicons_compass.svg", 18, 18),
