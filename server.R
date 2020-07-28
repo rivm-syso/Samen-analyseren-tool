@@ -227,6 +227,11 @@ function(input, output, session){
     sensor_unique$kleur <- kleur_marker_sensor
     sensor_unique$lijn <- 1
     
+    # Verwijder alle factoren: zet om naar characters
+    sensor_unique <- taRifx::remove.factors(sensor_unique)
+    sensor_reactive$sensor_data <- taRifx::remove.factors(sensor_reactive$sensor_data)
+    
+    
     # Als de sensor geen coordinaten heeft, zet dan op 0,0 (anders werkt spatialpointsdataframe niet)
     sensor_unique$lat[which(is.na(sensor_unique$lat))] <- 0
     sensor_unique$lon[which(is.na(sensor_unique$lon))] <- 0
@@ -288,6 +293,10 @@ function(input, output, session){
     lml_stations_reactive$statinfo$hasdata[which(lml_stations_reactive$statinfo$statcode %in% station_metdata)] <- TRUE
     lml_stations_reactive$statinfo$name_icon[which(lml_stations_reactive$statinfo$statcode %in% station_metdata)] <- 'lml_grey'
     
+    # Verwijder alle factoren: zet om naar characters
+    lml_stations_reactive$statinfo <- taRifx::remove.factors(lml_stations_reactive$statinfo)
+    lml_stations_reactive$lml_data <- taRifx::remove.factors(lml_stations_reactive$lml_data)
+    
     # Laat vervolgens alleen de stations zien waarvan ook data beschikbaar is:
     add_lmlstat_map()
   }
@@ -323,6 +332,11 @@ function(input, output, session){
      station_metdata <- unique(knmi_stations_reactive$knmi_data$station_nummer)
      knmi_stations_reactive$statinfo$hasdata[which(knmi_stations_reactive$statinfo$station_nummer %in% station_metdata)] <- TRUE
      knmi_stations_reactive$statinfo$name_icon[which(knmi_stations_reactive$statinfo$station_nummer %in% station_metdata)] <- 'knmi_grey'
+     
+     # Verwijder alle factoren: zet om naar characters
+     knmi_stations_reactive$statinfo <- taRifx::remove.factors(knmi_stations_reactive$statinfo)
+     knmi_stations_reactive$knmi_data <- taRifx::remove.factors(knmi_stations_reactive$knmi_data)
+     
      # Laat vervolgens alleen de stations zien waarvan ook data beschikbaar is:
      add_knmistat_map()
  }
