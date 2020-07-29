@@ -49,38 +49,44 @@ function(input, output, session){
   
   # Functie: Set the sensor as deselect and change color to base color
   set_sensor_deselect <- function(id_select){
+    # Als de sensor geen data heeft, dan moet je er ook niet op kunnen klikken
+    if(sensor_reactive$statinfo[sensor_reactive$statinfo$kit_id == id_select, "hasdata"]==TRUE){
     sensor_reactive$statinfo[sensor_reactive$statinfo$kit_id == id_select, "selected"] <- FALSE 
     sensor_reactive$statinfo[sensor_reactive$statinfo$kit_id == id_select, "huidig"] <- FALSE 
     sensor_reactive$statinfo[sensor_reactive$statinfo$kit_id == id_select, "kleur"] <- kleur_marker_sensor
     sensor_reactive$statinfo[sensor_reactive$statinfo$kit_id == id_select, "groep"] <- geen_groep
+    }
   }
   
   # Functie: Set sensor as select and specify color
   set_sensor_select <- function(id_select){
-    sensor_reactive$statinfo[sensor_reactive$statinfo$kit_id == id_select, "selected"] <- TRUE
-    sensor_reactive$statinfo[sensor_reactive$statinfo$kit_id == id_select, "huidig"] <- TRUE
-    # Select een kleur en geef dit mee aan de sensor
-    # Kies de eerste kleur in de lijst kleur_cat die aanwezig is
-    count  <- 1
-    # Zorg ervoor dat je blijft zoeken tot sensor een kleur heeft of dat de kleuren op zijn
-    while (kleur_sensor == "leeg" & count < length(kleur_cat)){
-      for (kleur_code in kleur_cat){
-        if (kleur_code %in% unique(sensor_reactive$statinfo$kleur)){
-          count <- count + 1
-          next # Als de kleur al is toebedeeld, sla deze dan over
-        }else{ 
-          kleur_sensor <- kleur_code # Vrije kleur voor de sensor
+    # Als de sensor geen data heeft, dan moet je er ook niet op kunnen klikken
+    if(sensor_reactive$statinfo[sensor_reactive$statinfo$kit_id == id_select, "hasdata"]==TRUE){
+      sensor_reactive$statinfo[sensor_reactive$statinfo$kit_id == id_select, "selected"] <- TRUE
+      sensor_reactive$statinfo[sensor_reactive$statinfo$kit_id == id_select, "huidig"] <- TRUE
+      # Select een kleur en geef dit mee aan de sensor
+      # Kies de eerste kleur in de lijst kleur_cat die aanwezig is
+      count  <- 1
+      # Zorg ervoor dat je blijft zoeken tot sensor een kleur heeft of dat de kleuren op zijn
+      while (kleur_sensor == "leeg" & count < length(kleur_cat)){
+        for (kleur_code in kleur_cat){
+          if (kleur_code %in% unique(sensor_reactive$statinfo$kleur)){
+            count <- count + 1
+            next # Als de kleur al is toebedeeld, sla deze dan over
+          }else{ 
+            kleur_sensor <- kleur_code # Vrije kleur voor de sensor
+          }
         }
       }
+      # Als alle kleuren gebruikt zijn: kies zwart
+      if (count == length(kleur_cat)){
+        kleur_sensor <- "black"
+      }
+      
+      # Geef kleur aan de sensor
+      sensor_reactive$statinfo[sensor_reactive$statinfo$kit_id == id_select, "kleur"] <- kleur_sensor
+      kleur_sensor <- "leeg"
     }
-    # Als alle kleuren gebruikt zijn: kies zwart
-    if (count == length(kleur_cat)){
-      kleur_sensor <- "black"
-    }
-    
-    # Geef kleur aan de sensor
-    sensor_reactive$statinfo[sensor_reactive$statinfo$kit_id == id_select, "kleur"] <- kleur_sensor
-    kleur_sensor <- "leeg"
   }
   
   # Functie: Set the LML stations as deselect and change color to base color
@@ -239,6 +245,14 @@ function(input, output, session){
     # Voor de multiselect tool: omzetten lat/lon naar spatialpoints
     sensor_reactive$ms_coordinates <- SpatialPointsDataFrame(sensor_unique[,c('lon','lat')],sensor_unique)
 
+    # Check welke sensoren geen data hebben (=een error hebben meegegeven bij de api)
+    sensor_error <- unique(sensor_reactive$sensor_data$kit_id[which(!is.na(sensor_reactive$sensor_data$error))])
+    
+    # Geef aan of er wel of geen data is
+    sensor_unique$hasdata <- TRUE
+    sensor_unique$hasdata[which(sensor_unique$kit_id%in%sensor_error)] <- FALSE
+    sensor_unique$kleur[which(sensor_unique$kit_id%in%sensor_error)] <- '#858585'
+    
     # Voeg de sensor locaties ed toe aan interactive dataframe
     sensor_reactive$statinfo <- sensor_unique
     # voeg de sensoren toe aan de kaart
@@ -756,10 +770,10 @@ function(input, output, session){
   # De values selected worden weer FALSE en de markers kleur_sensor_marker gekleurd, groepen verwijderd
   observeEvent(input$reset_all, {
     if (!is_empty(sensor_reactive$statinfo)){
-      sensor_reactive$statinfo[, "selected"] <- FALSE 
-      sensor_reactive$statinfo[, "kleur"] <- kleur_marker_sensor
-      sensor_reactive$statinfo[, "groep"] <- geen_groep
-      sensor_reactive$statinfo[, "huidig"] <- FALSE 
+      sensor_reactive$statinfo[which(sensor_reactive$statinfo$hasdata == TRUE), "selected"] <- FALSE 
+      sensor_reactive$statinfo[which(sensor_reactive$statinfo$hasdata == TRUE), "kleur"] <- kleur_marker_sensor
+      sensor_reactive$statinfo[which(sensor_reactive$statinfo$hasdata == TRUE), "groep"] <- geen_groep
+      sensor_reactive$statinfo[which(sensor_reactive$statinfo$hasdata == TRUE), "huidig"] <- FALSE 
       # Laad de sensoren op de kaart zien
       add_sensors_map()
       }
@@ -809,7 +823,8 @@ function(input, output, session){
     # Ga elke sensor af en voeg deze bij de selectie
     for(id_select in found_in_bounds){
       check_selected_id(id_select)
-   }
+    }
+    print('einde multiselsect')
   })
   
   # Observe voor multiselect deselect ----
@@ -823,29 +838,25 @@ function(input, output, session){
     # Check of alle features worden verwijderd. Als dat het geval is, zet dan alle markers ook op deselected
     # Dus ook degene die individueel zijn geklikt
     if(overzicht_shapes$delete == overzicht_shapes$add){
-      sensor_reactive$statinfo[, "selected"] <- FALSE 
-      sensor_reactive$statinfo[, "kleur"] <- kleur_marker_sensor
-      sensor_reactive$statinfo[, "groep"] <- geen_groep
+      sensor_reactive$statinfo[which(sensor_reactive$statinfo$hasdata), "selected"] <- FALSE 
+      sensor_reactive$statinfo[which(sensor_reactive$statinfo$hasdata), "kleur"] <- kleur_marker_sensor
+      sensor_reactive$statinfo[which(sensor_reactive$statinfo$hasdata), "groep"] <- geen_groep
+      add_sensors_map()
     }
     else{
       # Als er maar één feature wordt verwijderd, ga dan de sensoren af en deselecteer deze een voor een
       for(feature in input$map_draw_deleted_features$features){
-        bounded_layer_ids <- findLocations(shape = feature, location_coordinates = ms_coordinates, location_id_colname = "kit_id")
-        for(id_select in bounded_layer_ids){
-          # Wanneer er op een LML of KNMI station marker geklikt wordt, gebeurt er niks
-          if (is_empty(grep("^knmi|^NL", id_select)) ){
-            # Check if sensor id already selected -> unselect sensor
-            if((sensor_reactive$statinfo$selected[which(sensor_reactive$statinfo$kit_id == id_select)][1])){
-              set_sensor_deselect(id_select)
-            }
-          }
+        found_in_bounds <- findLocations(shape = feature, 
+                                           location_coordinates = sensor_reactive$ms_coordinates, 
+                                           location_id_colname = "kit_id")
+        # ga dan de sensoren af en deselecteer deze een voor een
+        for(id_select in found_in_bounds){
+          check_selected_id(id_select)
         }
       }
     }
     # Houd bij hoeveel shapes er nog zijn
     overzicht_shapes$add <- overzicht_shapes$add - overzicht_shapes$delete
-    # Laat de sensoren op de kaart zien
-    add_sensors_map()
   })
   
   
