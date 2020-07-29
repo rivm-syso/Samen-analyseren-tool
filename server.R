@@ -87,9 +87,9 @@ function(input, output, session){
   set_lml_station_deselect <- function(id_select){
     lml_stations_reactive$statinfo[lml_stations_reactive$statinfo$statcode == id_select, "selected"] <- FALSE 
     lml_stations_reactive$statinfo[lml_stations_reactive$statinfo$statcode == id_select& 
-                                     lml_stations_reactive$statinfo$hasdata == TRUE, "name_icon"]  <- 'lml_grey'
+                                     lml_stations_reactive$statinfo$hasdata == TRUE, "name_icon"]  <- 'lml_black'
     lml_stations_reactive$statinfo[lml_stations_reactive$statinfo$statcode == id_select& 
-                                     lml_stations_reactive$statinfo$hasdata == FALSE, "name_icon"]  <- 'lml_black'
+                                     lml_stations_reactive$statinfo$hasdata == FALSE, "name_icon"]  <- 'lml_grey'
     lml_stations_reactive$statinfo[lml_stations_reactive$statinfo$statcode == id_select, "lijn"] <- 0 
   }
   
@@ -125,9 +125,9 @@ function(input, output, session){
   set_knmi_station_deselect <- function(id_select){
     knmi_stations_reactive$statinfo[knmi_stations_reactive$statinfo$station_nummer == id_select, "selected"] <- FALSE 
     knmi_stations_reactive$statinfo[knmi_stations_reactive$statinfo$station_nummer == id_select & 
-                                      knmi_stations_reactive$statinfo$hasdata == TRUE, "name_icon"] <- 'knmi_grey'
+                                      knmi_stations_reactive$statinfo$hasdata == TRUE, "name_icon"] <- 'knmi_black'
     knmi_stations_reactive$statinfo[knmi_stations_reactive$statinfo$station_nummer == id_select& 
-                                      knmi_stations_reactive$statinfo$hasdata == FALSE, "name_icon"] <- 'knmi_black'
+                                      knmi_stations_reactive$statinfo$hasdata == FALSE, "name_icon"] <- 'knmi_grey'
     
     
       }
@@ -291,7 +291,7 @@ function(input, output, session){
     # Geef aan van welke stations nu databeschikbaar is:
     station_metdata <- unique(lml_stations_reactive$lml_data$station_number)
     lml_stations_reactive$statinfo$hasdata[which(lml_stations_reactive$statinfo$statcode %in% station_metdata)] <- TRUE
-    lml_stations_reactive$statinfo$name_icon[which(lml_stations_reactive$statinfo$statcode %in% station_metdata)] <- 'lml_grey'
+    lml_stations_reactive$statinfo$name_icon[which(lml_stations_reactive$statinfo$statcode %in% station_metdata)] <- 'lml_black'
     
     # Verwijder alle factoren: zet om naar characters
     lml_stations_reactive$statinfo <- taRifx::remove.factors(lml_stations_reactive$statinfo)
@@ -331,7 +331,7 @@ function(input, output, session){
      # Geef aan van welke stations nu databeschikbaar is:
      station_metdata <- unique(knmi_stations_reactive$knmi_data$station_nummer)
      knmi_stations_reactive$statinfo$hasdata[which(knmi_stations_reactive$statinfo$station_nummer %in% station_metdata)] <- TRUE
-     knmi_stations_reactive$statinfo$name_icon[which(knmi_stations_reactive$statinfo$station_nummer %in% station_metdata)] <- 'knmi_grey'
+     knmi_stations_reactive$statinfo$name_icon[which(knmi_stations_reactive$statinfo$station_nummer %in% station_metdata)] <- 'knmi_black'
      
      # Verwijder alle factoren: zet om naar characters
      knmi_stations_reactive$statinfo <- taRifx::remove.factors(knmi_stations_reactive$statinfo)
@@ -570,6 +570,48 @@ function(input, output, session){
     return(lml_show_input)
   }
 
+  check_selected_id <- function(id_select){
+    # Bepaal of er op een sensr wordt geklikt, dus niet op lml station of knmi station.
+    # Het lml station begint met 'NL', het knmi station is een numeric
+    if (is_empty(grep("^knmi|^NL", id_select)) & !is.numeric(id_select) ){
+      # Check if sensor id already selected -> unselect sensor
+      if((sensor_reactive$statinfo$selected[which(sensor_reactive$statinfo$kit_id == id_select)][1])){
+        set_sensor_deselect(id_select)
+      }
+      # If sensor is not yet present -> select sensor
+      else{
+        set_sensor_select(id_select)
+      }
+      # Laad de sensoren op de kaart zien
+      add_sensors_map()
+      # Bij elke selectie of deselectie moet de gemiddelde voor de groep herberekend worden
+    }else{
+      # Check of het een lml station is:
+      if(!is_empty(grep("^NL", id_select))){
+        # Check if station id already selected -> unselect station
+        if((lml_stations_reactive$statinfo$selected[which(lml_stations_reactive$statinfo$statcode == id_select)])){
+          set_lml_station_deselect(id_select)
+          add_lmlstat_map()
+        }
+        # If station is not yet present -> select station
+        else{
+          set_lml_station_select(id_select)
+          add_lmlstat_map()
+        }
+      }else{ # Als het een KNMI station is
+        # Check if station id already selected -> unselect station
+        if((knmi_stations_reactive$statinfo$selected[which(knmi_stations_reactive$statinfo$station_nummer == id_select)])){
+          set_knmi_station_deselect(id_select)
+          add_knmistat_map()
+        }
+        # If station is not yet present -> select station
+        else{
+          set_knmi_station_select(id_select)
+          add_knmistat_map()
+        }
+      }
+    }
+  }
  
   ## OBSERVE EVENTS ----
   # Check waarop de data geselecteerd wordt: zet de choices klaar -gemeente of -project ----
@@ -681,46 +723,7 @@ function(input, output, session){
     id_select <- input$map_marker_click$id
     print('inputmarker select: id_select')
     print(id_select)
-    # Bepaal of er op een sensr wordt geklikt, dus niet op lml station of knmi station.
-    # Het lml station begint met 'NL', het knmi station is een numeric
-    if (is_empty(grep("^knmi|^NL", id_select)) & !is.numeric(id_select) ){
-      # Check if sensor id already selected -> unselect sensor
-      if((sensor_reactive$statinfo$selected[which(sensor_reactive$statinfo$kit_id == id_select)][1])){
-        set_sensor_deselect(id_select)
-      }
-      # If sensor is not yet present -> select sensor
-      else{
-        set_sensor_select(id_select)
-      }
-      # Laad de sensoren op de kaart zien
-      add_sensors_map()
-      # Bij elke selectie of deselectie moet de gemiddelde voor de groep herberekend worden
-    }else{
-    # Check of het een lml station is:
-      if(!is_empty(grep("^NL", id_select))){
-        # Check if station id already selected -> unselect station
-        if((lml_stations_reactive$statinfo$selected[which(lml_stations_reactive$statinfo$statcode == id_select)])){
-          set_lml_station_deselect(id_select)
-          add_lmlstat_map()
-        }
-        # If station is not yet present -> select station
-        else{
-          set_lml_station_select(id_select)
-          add_lmlstat_map()
-        }
-      }else{ # Als het een KNMI station is
-        # Check if station id already selected -> unselect station
-        if((knmi_stations_reactive$statinfo$selected[which(knmi_stations_reactive$statinfo$station_nummer == id_select)])){
-          set_knmi_station_deselect(id_select)
-          add_knmistat_map()
-        }
-        # If station is not yet present -> select station
-        else{
-          set_knmi_station_select(id_select)
-          add_knmistat_map()
-        }
-      }
-      }
+    check_selected_id(id_select)
     })
   
   # Observe of de huidige selectie moet worden gereset ----
@@ -779,7 +782,7 @@ function(input, output, session){
   
   # Observe voor multiselect ----
   observeEvent(input$map_draw_new_feature,{
-    
+    print('map_draw_new_feature: mulitselect')
     # Houd bij hoeveel features er zijn. Later nodig bij verwijderen, i.v.m. reset ook de losse selectie.
     overzicht_shapes$add <- overzicht_shapes$add + 1
     
@@ -787,22 +790,12 @@ function(input, output, session){
     found_in_bounds <- findLocations(shape = input$map_draw_new_feature,
                                      location_coordinates = ms_coordinates,
                                      location_id_colname = "kit_id")
+    print('found_in_bounds')
+    print(found_in_bounds)
     # Ga elke sensor af en voeg deze bij de selectie
     for(id_select in found_in_bounds){
-      # Wanneer er op een LML of KNMI station marker geklikt wordt, gebeurt er niks
-      if (is_empty(grep("^knmi|^NL", id_select)) ){
-        # Check if sensor id already selected -> unselect sensor
-        if((sensor_reactive$statinfo$selected[which(sensor_reactive$statinfo$kit_id == id_select)][1])){
-          set_sensor_deselect(id_select)
-        }
-        # If sensor is not yet present -> select sensor
-        else{ 
-          set_sensor_select(id_select)
-        }
-      }
-      # Laad de sensoren op de kaart zien
-      add_sensors_map()
-    }
+      check_selected_id(id_select)
+   }
   })
   
   # Observe voor multiselect deselect ----

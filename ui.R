@@ -89,6 +89,15 @@ htmlTemplate("./www/template_samenmeten.wide.html",
   sidebarLayout(
     # Sidebar panel voor leaflet map om sensoren te selecteren
     sidebarPanel(width=3,
+                 div(h4("Legenda"),
+                 div("Sensor: ", br(),img(src="symbol_sensor_black.svg"), "Met gegevens"),
+                 div(img(src="symbol_sensor_pink.svg"), "Geselecteerd"),
+                 div("KNMI-station: ", br(),img(src="symbol_knmi_black_triangle.svg"), "Met gegevens"),
+                 div(img(src="symbol_knmi_grey_triangle.svg"), "Zonder gegevens"),
+                 div(img(src="symbol_knmi_white_triangle.svg"), "Geselecteerd"),
+                 div("Luchtmeetnet-station: ", br(),img(src="symbol_lml_black.svg"), "Met gegevens"),
+                 div(img(src="symbol_lml_grey.svg"), "Zonder gegevens"),
+                 div(img(src="symbol_lml_white.svg"), "Geselecteerd")),
       # Button om de alles wat geselecteerd is te resetten
       actionButton("reset_all", "Reset alle sensoren"),
       br(),
