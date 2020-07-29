@@ -889,32 +889,41 @@ function(input, output, session){
     stations_df <- data.frame('Selectie' = as.character(knmi_stations_reactive$statinfo[which(knmi_stations_reactive$statinfo$selected),'station_nummer']))
   })
   
-  
-  # TODO: Het gaat fout als je alleen de lml station wilt selecteren.
-  # TODO: het plotten gaat fout als een sensor geen data heeft, dan gaat de kleur mis.  
-  
   # Create time plot met ggplot ----
   output$timeplot <- renderPlot({
     # Geef aan welk component geplot moet worden
     comp <- input$Component
     
-    # Maak de plot input van de sensoren
-    show_input <- filter_sensor_data_plot()
-    
-    ## Create array for the colours
-    # get the unique kit_id and the color
-    kit_kleur <- unique(sensor_reactive$statinfo[which(sensor_reactive$statinfo$selected),c('kit_id','kleur','groep', 'lijn')])
-    
-    # Als er een groep is, zorg voor 1 rij van de groep, zodat er maar 1 kleur is
-    if (length(unique(kit_kleur$groep)>1)){
-      kit_kleur[which(kit_kleur$groep != geen_groep),'kit_id'] <- kit_kleur[which(kit_kleur$groep != geen_groep),'groep']
-      kit_kleur <- unique(kit_kleur)
+    # Check of er wel wat geselecteerd is om te plotten
+    selected_sensor <- (TRUE %in% sensor_reactive$statinfo$selected)
+    selected_lml <- (TRUE %in% lml_stations_reactive$statinfo$selected)
+    if(selected_lml==FALSE & selected_sensor==FALSE){
+    validate("Selecteer een sensor of luchtmeetnetstation.")
     }
     
-    kit_kleur <- taRifx::remove.factors(kit_kleur)
-
+    # Initieer
+    show_input <- NULL
+    kit_kleur <- NULL
+    
+    if(selected_sensor){
+      # Maak de plot input van de sensoren
+      show_input <- filter_sensor_data_plot()
+      
+      ## Create array for the colours
+      # get the unique kit_id and the color
+      kit_kleur <- unique(sensor_reactive$statinfo[which(sensor_reactive$statinfo$selected),c('kit_id','kleur','groep', 'lijn')])
+      
+      # Als er een groep is, zorg voor 1 rij van de groep, zodat er maar 1 kleur is
+      if (length(unique(kit_kleur$groep)>1)){
+        kit_kleur[which(kit_kleur$groep != geen_groep),'kit_id'] <- kit_kleur[which(kit_kleur$groep != geen_groep),'groep']
+        kit_kleur <- unique(kit_kleur)
+      }
+      
+      kit_kleur <- taRifx::remove.factors(kit_kleur)
+    }
+    
     # Check of er een luchtmeetnet station geselecteerd is:
-    if(TRUE %in% lml_stations_reactive$statinfo$selected){
+    if(selected_lml){
       # Filter de lml data op de juiste gegevens
       lml_show_input <- filter_lml_data_plot()
       # Zorg ook voor het kleur en lijntype overzicht
@@ -926,6 +935,7 @@ function(input, output, session){
       kit_kleur <- rbind(kit_kleur, lml_kit_kleur)
     }
     
+    # Bepaal de kleuren en lijntypes voor in de plot
     # Sort by kit_id
     kit_kleur_sort <- kit_kleur[order(kit_kleur$kit_id),]
     # create colour array
@@ -935,7 +945,8 @@ function(input, output, session){
     
     # Bepaal de max voor de ylim
     ylim_max <- max(show_input$pm10, na.rm=T)
-  
+    
+    # maak de plot
     p_timeplot <- ggplot(data = show_input, aes_string(x = "date", y = comp, group = "kit_id")) +
       geom_line(aes(linetype= kit_id, col=kit_id)) +
       scale_color_manual(values = kleur_array) +
@@ -976,9 +987,15 @@ function(input, output, session){
   
   # Create kalender plot vanuit openair ----
   output$calendar <- renderPlot({
-    show_input <- filter_sensor_data_plot()
-    validate(need(!is_empty(show_input),"Selecteer een sensor."))
+    # Check of er wel wat geselecteerd is om te plotten
+    selected_sensor <- (TRUE %in% sensor_reactive$statinfo$selected)
+    if(selected_sensor==FALSE){
+      validate("Selecteer een sensor.")
+    }
     
+    # haal de daat op om te plotten
+    show_input <- filter_sensor_data_plot()
+
     try(calendarPlot(show_input,
                      pollutant = input$Component, limits= c(0,150), cols = 'Purples', local.tz="Europe/Amsterdam")) 
     # Call in try() zodat er geen foutmelding wordt getoond als er geen enkele sensor is aangeklikt 
@@ -986,6 +1003,13 @@ function(input, output, session){
   
   # Create timevariation functie vanuit openair ----
   output$timevariation <- renderPlot({
+    # Check of er wel wat geselecteerd is om te plotten
+    selected_sensor <- (TRUE %in% sensor_reactive$statinfo$selected)
+    if(selected_sensor==FALSE){
+      validate("Selecteer een sensor.")
+    }
+    
+    # haal de data op om te plotten
     show_input <- filter_sensor_data_plot()
     
     ## Create array for the colours
@@ -1013,6 +1037,12 @@ function(input, output, session){
   
   # Create pollutionrose functie vanuit openair ----
   output$pollutionplot <- renderPlot({
+    # Check of er wel wat geselecteerd is om te plotten
+    selected_sensor <- (TRUE %in% sensor_reactive$statinfo$selected)
+    if(selected_sensor==FALSE){
+      validate("Selecteer een sensor.")
+    }
+    
     # Zorg voor de juiste gegevens van de sensoren
     show_input <- filter_sensor_data_plot()
     # Zorg voor de KNMI winddata
@@ -1040,6 +1070,12 @@ function(input, output, session){
   
   # Create percentilerose functie vanuit openair ----
   output$percentileplot <- renderPlot({
+    # Check of er wel wat geselecteerd is om te plotten
+    selected_sensor <- (TRUE %in% sensor_reactive$statinfo$selected)
+    if(selected_sensor==FALSE){
+      validate("Selecteer een sensor.")
+    }
+    
     # Zorg voor de juiste gegevens van de sensoren
     show_input <- filter_sensor_data_plot()
     # Zorg voor de KNMI winddata
