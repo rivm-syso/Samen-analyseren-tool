@@ -262,6 +262,10 @@ function(input, output, session){
     if(overig_reactive$data_set=='API_luchtmeetnet'){
       # Haal de gegevens op van de stations via de luchtmeetnet API
       print('ophalen api luchtmeetnet')
+      # Check of er wel stations geselecteerd zijn
+      if(!TRUE %in% lml_stations_reactive$statinfo$selected){
+        validate('Selecteer een LML-station.')
+      }
       lml_stations_reactive$lml_data <- get_lml_data_api()
       
     }else if(overig_reactive$data_set=='eigen_dataset_lml'){
@@ -292,6 +296,7 @@ function(input, output, session){
     station_metdata <- unique(lml_stations_reactive$lml_data$station_number)
     lml_stations_reactive$statinfo$hasdata[which(lml_stations_reactive$statinfo$statcode %in% station_metdata)] <- TRUE
     lml_stations_reactive$statinfo$name_icon[which(lml_stations_reactive$statinfo$statcode %in% station_metdata)] <- 'lml_black'
+    lml_stations_reactive$statinfo$selected[which(lml_stations_reactive$statinfo$statcode %in% station_metdata)] <- FALSE
     
     # Verwijder alle factoren: zet om naar characters
     lml_stations_reactive$statinfo <- taRifx::remove.factors(lml_stations_reactive$statinfo)
@@ -312,6 +317,10 @@ function(input, output, session){
     if(overig_reactive$data_set=='API_knmi'){
       # Haal de gegevens op van de stations via de KNMI API
       print('ophalen api KNMI')
+      # Check of er wel stations geselecteerd zijn
+      if(!TRUE %in% knmi_stations_reactive$statinfo$selected){
+        validate('Selecteer een KNMI-station.')
+      }
       knmi_stations_reactive$knmi_data <- get_knmi_data_api()
     }else if(overig_reactive$data_set=='eigen_dataset_knmi'){
       # Haal de gegevens op van de stations vanuit een ingelezen bestand
@@ -332,6 +341,7 @@ function(input, output, session){
      station_metdata <- unique(knmi_stations_reactive$knmi_data$station_nummer)
      knmi_stations_reactive$statinfo$hasdata[which(knmi_stations_reactive$statinfo$station_nummer %in% station_metdata)] <- TRUE
      knmi_stations_reactive$statinfo$name_icon[which(knmi_stations_reactive$statinfo$station_nummer %in% station_metdata)] <- 'knmi_black'
+     knmi_stations_reactive$statinfo$selected[which(knmi_stations_reactive$statinfo$station_nummer %in% station_metdata)] <- FALSE
      
      # Verwijder alle factoren: zet om naar characters
      knmi_stations_reactive$statinfo <- taRifx::remove.factors(knmi_stations_reactive$statinfo)
@@ -385,6 +395,11 @@ function(input, output, session){
 
     # Alle gegevens zijn van de api opgehaald, retun de totale set
     updateProgress(value = 0.90 ,detail = "Alle data van Luchtmeetnet opgehaald.")
+    
+    #Hernoem de kolom timestamp naar date (dan kan ook openair er mee werken)
+    station_data_all <- plyr::rename(station_data_all, c('timestamp_measured'= 'date'))
+    
+    print('debug')
     #return de totale dataset
     return(station_data_all)
   }
