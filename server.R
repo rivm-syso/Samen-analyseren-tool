@@ -237,7 +237,7 @@ function(input, output, session){
     sensor_unique$lon[which(is.na(sensor_unique$lon))] <- 0
     
     # Voor de multiselect tool: omzetten lat/lon naar spatialpoints
-    ms_coordinates <- SpatialPointsDataFrame(sensor_unique[,c('lon','lat')],sensor_unique)
+    sensor_reactive$ms_coordinates <- SpatialPointsDataFrame(sensor_unique[,c('lon','lat')],sensor_unique)
 
     # Voeg de sensor locaties ed toe aan interactive dataframe
     sensor_reactive$statinfo <- sensor_unique
@@ -803,10 +803,9 @@ function(input, output, session){
     
     # Zoek de sensoren in de feature
     found_in_bounds <- findLocations(shape = input$map_draw_new_feature,
-                                     location_coordinates = ms_coordinates,
+                                     location_coordinates = sensor_reactive$ms_coordinates,
                                      location_id_colname = "kit_id")
-    print('found_in_bounds')
-    print(found_in_bounds)
+
     # Ga elke sensor af en voeg deze bij de selectie
     for(id_select in found_in_bounds){
       check_selected_id(id_select)
