@@ -37,7 +37,7 @@ function(input, output, session){
 
   # Zet reactive values op----
   groepering_reactive <- reactiveValues(groepsnaam = geen_groep, df_gem = data.frame())
-  tijdreeks_reactive <- reactiveValues(startdatum = 0, einddatum=0)
+  tijdreeks_reactive <- reactiveValues(startdatum = 0, einddatum=0, startdatum_tpdata = 0, einddatum_tpdata=0)
   overig_reactive <- reactiveValues(data_set = 'voorbeeld', knmi_stat_wdws = NULL)
   overzicht_shapes <- reactiveValues(add = 0, delete = 0) # nodig om selectie ongedaan te maken
   choices_api_reactive <- reactiveValues(choices=gemeente_choices)
@@ -407,7 +407,7 @@ function(input, output, session){
       updateProgress(value = (ind/length(lml_stats))*0.8, detail = text)
       
       # Haal voor elk station de data op van luchtmeetnet API
-      station_data_ruw <- GetLMLAPI(stat, format(tijdreeks_reactive$startdatum, '%Y%m%d'), format(tijdreeks_reactive$einddatum, '%Y%m%d'))
+      station_data_ruw <- GetLMLAPI(stat, format(tijdreeks_reactive$startdatum_tpdata, '%Y%m%d'), format(tijdreeks_reactive$einddatum_tpdata, '%Y%m%d'))
       # Voeg alle meetwaardes vam de stations samen
       station_data_all <- rbind(station_data_all, station_data_ruw$data)}
 
@@ -459,7 +459,7 @@ function(input, output, session){
     progress$set(message = paste0("van stations: ", knmi_stats), value = 0.3)
     
     # ophalen van de gegevens via de API
-    station_all_data <- GetKNMIAPI(knmi_stats,format(tijdreeks_reactive$startdatum, '%Y%m%d'), format(tijdreeks_reactive$einddatum, '%Y%m%d'))
+    station_all_data <- GetKNMIAPI(knmi_stats,format(tijdreeks_reactive$startdatum_tpdata, '%Y%m%d'), format(tijdreeks_reactive$einddatum_tpdata, '%Y%m%d'))
     
     # Je hebt voor nu alleen het data deel van de gegevens uit de api nodig
     station_all_data <- station_all_data$data
@@ -516,7 +516,7 @@ function(input, output, session){
       projectnaam <- paste0("codegemeente eq'",input$sensor_specificeer,"'")}
     
     print('aanroepen api')
-    print(paste0('projectnaam: ', projectnaam, ' startdatum: ',tijdreeks_reactive$startdatum, ' einddatum: ', tijdreeks_reactive$einddatum))
+    print(paste0('projectnaam: ', projectnaam, ' startdatum: ',tijdreeks_reactive$startdatum_tpdata, ' einddatum: ', tijdreeks_reactive$einddatum_tpdata))
     # Aanroepen van de API
     sensor_data_ruw <- GetSamenMetenAPI(projectnaam, format(tijdreeks_reactive$startdatum, '%Y%m%d'), 
                                         format(tijdreeks_reactive$einddatum, '%Y%m%d'), data_opslag_list,
@@ -725,13 +725,22 @@ function(input, output, session){
     groepering_reactive$groepsnaamnaam <- input$bestaande_groep
   })
   
-  # Observe of de datum wordt aangepast ----
+  # Observe of de datum wordt aangepast voor de plots (dus het visualisatie gedeelte)----
   observeEvent({input$DateStart},{
     tijdreeks_reactive$startdatum <- input$DateStart
   })
   
   observeEvent({input$DateEind},{
     tijdreeks_reactive$einddatum <- input$DateEind
+  })
+  
+  # Observe of de datum wordt aangepast voor de api (dus het data gedeelte----
+  observeEvent({input$DateStart_tpData},{
+    tijdreeks_reactive$startdatum_tpdata <- input$DateStart_tpData
+  })
+  
+  observeEvent({input$DateEind_tpData},{
+    tijdreeks_reactive$einddatum_tpdata <- input$DateEind_tpData
   })
   
   # Observe if user selects a sensor ----
@@ -895,6 +904,18 @@ function(input, output, session){
                   row.names = FALSE)
     }
   )
+  
+  # Tekst voor bij de downloaden data van api voor welke tijdreeks wordt gebruikt
+  output$tijdreeks_tpdata_lml <- renderText({
+    paste0("Tijdreeks: ", tijdreeks_reactive$startdatum_tpdata, ' tot ', tijdreeks_reactive$einddatum_tpdata, '  (Zelf in te stellen in stap 1)')
+  })
+  
+  # Elk id kan maar 1x worden gebruikt, dus voor ander tabblad nieuw id
+  # Tekst voor bij de downloaden data van api voor welke tijdreeks wordt gebruikt
+  output$tijdreeks_tpdata_knmi <- renderText({
+    paste0("Tijdreeks: ", tijdreeks_reactive$startdatum_tpdata, ' tot ', tijdreeks_reactive$einddatum_tpdata, '  (Zelf in te stellen in stap 1)')
+    
+  })
   
   # Tekst voor bij de pollutieplot om aan te geven welk knmi station is gebruikt
   output$knmi_stat_wdws <- renderText({

@@ -31,7 +31,11 @@ tpData <- function(){
                              # Specificeer waarvan de data gedownload kan worden (de choices worden reactive gemaakt door de selectinput hierboven)
                              selectInput(inputId = "sensor_specificeer", label = "Maak uw keuze:", choice="",selected = NULL, multiple = FALSE,
                                          selectize = TRUE, width = NULL, size = NULL),                   
-                             
+                             # Input: Blokjes voor de datum
+                             dateInput("DateStart_tpData", label="Selecteer begin tijdreeks:", format='dd-mm-yyyy',value = '2019-01-01'
+                             ),
+                             dateInput("DateEind_tpData", label="Selecteer einde tijdreeks:", format='dd-mm-yyyy', value = '2019-01-08' 
+                             ),
                              # Button om de gegevens van de sensore op t halen via de API en om de sensor data te downloaden
                              downloadButton("downloadData_sensor",'Download de metingen van de sensoren'),
                              # Mogelijkheid om je eigen data in te laden:
@@ -52,6 +56,8 @@ tpData <- function(){
                             actionButton("show_luchtmeetnet", "Laad locaties luchtmeetnetstations"),
                             # Output: tabel met de geslecteerde LML station, voor het downloaden van de data
                             tableOutput("stations_lml"),
+                            # Output: met de begin en eind datum erin, kan in stap1 worden ingesteld
+                            textOutput('tijdreeks_tpdata_lml'),
                             # Button de gegevens van de luchtmeetnetstations op et halen via de API en om de LML data te downloaden
                             downloadButton("downloadData_luchtmeetnet",'download metingen luchtmeetnetstations'),
                             # Mogelijkheid om je eigen data in te laden:
@@ -75,6 +81,8 @@ tpData <- function(){
                              actionButton("show_knmi", "Laad locaties knmi-stations"),
                              # # Output: tabel met de geslecteerde knmi station, voor het downloaden van de data
                              tableOutput("stations_knmi"),
+                             # Output: met de begin en eind datum erin, kan in stap1 worden ingesteld
+                             textOutput('tijdreeks_tpdata_knmi'),
                              # # Button om de gegevens van de knmi-stations op te halen via de API en om de knmi data te downloaden
                              downloadButton("downloadData_knmi",'download metingen knmi-stations'),
                              # Mogelijkheid om je eigen data in te laden:
