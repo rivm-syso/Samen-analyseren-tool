@@ -44,7 +44,7 @@ tpData <- function(){
                                                   ".csv"))
                              ),
                     tabPanel("Stap 2: Luchtmeetnet",
-                             helpText("Laadt eerst de locaties van de meetstations van Luchtmeetnet. 
+                             helpText("Laad eerst de locaties van de meetstations van Luchtmeetnet. 
                                       Selecteer daarna de stations waarvan u de meetgegevens wilt opvragen.
                                       De opgevraagde gegevens worden direct getoond. U kunt ze ook downloaden 
                                       en op een ander moment weer inladen, 
@@ -69,7 +69,7 @@ tpData <- function(){
                             p("",style = "font-size:12px")
                     ),
                     tabPanel("Stap 3: KNMI",
-                             helpText("Laadt eerst de locaties van de meetstations van het KNMI.
+                             helpText("Laad eerst de locaties van de meetstations van het KNMI.
                                       Selecteer daarna de stations waarvan u de meetgegevens wilt opvragen.
                                       De opgevraagde gegevens worden direct getoond. U kunt ze ook downloaden
                                       en op een ander moment weer inladen,

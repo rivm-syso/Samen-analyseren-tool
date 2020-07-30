@@ -12,6 +12,9 @@
 
 function(input, output, session){ 
   
+  # Limiet voor het uploaden van data bestanden aangepast naar 30MB
+  options(shiny.maxRequestSize=30*1024^2) 
+  
   ## INITIALISATIE ----
   # Generate base map----
   # Hierop staan de knmi-stations, de luchtmeetnetstations en de sensoren
@@ -35,10 +38,11 @@ function(input, output, session){
   # Zet reactive values op----
   groepering_reactive <- reactiveValues(groepsnaam = geen_groep, df_gem = data.frame())
   tijdreeks_reactive <- reactiveValues(startdatum = 0, einddatum=0)
-  overig_reactive <- reactiveValues(data_set = 'voorbeeld')
+  overig_reactive <- reactiveValues(data_set = 'voorbeeld', knmi_stat_wdws = NULL)
   overzicht_shapes <- reactiveValues(add = 0, delete = 0) # nodig om selectie ongedaan te maken
   choices_api_reactive <- reactiveValues(choices=gemeente_choices)
   
+
   # reactive values voor de data en info over de sensoren, lml stations en knmi stations
   sensor_reactive <- reactiveValues(statinfo=sensor_unique, sensor_data=input_df)
   lml_stations_reactive <- reactiveValues(statinfo=lml_stations_all, lml_data = input_df_lml)
@@ -667,6 +671,7 @@ function(input, output, session){
     updateSelectInput(session, "knmi_stat_wdws", choices = choices_knmi
     )})
   
+
   #Print welke datagroep bij samenmeten api wordt opgevraagd
   observeEvent({input$sensor_specificeer},{
     print(input$sensor_specificeer)
@@ -707,7 +712,8 @@ function(input, output, session){
   observeEvent({input$API_luchtmeetnet},{
     print("Eerste aanroep api luchtmeetnet")
     overig_reactive$data_set <- 'API_luchtmeetnet'
-    insert_nieuwe_data_lml()})
+    insert_nieuwe_data_lml()
+    })
   
   # Observe of de specifieke KNMI stations dataset opgehaald en ingeladen moet worden----
   observeEvent({input$API_knmi},{
@@ -866,7 +872,7 @@ function(input, output, session){
   output$downloadData_luchtmeetnet <- downloadHandler(
     # geef de filename op, zou via interactieve kunnen
     filename = function(){
-      paste('testLML', 'csv', sep=".")
+      paste('data_luchtmeetnet', 'csv', sep=".")
     },
     # Geef de data op: deze wordt eerst met de API opgehaald
     content = function(file) {
@@ -878,7 +884,7 @@ function(input, output, session){
   output$downloadData_knmi <- downloadHandler(
     # geef de filename op, zou via interactieve kunnen
     filename = function(){
-      paste('testknmi', 'csv', sep=".")
+      paste('data_knmi', 'csv', sep=".")
     },
     # Geef de data op: deze wordt eerst met de API opgehaald
     content = function(file) {
@@ -891,7 +897,7 @@ function(input, output, session){
   output$downloadData_sensor <- downloadHandler(
     # geef de filename op, zou via interactieve kunnen
     filename = function(){
-      paste('testsensor', 'csv', sep=".")
+      paste('data_sensoren', 'csv', sep=".")
     },
     # Geef de data op: deze wordt eerst met de API opgehaald
     content = function(file) {
@@ -899,6 +905,17 @@ function(input, output, session){
                   row.names = FALSE)
     }
   )
+  
+  # Tekst voor bij de pollutieplot om aan te geven welk knmi station is gebruikt
+  output$knmi_stat_wdws <- renderText({
+    paste0("Met winddata van knmi-station: ", input$knmi_stat_wdws)
+  })
+  
+  # Elk id kan maar 1x worden gebruikt, dus voor ander tabblad nieuw id
+  # Tekst voor bij de pollutieplot om aan te geven welk knmi station is gebruikt
+  output$knmi_stat_wdws_2 <- renderText({
+    paste0("Met winddata van knmi-station: ", input$knmi_stat_wdws)
+  })
   
   # Create tabel huidige selectie ----
   output$huidig <- renderTable({
@@ -1068,6 +1085,11 @@ function(input, output, session){
       validate("Selecteer een sensor.")
     }
     
+    # Als er geen knmi winddata is, geef een melding
+    if(is_empty(overig_reactive$knmi_stat_wdws)){
+    validate("Er is geen winddata beschikbaar.")
+    }
+    
     # Zorg voor de juiste gegevens van de sensoren
     show_input <- filter_sensor_data_plot()
     # Zorg voor de KNMI winddata
@@ -1084,13 +1106,18 @@ function(input, output, session){
   # Create windrose vanuit openair---- 
   output$windplot <- renderPlot({
     selected_id <- knmi_stations_reactive$statinfo[which(knmi_stations_reactive$statinfo$selected),'station_nummer']
+    
+    if(is_empty(selected_id)){
+      validate("Selecteer een KNMI-station.")
+    }
+    
     show_input <- knmi_stations_reactive$knmi_data[which(knmi_stations_reactive$knmi_data$station_nummer %in% selected_id),]    
     # TODO of wil je dat je de windroos alleen kan maken via de dropdown knmi_stat_wdws? dat je ze sowieso niet kan selecteren?
     show_input <- openair::selectByDate(mydata = show_input,start = tijdreeks_reactive$startdatum, end = tijdreeks_reactive$einddatum)
     print('plot windrose met deze data: ')
     print(head(show_input))
     # TODO Check of er wel data is, of dat ws en wd NA zijn.
-    try(windRose(show_input, wd = 'wd', ws = 'ws', type = 'station_nummer' , local.tz="Europe/Amsterdam", cols = "Purples")) 
+    try(windRose(show_input, wd = 'wd', ws = 'ws', type = 'station_code' , local.tz="Europe/Amsterdam", cols = "Purples")) 
   })
   
   # Create percentilerose functie vanuit openair ----
@@ -1100,6 +1127,12 @@ function(input, output, session){
     if(selected_sensor==FALSE){
       validate("Selecteer een sensor.")
     }
+    
+    # Als er geen knmi winddata is, geef een melding
+    if(is_empty(overig_reactive$knmi_stat_wdws)){
+      validate("Er is geen winddata beschikbaar.")
+    }
+    
     
     # Zorg voor de juiste gegevens van de sensoren
     show_input <- filter_sensor_data_plot()
