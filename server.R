@@ -290,7 +290,7 @@ function(input, output, session){
        lml_stations_reactive$lml_data <- read.csv(input$eigen_datafile_lml$datapath, sep=",", stringsAsFactors = F)
        
        # Zet de date naar een posixct
-       lml_stations_reactive$lml_data$date <- as.POSIXct(lml_stations_reactive$lml_data$timestamp_measured , tryFormat=c("%d/%m/%Y %H:%M","%Y-%m-%d %H:%M:%S"), tz='UTC')
+       lml_stations_reactive$lml_data$date <- as.POSIXct(lml_stations_reactive$lml_data$date , tryFormat=c("%d/%m/%Y %H:%M","%Y-%m-%d %H:%M:%S"), tz='UTC')
        
     }else if(overig_reactive$data_set=='voorbeeld'){
       # Haal de gegevens op van de stations via de voorbeeld csv
@@ -299,7 +299,7 @@ function(input, output, session){
       lml_stations_reactive$lml_data <- read.csv(lml_file, sep=",", stringsAsFactors = F)
       
       # Zet de date naar een posixct
-      lml_stations_reactive$lml_data$date <- as.POSIXct(lml_stations_reactive$lml_data$timestamp_measured , tryFormat=c("%d/%m/%Y %H:%M","%Y-%m-%d %H:%M:%S"), tz='UTC')
+      lml_stations_reactive$lml_data$date <- as.POSIXct(lml_stations_reactive$lml_data$date , tryFormat=c("%d/%m/%Y %H:%M","%Y-%m-%d %H:%M:%S"), tz='UTC')
     }
 
     # Zet de namen van de componenten PM10 en PM25 naar kleine letters (dan is het hetzelfde als de sensordata)
