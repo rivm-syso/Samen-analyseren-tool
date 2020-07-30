@@ -32,9 +32,7 @@ tpData <- function(){
                              selectInput(inputId = "sensor_specificeer", label = "Maak uw keuze:", choice="",selected = NULL, multiple = FALSE,
                                          selectize = TRUE, width = NULL, size = NULL),                   
                              
-                             # Button om de gegevens van de sensore op t halen via de API
-                             actionButton("API_samenmeten","Haal de metingen van de sensoren op"),
-                             # Button om de sensor data te downloaden
+                             # Button om de gegevens van de sensore op t halen via de API en om de sensor data te downloaden
                              downloadButton("downloadData_sensor",'Download de metingen van de sensoren'),
                              # Mogelijkheid om je eigen data in te laden:
                              fileInput("eigen_datafile_sensoren", "Laad dataset sensormetingen(csv-bestand): ",
@@ -51,12 +49,10 @@ tpData <- function(){
                                       zodat u niet elke keer hoeft te wachten.
                                       LET OP/TODO dit werkt nog niet allemaal"),
                             # Button om de luchtmeetnetsations op de kaart te zetten
-                            actionButton("show_luchtmeetnet", "Laadt locaties luchtmeetnetstations"),
+                            actionButton("show_luchtmeetnet", "Laad locaties luchtmeetnetstations"),
                             # Output: tabel met de geslecteerde LML station, voor het downloaden van de data
                             tableOutput("stations_lml"),
-                            # Button om de gegevens van de luchtmeetnetstations op et halen via de API
-                            actionButton("API_luchtmeetnet","Haal de metingen van de stations op"),
-                            # Button om de LML data te downloaden
+                            # Button de gegevens van de luchtmeetnetstations op et halen via de API en om de LML data te downloaden
                             downloadButton("downloadData_luchtmeetnet",'download metingen luchtmeetnetstations'),
                             # Mogelijkheid om je eigen data in te laden:
                             fileInput("eigen_datafile_lml", "Laad dataset luchtmeetnetmetingen(csv-bestand): ",
@@ -76,12 +72,10 @@ tpData <- function(){
                                       zodat u niet elke keer hoeft te wachten.
                                       LET OP/TODO dit werkt nog niet allemaal"),
                              # Button om de luchtmeetnetsations op de kaart te zetten
-                             actionButton("show_knmi", "Laadt locaties knmi-stations"),
+                             actionButton("show_knmi", "Laad locaties knmi-stations"),
                              # # Output: tabel met de geslecteerde knmi station, voor het downloaden van de data
                              tableOutput("stations_knmi"),
-                             # # Button om de gegevens van de knmi-stations op te halen via de API
-                             actionButton("API_knmi","Haal de metingen van de stations op"),
-                             # # Button om de knmi data te downloaden
+                             # # Button om de gegevens van de knmi-stations op te halen via de API en om de knmi data te downloaden
                              downloadButton("downloadData_knmi",'download metingen knmi-stations'),
                              # Mogelijkheid om je eigen data in te laden:
                              fileInput("eigen_datafile_knmi", "Laad dataset knmi-metingen(csv-bestand): ",

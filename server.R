@@ -702,26 +702,7 @@ function(input, output, session){
     insert_nieuwe_data_sensor()
     insert_nieuwe_data_lml()
     insert_nieuwe_data_knmi()})
-  
-  # Observe of de specifieke sensor dataset opgehaald en ingeladen moet worden----
-  observeEvent({input$API_samenmeten},{
-    overig_reactive$data_set <- 'API_samenmeten'
-    insert_nieuwe_data_sensor()})
-  
-  # Observe of de specifieke luchtmeetnet stations dataset opgehaald en ingeladen moet worden----
-  observeEvent({input$API_luchtmeetnet},{
-    print("Eerste aanroep api luchtmeetnet")
-    overig_reactive$data_set <- 'API_luchtmeetnet'
-    insert_nieuwe_data_lml()
-    })
-  
-  # Observe of de specifieke KNMI stations dataset opgehaald en ingeladen moet worden----
-  observeEvent({input$API_knmi},{
-    print("Eerste aanroep api knmi")
-    overig_reactive$data_set <- 'API_knmi'
-    insert_nieuwe_data_knmi()
-    })
-  
+
   #Observe of de luchtmeetnetstations moeten worden getoond----
   observeEvent({input$show_luchtmeetnet},{
     add_lmlstat_map()
@@ -876,6 +857,9 @@ function(input, output, session){
     },
     # Geef de data op: deze wordt eerst met de API opgehaald
     content = function(file) {
+      print("Eerste aanroep api luchtmeetnet")
+      overig_reactive$data_set <- 'API_luchtmeetnet'
+      insert_nieuwe_data_lml()
       write.table(lml_stations_reactive$lml_data, file, sep = ',',
                   row.names = FALSE)
     }
@@ -888,6 +872,9 @@ function(input, output, session){
     },
     # Geef de data op: deze wordt eerst met de API opgehaald
     content = function(file) {
+      print("Eerste aanroep api knmi")
+      overig_reactive$data_set <- 'API_knmi'
+      insert_nieuwe_data_knmi()
       write.table(knmi_stations_reactive$knmi_data, file, sep = ',',
                   row.names = FALSE)
     }
@@ -901,6 +888,9 @@ function(input, output, session){
     },
     # Geef de data op: deze wordt eerst met de API opgehaald
     content = function(file) {
+      print("Eerste aanroep api samenmeten")
+      overig_reactive$data_set <- 'API_samenmeten'
+      insert_nieuwe_data_sensor()
       write.table(sensor_reactive$sensor_data, file, sep = ',',
                   row.names = FALSE)
     }
