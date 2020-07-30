@@ -930,6 +930,9 @@ function(input, output, session){
   
   # Create tabel huidige selectie ----
   output$huidig <- renderTable({
+    if(!TRUE %in% sensor_reactive$statinfo$huidig){
+      validate("Geen sensor geselecteerd.")
+    }
   huidig_df <- data.frame('Selectie' = sensor_reactive$statinfo[which(sensor_reactive$statinfo$huidig),'kit_id'])
   })
   
