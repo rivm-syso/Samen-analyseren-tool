@@ -945,6 +945,86 @@ function(input, output, session){
     stations_df <- data.frame('Selectie' = as.character(knmi_stations_reactive$statinfo[which(knmi_stations_reactive$statinfo$selected),'station_nummer']))
   })
   
+  # Create average bar plot met ggplot ----
+  output$barplot <- renderPlot({
+    # Geef aan welk component geplot moet worden
+    comp <- input$Component
+    
+    # Check of er wel wat geselecteerd is om te plotten
+    selected_sensor <- (TRUE %in% sensor_reactive$statinfo$selected)
+    selected_lml <- (TRUE %in% lml_stations_reactive$statinfo$selected)
+    if(selected_lml==FALSE & selected_sensor==FALSE){
+      validate("Selecteer een sensor of luchtmeetnetstation.")
+    }
+    
+    # Initieer
+    show_input <- NULL
+    kit_kleur <- NULL
+    
+    if(selected_sensor){
+      # Maak de plot input van de sensoren
+      show_input <- filter_sensor_data_plot()
+      
+      ## Create array for the colours
+      # get the unique kit_id and the color
+      kit_kleur <- unique(sensor_reactive$statinfo[which(sensor_reactive$statinfo$selected),c('kit_id','kleur','groep', 'lijn')])
+      
+      # Als er een groep is, zorg voor 1 rij van de groep, zodat er maar 1 kleur is
+      if (length(unique(kit_kleur$groep)>1)){
+        kit_kleur[which(kit_kleur$groep != geen_groep),'kit_id'] <- kit_kleur[which(kit_kleur$groep != geen_groep),'groep']
+        kit_kleur <- unique(kit_kleur)
+      }
+      
+      kit_kleur <- taRifx::remove.factors(kit_kleur)
+    }
+    
+    # Check of er een luchtmeetnet station geselecteerd is:
+    if(selected_lml){
+      # Filter de lml data op de juiste gegevens
+      lml_show_input <- filter_lml_data_plot()
+      # Zorg ook voor het kleur en lijntype overzicht
+      lml_kit_kleur <- unique(lml_stations_reactive$statinfo[which(lml_stations_reactive$statinfo$selected),c('statcode','kleur','groep', 'lijn')])
+      names(lml_kit_kleur)[names(lml_kit_kleur)=="statcode"] <- "kit_id"
+      
+      # Voeg de LML data aan de sensordata toe:
+      show_input <- plyr::rbind.fill(show_input, lml_show_input)
+      kit_kleur <- rbind(kit_kleur, lml_kit_kleur)
+    }
+    
+    # Bepaal de kleuren en lijntypes voor in de plot
+    # Sort by kit_id
+    kit_kleur_sort <- kit_kleur[order(kit_kleur$kit_id),]
+    # create colour array
+    kleur_array <- kit_kleur_sort$kleur
+    # Maak ook voor de lijntype een array
+    lijn_array <- kit_kleur_sort$lijn
+    
+    # Bereken de statistic summary
+    show_input <- Rmisc::summarySE(show_input, comp, groupvars='kit_id', na.rm = T)
+    
+    print(show_input)
+    
+    # TODO: met het plotten van de errorbar en de N (aantal) gaat het niet goed als er een groep is
+    
+    # maak de plot
+    p_barplot <- ggplot(data = show_input, aes_string(x = 'kit_id', y=comp, group = "kit_id", fill="kit_id")) +
+      geom_col() +
+      # geom_errorbar(aes_string(ymin=paste0(comp,'-se'), ymax=paste0(comp,'+se'))) +
+      geom_linerange(aes_string(ymin=paste0(comp,'-se'), ymax=paste0(comp,'+se'))) +
+      
+      scale_fill_manual(values = kleur_array) +
+      labs(x='', y = 'gemiddelde concentratie (ug/m3)') +
+      geom_text(data=show_input,aes_string(x='kit_id',y=5,label='N'),vjust=0, colour='white') +
+      theme_bw() +
+      theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1))
+    
+
+    plot(p_barplot)
+  })
+  
+  
+  
+  
   # Create time plot met ggplot ----
   output$timeplot <- renderPlot({
     # Geef aan welk component geplot moet worden
@@ -954,7 +1034,7 @@ function(input, output, session){
     selected_sensor <- (TRUE %in% sensor_reactive$statinfo$selected)
     selected_lml <- (TRUE %in% lml_stations_reactive$statinfo$selected)
     if(selected_lml==FALSE & selected_sensor==FALSE){
-    validate("Selecteer een sensor of luchtmeetnetstation.")
+      validate("Selecteer een sensor of luchtmeetnetstation.")
     }
     
     # Initieer

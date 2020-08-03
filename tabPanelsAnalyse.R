@@ -15,6 +15,7 @@ tpAnalyse <- function(){
   tp <-  tabPanel("Visualisatie en Analyse",
                   tabsetPanel(
                     tpTimeplot(),
+                    tpBarplot(),
                     tpKalender(),
                     tpTimevariation(),
                     tpPercentileRose(),
@@ -40,6 +41,23 @@ library(shiny)
                       style = "font-size:12px")
  )
           
+  return(tp)
+} 
+
+tpBarplot <- function(){
+  
+  library(shiny)
+  
+  tp <-  tabPanel("Barplot",
+                  helpText("Selecteer een sensor. Deze grafiek laat de tijdreeks van de sensor in vergelijking met het meetstation zien."),
+                  plotOutput("barplot"),
+                  h4("Toelichting"),
+                  p("Als je een sensor aanklikt, zie je een tijdreeks van de uurlijkse sensorwaarden voor de geselecteerde periode.
+                    Deze waarden worden vergeleken met het dichtstbijzijnde meetstation van het landelijk luchtmeetnet.
+                    Dit maakt het mogelijk om de sensorwaarden snel te vergelijken met de referentiemetingen.",
+                    style = "font-size:12px")
+  )
+  
   return(tp)
 } 
 
