@@ -599,7 +599,10 @@ function(input, output, session){
     # de lml_data is zo opgebouwd:
     # [1] "ggplot_lml: date"               "ggplot_lml: station_number"     "ggplot_lml: value"              "ggplot_lml: timestamp_measured"
     # [5] "ggplot_lml: formula"  
-   
+    
+    # Zet de waardes ook in de pm10_kal en pm25_kal. Voor de luchtmeetnet stations zijn die gelijk aan pm10 en pm25
+    lml_show_input$pm10_kal <- lml_show_input$pm10
+    lml_show_input$pm25_kal <- lml_show_input$pm25
     
     return(lml_show_input)
   }
@@ -1014,7 +1017,7 @@ function(input, output, session){
       geom_linerange(aes_string(ymin=paste0(comp,'-se'), ymax=paste0(comp,'+se'))) +
       
       scale_fill_manual(values = kleur_array) +
-      labs(x='', y = 'gemiddelde concentratie (ug/m3)') +
+      labs(x='', y = 'gemiddelde concentratie (ug/m3)', title=paste0('Component: ',comp)) +
       geom_text(data=show_input,aes_string(x='kit_id',y=5,label='N'),vjust=0, colour='white') +
       theme_bw() +
       theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1))
@@ -1088,7 +1091,7 @@ function(input, output, session){
       geom_line(aes(linetype= kit_id, col=kit_id)) +
       scale_color_manual(values = kleur_array) +
       scale_linetype_manual(values = lijn_array) +
-      labs(x = "Tijd", y = 'concentratie (ug/m3)') +
+      labs(x = "Tijd", y = 'concentratie (ug/m3)', title=paste0('Component: ',comp)) +
       coord_cartesian(ylim = c(0, ylim_max)) + 
       theme_bw()
 

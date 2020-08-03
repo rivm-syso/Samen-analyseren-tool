@@ -128,7 +128,7 @@ htmlTemplate("./www/template_samenmeten.wide.html",
                                  checkboxInput("cComponent", "Component"),
                                  conditionalPanel("input.cComponent==true",
                                                   # Input: Selecteer de component uit de choices lijst
-                                                  selectInput(inputId = "Component", label = "Kies component:", choices = component_choices, selected = NULL, multiple = FALSE,
+                                                  selectInput(inputId = "Component", label = "Kies component:", choices = component_choices, selected = 'pm10_kal', multiple = FALSE,
                                                               selectize = TRUE, width = NULL, size = NULL)),
                                 # Set voor het groeperen van de sensoren
                                 checkboxInput("cGroeperen", "Groeperen"),
