@@ -86,61 +86,91 @@ htmlTemplate("./www/template_samenmeten.wide.html",
     conditionalPanel(condition="$('html').hasClass('shiny-busy')",
                      tags$div("De gegevens worden opgehaald, dit kan een tijd duren....",id="loadmessage")),
   # Sidebar layout met input en output definities
-  sidebarLayout(
+  sidebarLayout( 
     # Sidebar panel voor leaflet map om sensoren te selecteren
     sidebarPanel(width=3,
-                 div(h4("Legenda"),
-                 div("Sensor: ", br(),img(src="symbol_sensor_black.svg"), "Met gegevens"),
-                 div(img(src="symbol_sensor_grey.svg"), "Zonder gegevens"),
-                 div(img(src="symbol_sensor_pink.svg"), "Geselecteerd"),
-                 div("KNMI-station: ", br(),img(src="symbol_knmi_black_triangle.svg"), "Met gegevens"),
-                 div(img(src="symbol_knmi_grey_triangle.svg"), "Zonder gegevens"),
-                 div(img(src="symbol_knmi_white_triangle.svg"), "Geselecteerd"),
-                 div("Luchtmeetnet-station: ", br(),img(src="symbol_lml_black.svg"), "Met gegevens"),
-                 div(img(src="symbol_lml_grey.svg"), "Zonder gegevens"),
-                 div(img(src="symbol_lml_white.svg"), "Geselecteerd")),
-      # Button om de alles wat geselecteerd is te resetten
-      actionButton("reset_all", "Reset alle sensoren"),
-      br(),
-      # Input: Selecteer de component uit de choices lijst
-      selectInput(inputId = "Component", label = "Kies component:", choices = component_choices, selected = NULL, multiple = FALSE,
-                selectize = TRUE, width = NULL, size = NULL),
-      
-      # Input: Blokjes voor de datum
-      dateInput("DateStart", label="Selecteer begin tijdreeks:", format='dd-mm-yyyy',value = '2019-01-01'
-                ),
-      dateInput("DateEind", label="Selecteer einde tijdreeks:", format='dd-mm-yyyy', value = '2020-12-31' 
-                ),
-      # Input: Selecteer het knmi station waarvan de windriching en snelheid wordt gebruikt
-      selectInput(inputId = "knmi_stat_wdws", label = "Kies KNMI-station voor de windsnelheid en windrichting:", choices = '', selected = NULL, multiple = FALSE,
-                  selectize = TRUE, width = NULL, size = NULL), 
-      br(),
-
-      # Input: Tekst voor de groepselectie
-      textInput(inputId = "Text_groep",'Maak nieuwe groep:', value = ''),
-      # Input: kies groep uit lijst bestaande groepen (gaat via een selectInput)
-      uiOutput("bestaande_groep"),
-      # Button: knop om de selectie aan de groep toe te voegen
-      actionButton("groeperen", "Groepeer selectie"),
-      
-      # Button om de huidige selectie van sensoren te resetten
-      actionButton("reset_huidig", "Reset selectie"),
-      
-      # Output: tabel met de geslecteerde kitids, voor toekenning aan groep
-      tableOutput("huidig")
+                 # Set de Legenda
+                 checkboxInput("cLegenda", "Legenda"),
+                 conditionalPanel("input.cLegenda==true",
+                   div(
+                   div("Sensor: ", br(),img(src="symbol_sensor_black.svg"), "Met gegevens"),
+                   div(img(src="symbol_sensor_grey.svg"), "Zonder gegevens"),
+                   div(img(src="symbol_sensor_pink.svg"), "Geselecteerd"),
+                   div("KNMI-station: ", br(),img(src="symbol_knmi_black_triangle.svg"), "Met gegevens"),
+                   div(img(src="symbol_knmi_grey_triangle.svg"), "Zonder gegevens"),
+                   div(img(src="symbol_knmi_white_triangle.svg"), "Geselecteerd"),
+                   div("Luchtmeetnet-station: ", br(),img(src="symbol_lml_black.svg"), "Met gegevens"),
+                   div(img(src="symbol_lml_grey.svg"), "Zonder gegevens"),
+                   div(img(src="symbol_lml_white.svg"), "Geselecteerd"),
+                   br())),
+                 # Set de opties voor de Data laden en downloaden
+                 conditionalPanel(condition="input.tabset_data_analyse=='Data laden en downloaden'",  
+                                  div(h4("Welkom bij de Samen Anlayseren tool."),
+                                      p("Klik op de button om de tool te testen met een voorbeeld data set."),
+                                      # Button om terug te gaan naar de standaard voorbeeld data
+                                      actionButton("voorbeeld_data","Laad voorbeeld data"),
+                                      p("Wilt u de sensoren binnen uw eigen gemeente of project bekijken. 
+                                      Volg dan de stappen in de tabbladen."),
+                                      p("Real-time metingen van de sensoren kunt u vinden op het Samen Meten Dataportaal:", 
+                                        a("samenmeten.rivm.nl", href ='https://samenmeten.rivm.nl/dataportaal/', target = 'blank'))
+                                      )),
+                # Set de opties voor de visualisatie en analyse
+                conditionalPanel(condition="input.tabset_data_analyse=='Visualisatie en Analyse'", 
+                                 # Set de tijdreeks
+                                 checkboxInput("cTijdreeks", "Tijdreeks"),
+                                 conditionalPanel("input.cTijdreeks==true",
+                                    # Input: Blokjes voor de datum
+                                    dateInput("DateStart", label="Selecteer begin tijdreeks:", format='dd-mm-yyyy',value = '2019-01-01'
+                                    ),
+                                    dateInput("DateEind", label="Selecteer einde tijdreeks:", format='dd-mm-yyyy', value = '2020-12-31' 
+                                    )),
+                                 # Set keuze voor de component
+                                 checkboxInput("cComponent", "Component"),
+                                 conditionalPanel("input.cComponent==true",
+                                                  # Input: Selecteer de component uit de choices lijst
+                                                  selectInput(inputId = "Component", label = "Kies component:", choices = component_choices, selected = NULL, multiple = FALSE,
+                                                              selectize = TRUE, width = NULL, size = NULL)),
+                                # Set voor het groeperen van de sensoren
+                                checkboxInput("cGroeperen", "Groeperen"),
+                                conditionalPanel("input.cGroeperen==true",
+                                    # Input: Tekst voor de groepselectie
+                                    textInput(inputId = "Text_groep",'Maak nieuwe groep:', value = ''),
+                                    # Input: kies groep uit lijst bestaande groepen (gaat via een selectInput)
+                                    uiOutput("bestaande_groep"),
+                                    # Button: knop om de selectie aan de groep toe te voegen
+                                    actionButton("groeperen", "Groepeer selectie"),
+                                    
+                                    # Button om de huidige selectie van sensoren te resetten
+                                    actionButton("reset_huidig", "Reset selectie"),
+                                    
+                                    # Output: tabel met de geslecteerde kitids, voor toekenning aan groep
+                                    tableOutput("huidig")),
+                                
+                                # Set keuze voor KNMI station
+                                checkboxInput("cKNMIstat", "KNMI station"),
+                                conditionalPanel("input.cKNMIstat==true",
+                                     # Input: Selecteer het knmi station waarvan de windriching en snelheid wordt gebruikt
+                                     selectInput(inputId = "knmi_stat_wdws", label = "Kies KNMI-station voor de windsnelheid en windrichting:", choices = '', selected = NULL, multiple = FALSE,
+                                               selectize = TRUE, width = NULL, size = NULL)),
+                   
+                               # Button om de alles wat geselecteerd is te resetten
+                               actionButton("reset_all", "Reset alle sensoren")
+                   )
       ),
     
-    # Main panel voor outputs
+    # Main panel voor outputs 
     mainPanel(width=9,
       #Output: Leaflet map voor sensorselectie
       leafletOutput("map", height = "300px"),
+
       # Output: Tabset voor openair plots, zie voor de inhoud het script: tabPanels.R
       tabsetPanel(type = "tabs",
                   tpData(),
-                  tpAnalyse()
-                  )
+                  tpAnalyse(),
+                  id='tabset_data_analyse')
       )
-    ),
+  )
+    )
   )
 )
-)
+

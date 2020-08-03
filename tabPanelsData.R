@@ -14,12 +14,12 @@ tpData <- function(){
   
   tp <-  tabPanel("Data laden en downloaden",
                   tabsetPanel(
-                    tabPanel("Start",
-                             p("Welkom bij de Samen Anlayseren tool. 
-                               Klik op de buttom om de tool te testen met een voorbeeld data set. Wilt u de sensoren binnen uw eigen gemeente of project bekijken. Volg dan de stappen in de andere tabbladen."),
-                             p("Real-live metingen van de sensoren kunt u vinden op het Samen Meten Dataportaal:", a("samenmeten.rivm.nl", href ='https://samenmeten.rivm.nl/dataportaal/', target = 'blank')),
-                             # Button om terug te gaan naar de standaard voorbeeld data
-                             actionButton("voorbeeld_data","Laad voorbeeld data")),
+                    # tabPanel("Start",
+                    #          p("Welkom bij de Samen Anlayseren tool. 
+                    #            Klik op de button om de tool te testen met een voorbeeld data set. Wilt u de sensoren binnen uw eigen gemeente of project bekijken. Volg dan de stappen in de andere tabbladen."),
+                    #          p("Real-time metingen van de sensoren kunt u vinden op het Samen Meten Dataportaal:", a("samenmeten.rivm.nl", href ='https://samenmeten.rivm.nl/dataportaal/', target = 'blank')),
+                    #          # Button om terug te gaan naar de standaard voorbeeld data
+                    #          actionButton("voorbeeld_data","Laad voorbeeld data")),
                     tabPanel("Stap 1: Sensoren",
                              helpText("Selecteer hieronder het project of de gemeente waarvan u de sensoren wilt opvragen.
                                       Vraag daarna de gegevens op. LET OP: het opvragen van de gegevens kan enkele minuten tot een half uur duren.
