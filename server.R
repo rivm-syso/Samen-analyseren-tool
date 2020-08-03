@@ -38,7 +38,7 @@ function(input, output, session){
   # Zet reactive values op----
   groepering_reactive <- reactiveValues(groepsnaam = geen_groep, df_gem = data.frame())
   tijdreeks_reactive <- reactiveValues(startdatum = 0, einddatum=0, startdatum_tpdata = 0, einddatum_tpdata=0)
-  overig_reactive <- reactiveValues(data_set = 'voorbeeld', knmi_stat_wdws = NULL)
+  overig_reactive <- reactiveValues(data_set = 'voorbeeld')
   overzicht_shapes <- reactiveValues(add = 0, delete = 0) # nodig om selectie ongedaan te maken
   choices_api_reactive <- reactiveValues(choices=gemeente_choices)
   
@@ -332,6 +332,7 @@ function(input, output, session){
     # reactive values opgeslagen en getoond op de kaart
     # Data die er al is wordt overschreven, dus zet de hasdata op FALSE
     knmi_stations_reactive$statinfo$hasdata <- FALSE
+    knmi_stations_reactive$statinfo$name_icon <- 'knmi_grey'
     if(overig_reactive$data_set=='API_knmi'){
       # Haal de gegevens op van de stations via de KNMI API
       print('ophalen api KNMI')
@@ -1095,32 +1096,7 @@ function(input, output, session){
   })
   
   
-  # # Create time plot vanuit openair ----
-  # output$timeplot <- renderPlot({
-  #   show_input <- filter_sensor_data_plot()
-  #   comp <- input$Component
-  #   
-  #   # TODO: Maak hier ook de selectie van de geselecteerde lml stataion en merge die met de andere data
-  #   # misschien dan ook een lijn dikte of kleur meegeven. Nog over nadenken hoe of wat precies.
-  #   
-  #   # if / else statement om correctie lml data toe te voegen  
-  #   if(comp == "pm10" || comp == "pm10_kal"){
-  #     # Bepaal de max voor de ylim
-  #     ylim_max <- max(show_input$pm10)
-  #    
-  #     try(timePlot(show_input,
-  #                  pollutant = c(comp, "pm10_lml"), wd = "wd", type = "kit_id", local.tz="Europe/Amsterdam", ylim=c(0, ylim_max)))
-  #     # Call in try() zodat er geen foutmelding wordt getoond als er geen enkele sensor is aangeklikt 
-  #   }
-  #   else {
-  #     # Bepaal de max voor de ylim
-  #     ylim_max <- max(show_input$pm25)
-  #     try(timePlot(show_input,
-  #                  pollutant = c(comp, "pm25_lml"), wd = "wd", type = "kit_id", local.tz="Europe/Amsterdam", ylim=c(0, ylim_max)))
-  #     # Call in try() zodat er geen foutmelding wordt getoond als er geen enkele sensor is aangeklikt 
-  #   }
-  # })
-  
+ 
   # Create kalender plot vanuit openair ----
   output$calendar <- renderPlot({
     # Check of er wel wat geselecteerd is om te plotten
@@ -1180,7 +1156,7 @@ function(input, output, session){
     }
     
     # Als er geen knmi winddata is, geef een melding
-    if(is_empty(overig_reactive$knmi_stat_wdws)){
+    if(is_empty(input$knmi_stat_wdws)){
     validate("Er is geen winddata beschikbaar.")
     }
     
@@ -1223,7 +1199,7 @@ function(input, output, session){
     }
     
     # Als er geen knmi winddata is, geef een melding
-    if(is_empty(overig_reactive$knmi_stat_wdws)){
+    if(is_empty(input$knmi_stat_wdws)){
       validate("Er is geen winddata beschikbaar.")
     }
     
