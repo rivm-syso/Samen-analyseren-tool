@@ -73,20 +73,18 @@ knmi_stations_all <- readRDS('locaties_knmi_all.RDS')
 # Er staan meer stations in de samenmetendatabase dan via de API van KNMI op te vragen zijn, deels zijn dus andere bron
 # hier alleen die van de API van het KNMI meenemen
 nummers_knmi <- c(391,370,331,315,324,375,380,240,286,310,283,280,273,323,249,377,316,313,277,348,308,319,215,278,285,343,225,330,267,269,344,275,235,257,290,350,251,248,279,258,356,209,312,340,260,270,242)
-knmi_stations_all$station_nummer <- as.numeric(gsub('knmi_06', '', knmi_stations_all$statcode))
-knmi_stations_all$statcode <- paste0("KNMI_", knmi_stations_all$station_nummer)
+knmi_stations_all$station_number <- as.numeric(gsub('knmi_06', '', knmi_stations_all$statcode))
+knmi_stations_all$statcode <- paste0("KNMI_", knmi_stations_all$station_number)
 # Neem alleen de stations die in de API van het KNMI zitten
-knmi_stations_all <- knmi_stations_all[which(knmi_stations_all$station_nummer %in% nummers_knmi),]
+knmi_stations_all <- knmi_stations_all[which(knmi_stations_all$station_number %in% nummers_knmi),]
 knmi_stations_all$selected <- FALSE
 knmi_stations_all$hasdata <- FALSE
 knmi_stations_all$name_icon <- 'knmi_grey'
-knmi_labels <- as.list(paste("KNMI", knmi_stations_all$station_nummer, sep = ": "))
+knmi_labels <- as.list(paste("KNMI", knmi_stations_all$station_number, sep = ": "))
 
 
 # Voor de lml stations: ophalen hun naam en locatie en labels opzetten
-# TODO: dit zijn niet allemaal LML stations, eigenlijk via andere api call alles ophalen
-# TODO: De stationsnamen en nummers en dan per station de locatie...en eigenaar 
-lml_stations_all <- readRDS('locaties_lml_all.RDS')
+lml_stations_all <- GetLMLallstatinfoAPI()
 lml_stations_all$selected <- FALSE
 lml_stations_all$hasdata <- FALSE
 lml_stations_all$name_icon <- 'lml_grey'
@@ -94,15 +92,7 @@ lml_stations_all$kleur <- '#000000'
 lml_stations_all$lijn <- 0
 lml_stations_all$groep <- geen_groep
 
-# Maak in de labelling onderscheid tussen de LML en GGD stations
-lml_labels <- vector("list", length(lml_stations_all$statcode))
-lml_labels[grep('NL49', lml_stations_all$statcode)] <- "GGD"
-lml_labels[grep('NL10', lml_stations_all$statcode)] <- "LML"
-lml_labels[grep('NL01', lml_stations_all$statcode)] <- "DCMR"
-lml_labels[grep('NL54', lml_stations_all$statcode)] <- "ODRA"
-lml_labels[grep('NL50', lml_stations_all$statcode)] <- "Lim"
-
-lml_labels <- as.list(paste(lml_labels, lml_stations_all$statcode, sep = ": "))
+lml_labels <- as.list(lml_stations_all$station_number)
 
 ## Voor het kiezen van gemeente of rpoject voor het data ophalen van samenmeten API
 # hoofdkeuze 

@@ -95,18 +95,18 @@ function(input, output, session){
   
   # Functie: Set the LML stations as deselect and change color to base color
   set_lml_station_deselect <- function(id_select){
-    lml_stations_reactive$statinfo[lml_stations_reactive$statinfo$statcode == id_select, "selected"] <- FALSE 
-    lml_stations_reactive$statinfo[lml_stations_reactive$statinfo$statcode == id_select& 
+    lml_stations_reactive$statinfo[lml_stations_reactive$statinfo$station_number == id_select, "selected"] <- FALSE 
+    lml_stations_reactive$statinfo[lml_stations_reactive$statinfo$station_number == id_select& 
                                      lml_stations_reactive$statinfo$hasdata == TRUE, "name_icon"]  <- 'lml_black'
-    lml_stations_reactive$statinfo[lml_stations_reactive$statinfo$statcode == id_select& 
+    lml_stations_reactive$statinfo[lml_stations_reactive$statinfo$station_number == id_select& 
                                      lml_stations_reactive$statinfo$hasdata == FALSE, "name_icon"]  <- 'lml_grey'
-    lml_stations_reactive$statinfo[lml_stations_reactive$statinfo$statcode == id_select, "lijn"] <- 0 
+    lml_stations_reactive$statinfo[lml_stations_reactive$statinfo$station_number == id_select, "lijn"] <- 0 
   }
   
   # Functie: Set station as select and specify color
   set_lml_station_select <- function(id_select){
-    lml_stations_reactive$statinfo[lml_stations_reactive$statinfo$statcode == id_select, "selected"] <- TRUE
-    lml_stations_reactive$statinfo[lml_stations_reactive$statinfo$statcode == id_select, "name_icon"] <- 'lml_white'
+    lml_stations_reactive$statinfo[lml_stations_reactive$statinfo$station_number == id_select, "selected"] <- TRUE
+    lml_stations_reactive$statinfo[lml_stations_reactive$statinfo$station_number == id_select, "name_icon"] <- 'lml_white'
     # Select een lijntype en geef dit mee aan het station
     # Kies de eerste type in de lijst lijn_cat die aanwezig is
     count  <- 1
@@ -127,16 +127,16 @@ function(input, output, session){
     }
     
     # Geef lijntype aan het station
-    lml_stations_reactive$statinfo[lml_stations_reactive$statinfo$statcode == id_select, "lijn"] <- lijn_stat
+    lml_stations_reactive$statinfo[lml_stations_reactive$statinfo$station_number == id_select, "lijn"] <- lijn_stat
     lijn_stat <- "leeg"
   }
   
   # Functie: Set the stations as deselect and change color to base color
   set_knmi_station_deselect <- function(id_select){
-    knmi_stations_reactive$statinfo[knmi_stations_reactive$statinfo$station_nummer == id_select, "selected"] <- FALSE 
-    knmi_stations_reactive$statinfo[knmi_stations_reactive$statinfo$station_nummer == id_select & 
+    knmi_stations_reactive$statinfo[knmi_stations_reactive$statinfo$station_number == id_select, "selected"] <- FALSE 
+    knmi_stations_reactive$statinfo[knmi_stations_reactive$statinfo$station_number == id_select & 
                                       knmi_stations_reactive$statinfo$hasdata == TRUE, "name_icon"] <- 'knmi_black'
-    knmi_stations_reactive$statinfo[knmi_stations_reactive$statinfo$station_nummer == id_select& 
+    knmi_stations_reactive$statinfo[knmi_stations_reactive$statinfo$station_number == id_select& 
                                       knmi_stations_reactive$statinfo$hasdata == FALSE, "name_icon"] <- 'knmi_grey'
     
     
@@ -144,8 +144,8 @@ function(input, output, session){
   
   # Functie: Set station as select and specify color
   set_knmi_station_select <- function(id_select){
-    knmi_stations_reactive$statinfo[knmi_stations_reactive$statinfo$station_nummer == id_select, "selected"] <- TRUE 
-    knmi_stations_reactive$statinfo[knmi_stations_reactive$statinfo$station_nummer == id_select, "name_icon"] <- 'knmi_white'
+    knmi_stations_reactive$statinfo[knmi_stations_reactive$statinfo$station_number == id_select, "selected"] <- TRUE 
+    knmi_stations_reactive$statinfo[knmi_stations_reactive$statinfo$station_number == id_select, "name_icon"] <- 'knmi_white'
   }
   
   # Functie: plaats sensoren met juiste kleur op de kaart  
@@ -158,7 +158,7 @@ function(input, output, session){
     proxy %>% addCircleMarkers(data = sensor_loc, ~lon, ~lat, layerId = ~kit_id, label = lapply(as.list(sensor_loc$kit_id), HTML),
                                radius = 8, color = ~kleur, fillOpacity = 1, stroke = ~selected, group = "sensoren")}
   
-  # TODO: Universele namen voor de statcode etc van lml en knmi, nu in lmldata anders dan in lml idem knmi  
+  # TODO: Universele namen voor de station_number etc van lml en knmi, nu in lmldata anders dan in lml idem knmi  
   # TODO: ook de labels van KNMi en LML stations mooi maken, met eigenaar erbij etc.
   add_knmistat_map <- function(){
     station_loc <- knmi_stations_reactive$statinfo
@@ -166,7 +166,7 @@ function(input, output, session){
     # Update map with new markers to show selected
     proxy <- leafletProxy('map') # set up proxy map
     proxy %>% clearGroup("knmistations") # Clear sensor markers
-    proxy %>% addMarkers(data = station_loc, ~lon, ~lat, layerId = ~station_nummer, label = lapply(as.list(paste0('KNMI: ',station_loc$station_nummer)), HTML),
+    proxy %>% addMarkers(data = station_loc, ~lon, ~lat, layerId = ~station_number, label = lapply(as.list(paste0('KNMI: ',station_loc$station_number)), HTML),
                          icon = ~icons_stations[name_icon], group = "knmistations")}
 
   # Functie: plaats lml stations  op de kaart  
@@ -176,7 +176,7 @@ function(input, output, session){
     # Update map with new markers to show selected 
     proxy <- leafletProxy('map') # set up proxy map
     proxy %>% clearGroup("luchtmeetnetstations") # Clear sensor markers
-    proxy %>% addMarkers(data = station_loc, ~lon, ~lat, layerId = ~statcode, label = lapply(as.list(station_loc$statcode), HTML),
+    proxy %>% addMarkers(data = station_loc, ~lon, ~lat, layerId = ~station_number, label = lapply(as.list(station_loc$station_number), HTML),
                                icon = ~icons_stations[name_icon], group = "luchtmeetnetstations")}
   
   # Functie om de zoom/view te centreren rond de sensoren
@@ -312,9 +312,9 @@ function(input, output, session){
     
     # Geef aan van welke stations nu databeschikbaar is:
     station_metdata <- unique(lml_stations_reactive$lml_data$station_number)
-    lml_stations_reactive$statinfo$hasdata[which(lml_stations_reactive$statinfo$statcode %in% station_metdata)] <- TRUE
-    lml_stations_reactive$statinfo$name_icon[which(lml_stations_reactive$statinfo$statcode %in% station_metdata)] <- 'lml_black'
-    lml_stations_reactive$statinfo$selected[which(lml_stations_reactive$statinfo$statcode %in% station_metdata)] <- FALSE
+    lml_stations_reactive$statinfo$hasdata[which(lml_stations_reactive$statinfo$station_number %in% station_metdata)] <- TRUE
+    lml_stations_reactive$statinfo$name_icon[which(lml_stations_reactive$statinfo$station_number %in% station_metdata)] <- 'lml_black'
+    lml_stations_reactive$statinfo$selected[which(lml_stations_reactive$statinfo$station_number %in% station_metdata)] <- FALSE
     
     # Verwijder alle factoren: zet om naar characters
     lml_stations_reactive$statinfo <- taRifx::remove.factors(lml_stations_reactive$statinfo)
@@ -357,10 +357,10 @@ function(input, output, session){
       knmi_stations_reactive$knmi_data$date <- as.POSIXct(knmi_stations_reactive$knmi_data$date , tryFormat=c("%d/%m/%Y %H:%M","%Y-%m-%d %H:%M:%S"), tz='UTC')
     }
      # Geef aan van welke stations nu databeschikbaar is:
-     station_metdata <- unique(knmi_stations_reactive$knmi_data$station_nummer)
-     knmi_stations_reactive$statinfo$hasdata[which(knmi_stations_reactive$statinfo$station_nummer %in% station_metdata)] <- TRUE
-     knmi_stations_reactive$statinfo$name_icon[which(knmi_stations_reactive$statinfo$station_nummer %in% station_metdata)] <- 'knmi_black'
-     knmi_stations_reactive$statinfo$selected[which(knmi_stations_reactive$statinfo$station_nummer %in% station_metdata)] <- FALSE
+     station_metdata <- unique(knmi_stations_reactive$knmi_data$station_number)
+     knmi_stations_reactive$statinfo$hasdata[which(knmi_stations_reactive$statinfo$station_number %in% station_metdata)] <- TRUE
+     knmi_stations_reactive$statinfo$name_icon[which(knmi_stations_reactive$statinfo$station_number %in% station_metdata)] <- 'knmi_black'
+     knmi_stations_reactive$statinfo$selected[which(knmi_stations_reactive$statinfo$station_number %in% station_metdata)] <- FALSE
      
      # Verwijder alle factoren: zet om naar characters
      knmi_stations_reactive$statinfo <- taRifx::remove.factors(knmi_stations_reactive$statinfo)
@@ -397,8 +397,8 @@ function(input, output, session){
     ## Om de gegevens van het Luchtmeetnet op te halen
     # Maak een dataframe waar het in past
     station_data_all <- data.frame()
-    # Maak een lijst van de statcodes die je wilt ophalen
-    lml_stats <- lml_stations_reactive$statinfo$statcode[which(lml_stations_reactive$statinfo$selected==T)]
+    # Maak een lijst van de station_numbers die je wilt ophalen
+    lml_stats <- lml_stations_reactive$statinfo$station_number[which(lml_stations_reactive$statinfo$selected==T)]
     
     # Ga elk station af en haal de gegevens op uit de API
     for(ind in seq(1,length(lml_stats))){
@@ -452,8 +452,8 @@ function(input, output, session){
     
     #Maak een dataframe waar het in past
     station_data_all <- data.frame()
-    #Maak een string van de statcodes die je wilt ophalen
-    knmi_stats <- knmi_stations_reactive$statinfo$station_nummer[which(knmi_stations_reactive$statinfo$selected==T)]
+    #Maak een string van de station_numbers die je wilt ophalen
+    knmi_stats <- knmi_stations_reactive$statinfo$station_number[which(knmi_stations_reactive$statinfo$selected==T)]
     print(paste0('API ophalen: ',knmi_stats))
     
     # Voor de progress message
@@ -467,9 +467,9 @@ function(input, output, session){
     
     # hernoem de kolommen en gooi overige kolommen weg
     station_all_data <- dplyr::select(station_all_data, -c('YYYYMMDD', 'HH'))
-    station_all_data <- plyr::rename(station_all_data, c('STNS'= 'station_nummer', 'DD' = 'wd', 'FF'='ws', 'TEMP'='temp','U' = 'rh', 'tijd'='date'))
+    station_all_data <- plyr::rename(station_all_data, c('STNS'= 'station_number', 'DD' = 'wd', 'FF'='ws', 'TEMP'='temp','U' = 'rh', 'tijd'='date'))
 
-    station_all_data$station_code <- paste0('KNMI', station_all_data$station_nummer)
+    station_all_data$station_code <- paste0('KNMI', station_all_data$station_number)
     
     # Voor de progress message dat het bijna is afgerong
     progress$set(message = "Gegevens opgehaald", value = 1)
@@ -482,26 +482,6 @@ function(input, output, session){
   get_sensor_data_api <- function(){
    # Deze functie roept de API functies aan om de gegevens uit de API op te halen.
    # Tevens zit hier een progress bar in verwerkt met een update functie
-   
-   # Voor het maken van een progresbar voor het laden van de data via de samenmetenAPI
-   # Create a Progress object
-   progress <- shiny::Progress$new()
-   progress$set(message = "Ophalen van de gegevens", value = 0)
-   # Close the progress when this reactive exits (even if there's an error)
-   on.exit(progress$close())
-   
-   # Create a callback function to update progress.
-   # Each time this is called:
-   # - If `value` is NULL, it will move the progress bar 1/5 of the remaining
-   #   distance. If non-NULL, it will set the progress to that value.
-   # - It also accepts optional detail text.
-   updateProgress <- function(value = NULL, detail = NULL) {
-     if (is.null(value)) {
-       value <- progress$getValue()
-       value <- value + (progress$getMax() - value) / 5
-     }
-     progress$set(value = value, detail = detail)
-   }
    
     # Maak een lege lijst aan. Hier worden alle gegevens in opgeslagen en 
     # doorgegeven aan de helperfuncties,
@@ -520,8 +500,8 @@ function(input, output, session){
     print(paste0('projectnaam: ', projectnaam, ' startdatum: ',tijdreeks_reactive$startdatum_tpdata, ' einddatum: ', tijdreeks_reactive$einddatum_tpdata))
     # Aanroepen van de API
     sensor_data_ruw <- GetSamenMetenAPI(projectnaam, format(tijdreeks_reactive$startdatum, '%Y%m%d'), 
-                                        format(tijdreeks_reactive$einddatum, '%Y%m%d'), data_opslag_list,
-                                        updateProgress) 
+                                        format(tijdreeks_reactive$einddatum, '%Y%m%d'), data_opslag_list
+                                        ) 
     print('api opgehaald:')
     print('summary(sensor_data_ruw)')
     print(summary(sensor_data_ruw))
@@ -550,7 +530,6 @@ function(input, output, session){
     # Hernoemen van de tijd, zodat hetzelfde is als de input_df
     names(sensor_data_all_wide)[names(sensor_data_all_wide) == "tijd"] <- "date"
     #TODO: de error kolom weglaten.
-    updateProgress(100, 'Alles geladen')
     return(sensor_data_all_wide)
   }
 
@@ -575,7 +554,7 @@ function(input, output, session){
     # LET OP deze data is voor het maken van de pollutierozen, dus in combinatie met de sensordata
     # Bepaal van welk knmi-stations de winddata wordt gebruikt:
     stat_wdws <- input$knmi_stat_wdws
-    knmi_data_wdws <- knmi_stations_reactive$knmi_data[which(knmi_stations_reactive$knmi_data$station_nummer == stat_wdws),]
+    knmi_data_wdws <- knmi_stations_reactive$knmi_data[which(knmi_stations_reactive$knmi_data$station_number == stat_wdws),]
     show_input <- openair::selectByDate(mydata = knmi_data_wdws,start = tijdreeks_reactive$startdatum, end = tijdreeks_reactive$einddatum)
     
     # TODO wil je hier nog een waarschuwing als het knmi station geen winddata heeft? Dus alleen maar NA?
@@ -587,7 +566,7 @@ function(input, output, session){
   filter_lml_data_plot <- function(){
     # Deze functie maakt/filtert de lml data voor de visualisatie. De juiste component tijdreeks etc.
     # Geef aan welke stations zijn geselecteerd
-    lml_selected_id <- lml_stations_reactive$statinfo[which(lml_stations_reactive$statinfo$selected),'statcode']
+    lml_selected_id <- lml_stations_reactive$statinfo[which(lml_stations_reactive$statinfo$selected),'station_number']
     # Zoek daarbij de gegevens op
     lml_show_input <- lml_stations_reactive$lml_data[which(lml_stations_reactive$lml_data$station_number %in% lml_selected_id),] 
     # De gegevens zijn in long format, zet om naar wide : let op remove duplicates!
@@ -626,7 +605,7 @@ function(input, output, session){
       # Check of het een lml station is:
       if(!is_empty(grep("^NL", id_select))){
         # Check if station id already selected -> unselect station
-        if((lml_stations_reactive$statinfo$selected[which(lml_stations_reactive$statinfo$statcode == id_select)])){
+        if((lml_stations_reactive$statinfo$selected[which(lml_stations_reactive$statinfo$station_number == id_select)])){
           set_lml_station_deselect(id_select)
           add_lmlstat_map()
         }
@@ -637,7 +616,7 @@ function(input, output, session){
         }
       }else{ # Als het een KNMI station is
         # Check if station id already selected -> unselect station
-        if((knmi_stations_reactive$statinfo$selected[which(knmi_stations_reactive$statinfo$station_nummer == id_select)])){
+        if((knmi_stations_reactive$statinfo$selected[which(knmi_stations_reactive$statinfo$station_number == id_select)])){
           set_knmi_station_deselect(id_select)
           add_knmistat_map()
         }
@@ -668,7 +647,7 @@ function(input, output, session){
   
   # Haal de choices in de SelectInput voor de KNMI stations die data hebben voor de plots----
   observe({
-    choices_knmi <- knmi_stations_reactive$statinfo$station_nummer[which(knmi_stations_reactive$statinfo$hasdata==TRUE)]
+    choices_knmi <- knmi_stations_reactive$statinfo$station_number[which(knmi_stations_reactive$statinfo$hasdata==TRUE)]
     if(is_empty(choices_knmi)){
       choices_knmi <- c('Geen knmi data beschikbaar.')
     }
@@ -942,11 +921,11 @@ function(input, output, session){
   
   # Create tabel geselecteerde stations voor de download pagina ----
   output$stations_lml <- renderTable({
-    stations_df <- data.frame('Selectie' = lml_stations_reactive$statinfo[which(lml_stations_reactive$statinfo$selected),'statcode'])
+    stations_df <- data.frame('Selectie' = lml_stations_reactive$statinfo[which(lml_stations_reactive$statinfo$selected),'station_number'])
   })
   # Create tabel geselecteerde stations voor de download pagina ----
   output$stations_knmi <- renderTable({
-    stations_df <- data.frame('Selectie' = as.character(knmi_stations_reactive$statinfo[which(knmi_stations_reactive$statinfo$selected),'station_nummer']))
+    stations_df <- data.frame('Selectie' = as.character(knmi_stations_reactive$statinfo[which(knmi_stations_reactive$statinfo$selected),'station_number']))
   })
   
   # Create average bar plot met ggplot ----
@@ -987,8 +966,8 @@ function(input, output, session){
       # Filter de lml data op de juiste gegevens
       lml_show_input <- filter_lml_data_plot()
       # Zorg ook voor het kleur en lijntype overzicht
-      lml_kit_kleur <- unique(lml_stations_reactive$statinfo[which(lml_stations_reactive$statinfo$selected),c('statcode','kleur','groep', 'lijn')])
-      names(lml_kit_kleur)[names(lml_kit_kleur)=="statcode"] <- "kit_id"
+      lml_kit_kleur <- unique(lml_stations_reactive$statinfo[which(lml_stations_reactive$statinfo$selected),c('station_number','kleur','groep', 'lijn')])
+      names(lml_kit_kleur)[names(lml_kit_kleur)=="station_number"] <- "kit_id"
       
       # Voeg de LML data aan de sensordata toe:
       show_input <- plyr::rbind.fill(show_input, lml_show_input)
@@ -1067,8 +1046,8 @@ function(input, output, session){
       # Filter de lml data op de juiste gegevens
       lml_show_input <- filter_lml_data_plot()
       # Zorg ook voor het kleur en lijntype overzicht
-      lml_kit_kleur <- unique(lml_stations_reactive$statinfo[which(lml_stations_reactive$statinfo$selected),c('statcode','kleur','groep', 'lijn')])
-      names(lml_kit_kleur)[names(lml_kit_kleur)=="statcode"] <- "kit_id"
+      lml_kit_kleur <- unique(lml_stations_reactive$statinfo[which(lml_stations_reactive$statinfo$selected),c('station_number','kleur','groep', 'lijn')])
+      names(lml_kit_kleur)[names(lml_kit_kleur)=="station_number"] <- "kit_id"
       
       # Voeg de LML data aan de sensordata toe:
       show_input <- plyr::rbind.fill(show_input, lml_show_input)
@@ -1178,13 +1157,13 @@ function(input, output, session){
   
   # Create windrose vanuit openair---- 
   output$windplot <- renderPlot({
-    selected_id <- knmi_stations_reactive$statinfo[which(knmi_stations_reactive$statinfo$selected),'station_nummer']
+    selected_id <- knmi_stations_reactive$statinfo[which(knmi_stations_reactive$statinfo$selected),'station_number']
     
     if(is_empty(selected_id)){
       validate("Selecteer een KNMI-station.")
     }
     
-    show_input <- knmi_stations_reactive$knmi_data[which(knmi_stations_reactive$knmi_data$station_nummer %in% selected_id),]    
+    show_input <- knmi_stations_reactive$knmi_data[which(knmi_stations_reactive$knmi_data$station_number %in% selected_id),]    
     # TODO of wil je dat je de windroos alleen kan maken via de dropdown knmi_stat_wdws? dat je ze sowieso niet kan selecteren?
     show_input <- openair::selectByDate(mydata = show_input,start = tijdreeks_reactive$startdatum, end = tijdreeks_reactive$einddatum)
     print('plot windrose met deze data: ')
