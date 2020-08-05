@@ -356,6 +356,7 @@ function(input, output, session){
       # Zet de date naar een posixct
       knmi_stations_reactive$knmi_data$date <- as.POSIXct(knmi_stations_reactive$knmi_data$date , tryFormat=c("%d/%m/%Y %H:%M","%Y-%m-%d %H:%M:%S"), tz='UTC')
     }
+    
      # Geef aan van welke stations nu databeschikbaar is:
      station_metdata <- unique(knmi_stations_reactive$knmi_data$station_number)
      knmi_stations_reactive$statinfo$hasdata[which(knmi_stations_reactive$statinfo$station_number %in% station_metdata)] <- TRUE
@@ -1062,8 +1063,6 @@ function(input, output, session){
     # Maak ook voor de lijntype een array
     lijn_array <- kit_kleur_sort$lijn
     
-    # Bepaal de max voor de ylim
-    ylim_max <- max(show_input$pm10, na.rm=T)
     
     # maak de plot
     p_timeplot <- ggplot(data = show_input, aes_string(x = "date", y = comp, group = "kit_id")) +
@@ -1071,7 +1070,7 @@ function(input, output, session){
       scale_color_manual(values = kleur_array) +
       scale_linetype_manual(values = lijn_array) +
       labs(x = "Tijd", y = 'concentratie (ug/m3)', title=paste0('Component: ',comp)) +
-      coord_cartesian(ylim = c(0, ylim_max)) + 
+      expand_limits(y=0) + # Zodat er geen negatieve waardes worden getoond
       theme_bw()
 
     plot(p_timeplot)

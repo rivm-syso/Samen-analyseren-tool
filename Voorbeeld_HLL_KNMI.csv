@@ -1,4 +1,4 @@
-"station_nummer","wd","ws","temp","rh","date","station_code"
+"station_number","wd","ws","temp","rh","date","station_code"
 225,250,7,NA,NA,2019-12-23 01:00:00,"KNMI225"
 225,270,8,NA,NA,2019-12-23 02:00:00,"KNMI225"
 225,260,8,NA,NA,2019-12-23 03:00:00,"KNMI225"

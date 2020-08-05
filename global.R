@@ -74,7 +74,7 @@ knmi_stations_all <- readRDS('locaties_knmi_all.RDS')
 # hier alleen die van de API van het KNMI meenemen
 nummers_knmi <- c(391,370,331,315,324,375,380,240,286,310,283,280,273,323,249,377,316,313,277,348,308,319,215,278,285,343,225,330,267,269,344,275,235,257,290,350,251,248,279,258,356,209,312,340,260,270,242)
 knmi_stations_all$station_number <- as.numeric(gsub('knmi_06', '', knmi_stations_all$statcode))
-knmi_stations_all$statcode <- paste0("KNMI_", knmi_stations_all$station_number)
+knmi_stations_all$statcode <- paste0("KNMI", knmi_stations_all$station_number)
 # Neem alleen de stations die in de API van het KNMI zitten
 knmi_stations_all <- knmi_stations_all[which(knmi_stations_all$station_number %in% nummers_knmi),]
 knmi_stations_all$selected <- FALSE
