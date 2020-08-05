@@ -481,14 +481,34 @@ function(input, output, session){
  
  # Ophalen van de sensor data vanuit een API
   get_sensor_data_api <- function(){
-   # Deze functie roept de API functies aan om de gegevens uit de API op te halen.
-   # Tevens zit hier een progress bar in verwerkt met een update functie
-   
+    # Deze functie roept de API functies aan om de gegevens uit de API op te halen.
+    # Tevens zit hier een progress bar in verwerkt met een update functie
+    
+    # Voor het maken van een progresbar voor het laden van de data via de samenmetenAPI
+    # Create a Progress object
+    progress <- shiny::Progress$new()
+    progress$set(message = "Ophalen van de gegevens", value = 0)
+    # Close the progress when this reactive exits (even if there's an error)
+    on.exit(progress$close())
+    
+    # Create a callback function to update progress.
+    # Each time this is called:
+    # - If `value` is NULL, it will move the progress bar 1/5 of the remaining
+    #   distance. If non-NULL, it will set the progress to that value.
+    # - It also accepts optional detail text.
+    updateProgress <- function(value = NULL, detail = NULL) {
+      if (is.null(value)) {
+        value <- progress$getValue()
+        value <- value + (progress$getMax() - value) / 5
+      }
+      progress$set(value = value, detail = detail)
+    }
+    
     # Maak een lege lijst aan. Hier worden alle gegevens in opgeslagen en 
     # doorgegeven aan de helperfuncties,
     # zodat die ook alle gegevens ter beschikking hebben.
     data_opslag_list <- list()
-  
+    
     # Vanuit de gebruiker wordt aangegeven welke gegevens moeten worden opgehaald.
     # hier wordt het stukje van de url voor project en gemeente gezet.
     if(input$sensor_hoofdgroep=='project'){
@@ -501,8 +521,8 @@ function(input, output, session){
     print(paste0('projectnaam: ', projectnaam, ' startdatum: ',tijdreeks_reactive$startdatum_tpdata, ' einddatum: ', tijdreeks_reactive$einddatum_tpdata))
     # Aanroepen van de API
     sensor_data_ruw <- GetSamenMetenAPI(projectnaam, format(tijdreeks_reactive$startdatum, '%Y%m%d'), 
-                                        format(tijdreeks_reactive$einddatum, '%Y%m%d'), data_opslag_list
-                                        ) 
+                                        format(tijdreeks_reactive$einddatum, '%Y%m%d'), data_opslag_list,
+                                        updateProgress) 
     print('api opgehaald:')
     print('summary(sensor_data_ruw)')
     print(summary(sensor_data_ruw))
@@ -517,10 +537,10 @@ function(input, output, session){
     print(head(sensor_data_metingen))
     print('net voor de error')
     sensor_data_all <- sp::merge(sensor_data_metingen, sensor_data_ruw$sensordata[,c('kit_id','lat','lon')],
-                             all.x, by.x='kit_id', by.y='kit_id')
+                                 all.x, by.x='kit_id', by.y='kit_id')
     
     print('data samenvoegen:')
-  
+    
     # Omzetten naar een wide dataframe, dat er per kit_id en timestamp 1 rij data is
     sensor_data_all_wide <- tidyr::pivot_wider(dplyr::distinct(sensor_data_all),names_from = 'grootheid', values_from='waarde')
     print('head(sensor_data_all_wide)')
@@ -531,6 +551,7 @@ function(input, output, session){
     # Hernoemen van de tijd, zodat hetzelfde is als de input_df
     names(sensor_data_all_wide)[names(sensor_data_all_wide) == "tijd"] <- "date"
     #TODO: de error kolom weglaten.
+    updateProgress(100, 'Alles geladen')
     return(sensor_data_all_wide)
   }
 
