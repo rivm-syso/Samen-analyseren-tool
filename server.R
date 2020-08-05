@@ -559,8 +559,14 @@ function(input, output, session){
   filter_sensor_data_plot <- function(){
     # Deze functie maakt/filtert de sensor data voor de visualisatie. De juiste component tijdreeks etc.
     selected_id <- sensor_reactive$statinfo[which(sensor_reactive$statinfo$selected & sensor_reactive$statinfo$groep == geen_groep),'kit_id']
-    show_input <- sensor_reactive$sensor_data[which(sensor_reactive$sensor_data$kit_id %in% selected_id),]    
+    # Op een of andere manier is de selected_id een dataframe wanneer net uit de api wordt geladen.
+    # De datafiltering om show_input te maken werkt alleen met characters
+    if(TRUE %in% (class(selected_id)=='tbl')){
+      selected_id <- selected_id[[1]]
+    }
     
+    show_input <- sensor_reactive$sensor_data[which(sensor_reactive$sensor_data$kit_id %in% selected_id),]    
+
     # Als er groepen zijn geselecteerd, bereken dan het gemiddelde
     if (length(unique(sensor_reactive$statinfo$groep))>1){
       calc_groep_mean() # berekent groepsgemiddeldes
@@ -1049,11 +1055,12 @@ function(input, output, session){
     if(selected_sensor){
       # Maak de plot input van de sensoren
       show_input <- filter_sensor_data_plot()
-      
+      print(head(show_input))
+      print(tail(show_input))
       ## Create array for the colours
       # get the unique kit_id and the color
       kit_kleur <- unique(sensor_reactive$statinfo[which(sensor_reactive$statinfo$selected),c('kit_id','kleur','groep', 'lijn')])
-      
+      print(kit_kleur)
       # Als er een groep is, zorg voor 1 rij van de groep, zodat er maar 1 kleur is
       if (length(unique(kit_kleur$groep)>1)){
         kit_kleur[which(kit_kleur$groep != geen_groep),'kit_id'] <- kit_kleur[which(kit_kleur$groep != geen_groep),'groep']
@@ -1095,6 +1102,7 @@ function(input, output, session){
       theme_bw()
 
     plot(p_timeplot)
+    print('eindeplot')
   })
   
   
@@ -1156,9 +1164,9 @@ function(input, output, session){
     if(selected_sensor==FALSE){
       validate("Selecteer een sensor.")
     }
-    
+    print(input$knmi_stat_wdws)
     # Als er geen knmi winddata is, geef een melding
-    if(is_empty(input$knmi_stat_wdws)){
+    if(input$knmi_stat_wdws == 'Geen knmi data beschikbaar.'){
     validate("Er is geen winddata beschikbaar.")
     }
     
@@ -1201,7 +1209,7 @@ function(input, output, session){
     }
     
     # Als er geen knmi winddata is, geef een melding
-    if(is_empty(input$knmi_stat_wdws)){
+    if(input$knmi_stat_wdws == 'Geen knmi data beschikbaar.'){
       validate("Er is geen winddata beschikbaar.")
     }
     
