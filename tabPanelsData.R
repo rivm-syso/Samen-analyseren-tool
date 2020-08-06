@@ -32,9 +32,9 @@ tpData <- function(){
                              selectInput(inputId = "sensor_specificeer", label = "Maak uw keuze:", choice="",selected = NULL, multiple = FALSE,
                                          selectize = TRUE, width = NULL, size = NULL),                   
                              # Input: Blokjes voor de datum
-                             dateInput("DateStart_tpData", label="Selecteer begin tijdreeks:", format='dd-mm-yyyy',value = '2019-01-01'
+                             dateInput("DateStart_tpData", label="Selecteer begin tijdreeks:", format='dd-mm-yyyy',value = Sys.Date()-14
                              ),
-                             dateInput("DateEind_tpData", label="Selecteer einde tijdreeks:", format='dd-mm-yyyy', value = '2019-01-08' 
+                             dateInput("DateEind_tpData", label="Selecteer einde tijdreeks:", format='dd-mm-yyyy', value = Sys.Date()
                              ),
                              # Button om de gegevens van de sensore op t halen via de API en om de sensor data te downloaden
                              downloadButton("downloadData_sensor",'Download de metingen van de sensoren'),

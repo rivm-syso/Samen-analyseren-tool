@@ -241,7 +241,6 @@ function(input, output, session){
     sensor_unique <- taRifx::remove.factors(sensor_unique)
     sensor_reactive$sensor_data <- taRifx::remove.factors(sensor_reactive$sensor_data)
     
-    
     # Als de sensor geen coordinaten heeft, zet dan op 0,0 (anders werkt spatialpointsdataframe niet)
     sensor_unique$lat[which(is.na(sensor_unique$lat))] <- 0
     sensor_unique$lon[which(is.na(sensor_unique$lon))] <- 0
@@ -265,6 +264,14 @@ function(input, output, session){
     mean_lat <- mean(sensor_unique$lat[which(sensor_unique$lat>0)])
     mean_lon <- mean(sensor_unique$lon[which(sensor_unique$lon>0)])
     set_view_map(mean_lat, mean_lon)
+    
+    print(min(sensor_reactive$sensor_data$date, na.rm = T))
+    print(max(sensor_reactive$sensor_data$date, na.rm = T))
+    
+    # Pas ook de Tijdreeks aan voor het analyse gedeelte
+    updateDateInput(session,"DateStart", value = min(sensor_reactive$sensor_data$date, na.rm = T))
+    updateDateInput(session, "DateEind", value = max(sensor_reactive$sensor_data$date, na.rm = T))
+    
   } 
   
   # Functie om de luchtmeetnet data in te laden
