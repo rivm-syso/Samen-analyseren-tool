@@ -610,13 +610,11 @@ function(input, output, session){
   # Functie om de knmi data klaar te maken voor de visualisatie
   filter_knmi_data_plot <- function(){
     # Deze functie maakt/filtert de knmi data voor de visualisatie. De juiste tijdreeks etc.
-    # LET OP deze data is voor het maken van de pollutierozen, dus in combinatie met de sensordata
-    # Bepaal van welk knmi-stations de winddata wordt gebruikt:
-    stat_wdws <- input$knmi_stat_wdws
-    knmi_data_wdws <- knmi_stations_reactive$knmi_data[which(knmi_stations_reactive$knmi_data$station_number == stat_wdws),]
-    show_input <- openair::selectByDate(mydata = knmi_data_wdws,start = tijdreeks_reactive$startdatum, end = tijdreeks_reactive$einddatum)
+    selected_id <- knmi_stations_reactive$statinfo[which(knmi_stations_reactive$statinfo$selected),'station_number']
     
-    # TODO wil je hier nog een waarschuwing als het knmi station geen winddata heeft? Dus alleen maar NA?
+    show_input <- knmi_stations_reactive$knmi_data[which(knmi_stations_reactive$knmi_data$station_number %in% selected_id),]    
+    # TODO of wil je dat je de windroos alleen kan maken via de dropdown knmi_stat_wdws? dat je ze sowieso niet kan selecteren?
+    show_input <- openair::selectByDate(mydata = show_input,start = tijdreeks_reactive$startdatum, end = tijdreeks_reactive$einddatum)
     
     return(show_input)
   }
@@ -698,15 +696,6 @@ function(input, output, session){
     updateSelectInput(session, "sensor_specificeer",choices = choices_api_reactive$choices
     )})
   
-  
-  # Haal de choices in de SelectInput voor de KNMI stations die data hebben voor de plots----
-  observe({
-    choices_knmi <- knmi_stations_reactive$statinfo$station_number[which(knmi_stations_reactive$statinfo$hasdata==TRUE)]
-    if(is_empty(choices_knmi)){
-      choices_knmi <- c('Geen knmi data beschikbaar.')
-    }
-    updateSelectInput(session, "knmi_stat_wdws", choices = choices_knmi
-    )})
   
 
   #Print welke datagroep bij samenmeten api wordt opgevraagd
@@ -956,17 +945,7 @@ function(input, output, session){
     
   })
   
-  # Tekst voor bij de pollutieplot om aan te geven welk knmi station is gebruikt
-  output$knmi_stat_wdws <- renderText({
-    paste0("Met winddata van knmi-station: ", input$knmi_stat_wdws)
-  })
-  
-  # Elk id kan maar 1x worden gebruikt, dus voor ander tabblad nieuw id
-  # Tekst voor bij de pollutieplot om aan te geven welk knmi station is gebruikt
-  output$knmi_stat_wdws_2 <- renderText({
-    paste0("Met winddata van knmi-station: ", input$knmi_stat_wdws)
-  })
-  
+
   # Create tabel huidige selectie ----
   output$huidig <- renderTable({
     if(!TRUE %in% sensor_reactive$statinfo$huidig){
@@ -1193,10 +1172,13 @@ function(input, output, session){
     if(selected_sensor==FALSE){
       validate("Selecteer een sensor.")
     }
-    print(input$knmi_stat_wdws)
-    # Als er geen knmi winddata is, geef een melding
-    if(input$knmi_stat_wdws == 'Geen knmi data beschikbaar.'){
-    validate("Er is geen winddata beschikbaar.")
+    
+    selected_knmi <- knmi_stations_reactive$statinfo[which(knmi_stations_reactive$statinfo$selected),'station_number']
+    if(is_empty(selected_knmi)){
+      validate("Selecteer 1 KNMI-station.")
+    }
+    if(length(selected_knmi)>1){
+      validate("U heeft meerdere KNMI-stations geslecteerd. Selecteer slechts 1 KNMI-station.")
     }
     
     # Zorg voor de juiste gegevens van de sensoren
@@ -1220,11 +1202,8 @@ function(input, output, session){
       validate("Selecteer een KNMI-station.")
     }
     
-    show_input <- knmi_stations_reactive$knmi_data[which(knmi_stations_reactive$knmi_data$station_number %in% selected_id),]    
-    # TODO of wil je dat je de windroos alleen kan maken via de dropdown knmi_stat_wdws? dat je ze sowieso niet kan selecteren?
-    show_input <- openair::selectByDate(mydata = show_input,start = tijdreeks_reactive$startdatum, end = tijdreeks_reactive$einddatum)
-    print('plot windrose met deze data: ')
-    print(head(show_input))
+    show_input <- filter_knmi_data_plot() 
+    
     # TODO Check of er wel data is, of dat ws en wd NA zijn.
     try(windRose(show_input, wd = 'wd', ws = 'ws', type = 'station_code' , local.tz="Europe/Amsterdam", cols = "Purples")) 
   })
@@ -1237,9 +1216,12 @@ function(input, output, session){
       validate("Selecteer een sensor.")
     }
     
-    # Als er geen knmi winddata is, geef een melding
-    if(input$knmi_stat_wdws == 'Geen knmi data beschikbaar.'){
-      validate("Er is geen winddata beschikbaar.")
+    selected_knmi <- knmi_stations_reactive$statinfo[which(knmi_stations_reactive$statinfo$selected),'station_number']
+    if(is_empty(selected_knmi)){
+      validate("Selecteer 1 KNMI-station.")
+    }
+    if(length(selected_knmi)>1){
+      validate("U heeft meerdere KNMI-stations geslecteerd. Selecteer slechts 1 KNMI-station.")
     }
     
     

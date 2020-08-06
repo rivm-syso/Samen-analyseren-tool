@@ -146,13 +146,7 @@ htmlTemplate("./www/template_samenmeten.wide.html",
                                     # Output: tabel met de geslecteerde kitids, voor toekenning aan groep
                                     tableOutput("huidig")),
                                 
-                                # Set keuze voor KNMI station
-                                checkboxInput("cKNMIstat", "KNMI station"),
-                                conditionalPanel("input.cKNMIstat==true",
-                                     # Input: Selecteer het knmi station waarvan de windriching en snelheid wordt gebruikt
-                                     selectInput(inputId = "knmi_stat_wdws", label = "Kies KNMI-station voor de windsnelheid en windrichting:", choices = '', selected = NULL, multiple = FALSE,
-                                               selectize = TRUE, width = NULL, size = NULL)),
-                   
+                                    
                                # Button om de alles wat geselecteerd is te resetten
                                actionButton("reset_all", "Reset alle sensoren")
                    )

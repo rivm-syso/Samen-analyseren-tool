@@ -127,7 +127,6 @@ tpPercentileRose<- function(){
   tp <-  tabPanel("Pollutieroos",
                   helpText("Deze grafiek toont de gemiddelde concentratie per windrichting per sensor of sensorgroep."),
                   p("LET OP: als het KNMI-station geen gegevens over de wind of de sensor alleen 0 gemeten heeft, is deze pollutieroos vreemd. Check of er een windroos voor dit KNMI-station is. Check in de tijdreeks of de sensor metingen boven de 0 heeft."),
-                  textOutput('knmi_stat_wdws_2'),
                   plotOutput("percentileplot"),
                       h4("Toelichting"),
                       p("Als je een sensor aanklikt, wordt een pollutieroos getoond. 
@@ -146,7 +145,6 @@ tpPollutionRose<- function(){
   tp <-  tabPanel("Pollutieroos (%)",
                   helpText("Deze grafiek toont per windrichting de relatieve bijdrage aan de totale gemiddelde concentratie per sensor of sensorgroep."),
                   p("LET OP: als het KNMI-station geen gegevens over de wind heeft, kan er geen pollutieroos (%) worden getoond. Check of er een windroos voor dit KNMI-station is."),
-                  textOutput('knmi_stat_wdws'),
                   plotOutput("pollutionplot"),
                       h4("Toelichting"),
                       p("Als je een sensor aanklikt, wordt een gewogen pollutieroos getoond. 
