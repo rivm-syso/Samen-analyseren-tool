@@ -100,7 +100,7 @@ function(input, output, session){
                                      lml_stations_reactive$statinfo$hasdata == TRUE, "name_icon"]  <- 'lml_black'
     lml_stations_reactive$statinfo[lml_stations_reactive$statinfo$station_number == id_select& 
                                      lml_stations_reactive$statinfo$hasdata == FALSE, "name_icon"]  <- 'lml_grey'
-    lml_stations_reactive$statinfo[lml_stations_reactive$statinfo$station_number == id_select, "lijn"] <- 0 
+    lml_stations_reactive$statinfo[lml_stations_reactive$statinfo$station_number == id_select, "lijn"] <- 'blank' 
   }
   
   # Functie: Set station as select and specify color
@@ -121,9 +121,9 @@ function(input, output, session){
         }
       }
     }
-    # Als alle kleuren gebruikt zijn: kies zwart
+    # Als alle lijnen gebruikt zijn: kies dashed
     if (count == length(lijn_cat)){
-      lijn_stat <- 2
+      lijn_stat <- 'dashed'
     }
     
     # Geef lijntype aan het station
@@ -235,7 +235,7 @@ function(input, output, session){
     sensor_unique$huidig <- FALSE
     sensor_unique$groep <- geen_groep
     sensor_unique$kleur <- kleur_marker_sensor
-    sensor_unique$lijn <- 1
+    sensor_unique$lijn <- 'solid'
     
     # Verwijder alle factoren: zet om naar characters
     sensor_unique <- taRifx::remove.factors(sensor_unique)
@@ -286,6 +286,43 @@ function(input, output, session){
       }
       lml_stations_reactive$lml_data <- get_lml_data_api()
       
+      # Zet de namen van de componenten PM10 en PM25 naar kleine letters (dan is het hetzelfde als de sensordata)
+      lml_stations_reactive$lml_data$formula[which(lml_stations_reactive$lml_data$formula=='PM10')] <- 'pm10'
+      lml_stations_reactive$lml_data$formula[which(lml_stations_reactive$lml_data$formula=='PM25')] <- 'pm25'
+      
+      # De gegevens zijn in long format, zet om naar wide : let op remove duplicates!
+      lml_stations_reactive$lml_data <- dplyr::distinct(lml_stations_reactive$lml_data)
+      lml_stations_reactive$lml_data <- tidyr::pivot_wider(lml_stations_reactive$lml_data, names_from='formula', values_from='value')
+      
+      # de lml_data is zo opgebouwd:
+      # [1] "ggplot_lml: date"               "ggplot_lml: station_number"     "ggplot_lml: value"              "ggplot_lml: timestamp_measured"
+      # [5] "ggplot_lml: formula"  
+      
+      # Er zijn stations die geen pm10 en geen pm25 meten, deze wil je ook uit de lml_stations_reactive$lml_data
+      station_remove_pm10 <- NULL
+      station_remove_pm25 <- NULL
+      # Check welke stations geen pm10 en geen pm25 hebben doorgegeven
+      if('pm10' %in% names(lml_stations_reactive$lml_data)){
+        lml_summary <- lml_stations_reactive$lml_data %>% group_by(station_number) %>% summarise(n(), sum(is.na(pm10)))
+        lml_summary_filter <- filter(lml_summary, lml_summary[,'sum(is.na(pm10))']==lml_summary[,'n()'])
+        station_remove_pm10 <- lml_summary_filter$station_number
+      }
+      if('pm25' %in% names(lml_stations_reactive$lml_data)){
+        lml_summary <- lml_stations_reactive$lml_data %>% group_by(station_number) %>% summarise(n(), sum(is.na(pm25)))
+        lml_summary_filter <- filter(lml_summary, lml_summary[,'sum(is.na(pm25))']==lml_summary[,'n()'])
+        station_remove_pm25 <- lml_summary_filter$station_number
+      }
+      
+      # Neem alleen de stations mee die wel pm10 of pm25 hebben gemeten
+      lml_stations_reactive$lml_data <- lml_stations_reactive$lml_data[which(!lml_stations_reactive$lml_data$station_number %in% station_remove_pm10 &
+                                             !lml_stations_reactive$lml_data$station_number %in% station_remove_pm25),]
+      
+      print('stations zonder pm10: ')
+      print(station_remove_pm10)
+      
+      print('stations zonder pm25: ')
+      print(station_remove_pm25)
+
     }else if(overig_reactive$data_set=='eigen_dataset_lml'){
        # Haal de gegevens op van de stations via een ingeladen csv
        print('ophalen csv luchtmeetnet')
@@ -306,10 +343,6 @@ function(input, output, session){
       lml_stations_reactive$lml_data$date <- as.POSIXct(lml_stations_reactive$lml_data$date , tryFormat=c("%d/%m/%Y %H:%M","%Y-%m-%d %H:%M:%S"), tz='UTC')
     }
 
-    # Zet de namen van de componenten PM10 en PM25 naar kleine letters (dan is het hetzelfde als de sensordata)
-    lml_stations_reactive$lml_data$formula[which(lml_stations_reactive$lml_data$formula=='PM10')] <- 'pm10'
-    lml_stations_reactive$lml_data$formula[which(lml_stations_reactive$lml_data$formula=='PM25')] <- 'pm25'
-    
     # Geef aan van welke stations nu databeschikbaar is:
     station_metdata <- unique(lml_stations_reactive$lml_data$station_number)
     lml_stations_reactive$statinfo$hasdata[which(lml_stations_reactive$statinfo$station_number %in% station_metdata)] <- TRUE
@@ -419,7 +452,6 @@ function(input, output, session){
     #Hernoem de kolom timestamp naar date (dan kan ook openair er mee werken)
     station_data_all <- plyr::rename(station_data_all, c('timestamp_measured'= 'date'))
     
-    print('debug')
     #return de totale dataset
     return(station_data_all)
   }
@@ -596,16 +628,11 @@ function(input, output, session){
     lml_selected_id <- lml_stations_reactive$statinfo[which(lml_stations_reactive$statinfo$selected),'station_number']
     # Zoek daarbij de gegevens op
     lml_show_input <- lml_stations_reactive$lml_data[which(lml_stations_reactive$lml_data$station_number %in% lml_selected_id),] 
-    # De gegevens zijn in long format, zet om naar wide : let op remove duplicates!
-    lml_show_input <- dplyr::distinct(lml_show_input)
-    lml_show_input <- tidyr::pivot_wider(lml_show_input, names_from='formula', values_from='value')
+
     # Maak een selectie op de geselecteerde tijdreeks
     lml_show_input <- openair::selectByDate(mydata = lml_show_input,start = tijdreeks_reactive$startdatum, end = tijdreeks_reactive$einddatum)
     lml_show_input$kit_id <- lml_show_input$station_number
-    # de lml_data is zo opgebouwd:
-    # [1] "ggplot_lml: date"               "ggplot_lml: station_number"     "ggplot_lml: value"              "ggplot_lml: timestamp_measured"
-    # [5] "ggplot_lml: formula"  
-    
+
     # Zet de waardes ook in de pm10_kal en pm25_kal. Voor de luchtmeetnet stations zijn die gelijk aan pm10 en pm25
     lml_show_input$pm10_kal <- lml_show_input$pm10
     lml_show_input$pm25_kal <- lml_show_input$pm25
@@ -1061,7 +1088,6 @@ function(input, output, session){
       ## Create array for the colours
       # get the unique kit_id and the color
       kit_kleur <- unique(sensor_reactive$statinfo[which(sensor_reactive$statinfo$selected),c('kit_id','kleur','groep', 'lijn')])
-      print(kit_kleur)
       # Als er een groep is, zorg voor 1 rij van de groep, zodat er maar 1 kleur is
       if (length(unique(kit_kleur$groep)>1)){
         kit_kleur[which(kit_kleur$groep != geen_groep),'kit_id'] <- kit_kleur[which(kit_kleur$groep != geen_groep),'groep']
@@ -1083,6 +1109,9 @@ function(input, output, session){
       show_input <- plyr::rbind.fill(show_input, lml_show_input)
       kit_kleur <- rbind(kit_kleur, lml_kit_kleur)
     }
+    
+    print(kit_kleur)
+    
     
     # Bepaal de kleuren en lijntypes voor in de plot
     # Sort by kit_id

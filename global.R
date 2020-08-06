@@ -51,7 +51,7 @@ kleur_cat <- list('#42145f','#ffb612','#a90061','#777c00','#007bc7','#673327','#
 kleur_sensor <- "leeg"
 kleur_marker_sensor <- "#000000" # default kleur sensor grey=#525252 black=000000
 geen_groep <- "" # default waarde als de sensor niet in een groep zit
-lijn_cat <- list(2,3,4,5,6) # linetype: “blank”, “solid”, “dashed”, “dotted”, “dotdash”, “longdash”, “twodash”. 0123456
+lijn_cat <- list('dashed', 'dotted', 'dotdash', 'longdash', 'twodash') # linetype: “blank”, “solid”, “dashed”, “dotted”, “dotdash”, “longdash”, “twodash”. 0123456
 
 lijn_stat <- "leeg"
 icons_stations <- iconList(
@@ -89,7 +89,7 @@ lml_stations_all$selected <- FALSE
 lml_stations_all$hasdata <- FALSE
 lml_stations_all$name_icon <- 'lml_grey'
 lml_stations_all$kleur <- '#000000'
-lml_stations_all$lijn <- 0
+lml_stations_all$lijn <- 'solid'
 lml_stations_all$groep <- geen_groep
 
 lml_labels <- as.list(lml_stations_all$station_number)

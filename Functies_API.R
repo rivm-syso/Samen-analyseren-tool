@@ -131,12 +131,12 @@ GetLMLstatdataAPI <- function(station, ymd_vanaf, ymd_tot){
   # Ga elke week af en haal de gegevens op
   for(index_week in seq(1,length(levels(week_opdeling))-1)){
     # Stel de URL samen van de week en de stationnummer
-    print(levels(week_opdeling)[index_week])
+    # print(levels(week_opdeling)[index_week])
     startdatum <- format(as.POSIXct(levels(week_opdeling)[index_week], format='%Y-%m-%d'), '%Y-%m-%d %H:%M:%S')
     einddatum <- format(as.POSIXct(levels(week_opdeling)[index_week+1], format='%Y-%m-%d'), '%Y-%m-%d %H:%M:%S')
     url_week <- paste("https://api.luchtmeetnet.nl/open_api/measurements?station_number=",station,"&start=",startdatum,"&end=",einddatum, sep="")
     url_week <- gsub(" ","T", url_week) # Spaties mogen niet in de api, dan krijg je geen resultaat terug.
-    print(url_week)
+    # print(url_week)
     # Haal de gegevens op
     content_measurements <- GetAPIDataframe(url_week)
     print("URL week van Luchtmeetnet opgehaald")
