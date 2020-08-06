@@ -520,8 +520,8 @@ function(input, output, session){
     print('aanroepen api')
     print(paste0('projectnaam: ', projectnaam, ' startdatum: ',tijdreeks_reactive$startdatum_tpdata, ' einddatum: ', tijdreeks_reactive$einddatum_tpdata))
     # Aanroepen van de API
-    sensor_data_ruw <- GetSamenMetenAPI(projectnaam, format(tijdreeks_reactive$startdatum, '%Y%m%d'), 
-                                        format(tijdreeks_reactive$einddatum, '%Y%m%d'), data_opslag_list,
+    sensor_data_ruw <- GetSamenMetenAPI(projectnaam, format(tijdreeks_reactive$startdatum_tpdata, '%Y%m%d'), 
+                                        format(tijdreeks_reactive$einddatum_tpdata, '%Y%m%d'), data_opslag_list,
                                         updateProgress) 
     print('api opgehaald:')
     print('summary(sensor_data_ruw)')
@@ -533,9 +533,7 @@ function(input, output, session){
     # metingen met de meetwaardes voor de grafieken (alleen de sensormetingen) dus deel van input_df
     # Deze worden samengevoegd in 1 wide tabel
     sensor_data_metingen <- dplyr::distinct(sensor_data_ruw$metingen)
-    print('head(sensor_data_metingen)')
-    print(head(sensor_data_metingen))
-    print('net voor de error')
+
     sensor_data_all <- sp::merge(sensor_data_metingen, sensor_data_ruw$sensordata[,c('kit_id','lat','lon')],
                                  all.x, by.x='kit_id', by.y='kit_id')
     
@@ -552,6 +550,7 @@ function(input, output, session){
     names(sensor_data_all_wide)[names(sensor_data_all_wide) == "tijd"] <- "date"
     #TODO: de error kolom weglaten.
     updateProgress(100, 'Alles geladen')
+    print('einde get api functie sensoren')
     return(sensor_data_all_wide)
   }
 
@@ -911,6 +910,8 @@ function(input, output, session){
       print("Eerste aanroep api samenmeten")
       overig_reactive$data_set <- 'API_samenmeten'
       insert_nieuwe_data_sensor()
+      print('schrijf sensordata weg naar file: downloadwindow')
+      Sys.sleep(10) # Zien of dan wel de download getriggerd wordt
       write.table(sensor_reactive$sensor_data, file, sep = ',',
                   row.names = FALSE)
     }
