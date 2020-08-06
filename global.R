@@ -50,6 +50,7 @@ choices <- c( "PM10 - gekalibreerd", "PM2.5 - gekalibreerd","PM10", "PM2.5") #se
 kleur_cat <- list('#42145f','#ffb612','#a90061','#777c00','#007bc7','#673327','#e17000','#39870c', '#94710a','#01689b','#f9e11e','#76d2b6','#d52b1e','#8fcae7','#ca005d','#275937','#f092cd')
 kleur_sensor <- "leeg"
 kleur_marker_sensor <- "#000000" # default kleur sensor grey=#525252 black=000000
+kleur_marker_sensor_no_data <- '#b8b8b8'
 geen_groep <- "" # default waarde als de sensor niet in een groep zit
 lijn_cat <- list('dashed', 'dotted', 'dotdash', 'longdash', 'twodash') # linetype: “blank”, “solid”, “dashed”, “dotted”, “dotdash”, “longdash”, “twodash”. 0123456
 
@@ -99,8 +100,9 @@ lml_labels <- as.list(lml_stations_all$station_number)
 hoofd_choices <- data.frame('namen'=c('project', 'gemeente'), 'labels'=c('Project','Gemeente')) #LET op deze worden gebruikt in server voor if else, dus pas niet zomaar aan.
 hoofd_choices = setNames(hoofd_choices$namen,hoofd_choices$labels)
 
-# Overzicht projectnamen
-project_choices <- c('Amersfoort', 'Hollandse Luchten')
+# Inladen overzicht projectnaam
+overzicht_project <- read.csv('./overzicht_projecten.csv',header=T)
+project_choices <- overzicht_project$project
 
 # Inladen overzicht gemeente code en naam
 overzicht_gemeente <- read.csv('./overzicht_code_gemeentes.csv',header=F)

@@ -26,7 +26,7 @@ tpData <- function(){
                                       De opgevraagde gegevens worden direct getoond. U kunt ze ook downloaden en op een ander moment weer inladen, 
                                       zodat u niet elke keer hoeft te wachten."),
                              # Kies eerst waarvan je data wilt selecteren: gemeente of project
-                             selectInput(inputId = "sensor_hoofdgroep", label = "Selecteer op project of gemeente:", choices = hoofd_choices, selected = NULL, multiple = FALSE,
+                             selectInput(inputId = "sensor_hoofdgroep", label = "Selecteer op project of gemeente:", choices = hoofd_choices, selected = 'gemeente', multiple = FALSE,
                                          selectize = TRUE, width = NULL, size = NULL),
                              # Specificeer waarvan de data gedownload kan worden (de choices worden reactive gemaakt door de selectinput hierboven)
                              selectInput(inputId = "sensor_specificeer", label = "Maak uw keuze:", choice="",selected = NULL, multiple = FALSE,

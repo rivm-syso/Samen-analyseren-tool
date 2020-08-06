@@ -255,7 +255,7 @@ function(input, output, session){
     # Geef aan of er wel of geen data is
     sensor_unique$hasdata <- TRUE
     sensor_unique$hasdata[which(sensor_unique$kit_id%in%sensor_error)] <- FALSE
-    sensor_unique$kleur[which(sensor_unique$kit_id%in%sensor_error)] <- '#858585'
+    sensor_unique$kleur[which(sensor_unique$kit_id%in%sensor_error)] <- kleur_marker_sensor_no_data
     
     # Voeg de sensor locaties ed toe aan interactive dataframe
     sensor_reactive$statinfo <- sensor_unique
@@ -1083,8 +1083,7 @@ function(input, output, session){
     if(selected_sensor){
       # Maak de plot input van de sensoren
       show_input <- filter_sensor_data_plot()
-      print(head(show_input))
-      print(tail(show_input))
+
       ## Create array for the colours
       # get the unique kit_id and the color
       kit_kleur <- unique(sensor_reactive$statinfo[which(sensor_reactive$statinfo$selected),c('kit_id','kleur','groep', 'lijn')])
