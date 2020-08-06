@@ -37,21 +37,25 @@ tpData <- function(){
                              dateInput("DateEind_tpData", label="Selecteer einde tijdreeks:", format='dd-mm-yyyy', value = Sys.Date()
                              ),
                              # Button om de gegevens van de sensore op t halen via de API en om de sensor data te downloaden
-                             downloadButton("downloadData_sensor",'Download de metingen van de sensoren'),
+                             downloadButton("downloadData_sensor",'Haal de metingen van de sensoren op en download'),
+                             # Button om de gegevens van de sensore op t halen via de API en om de sensor data te downloaden
+                             downloadButton("downloadData_sensor2",'Extra: download de sensoren van de kaart'),
                              # Mogelijkheid om je eigen data in te laden:
                              fileInput("eigen_datafile_sensoren", "Laad dataset sensormetingen(csv-bestand): ",
                                        multiple = FALSE,
                                        accept = c("text/csv",
                                                   "text/comma-separated-values,text/plain",
-                                                  ".csv"))
+                                                  ".csv")),
+                             h4("Toelichting"),
+                             p("De gegevens worden opgehaald met de API van SamenMeten. Meer informatie over de gegevens is te vinden op:  ", a("Samenmeten.nl", href ='https://samenmeten.rivm.nl/dataportaal/', target = 'blank')
+                               ,style = "font-size:12px")
                              ),
                     tabPanel("Stap 2: Luchtmeetnet",
                              helpText("Laad eerst de locaties van de meetstations van Luchtmeetnet. 
                                       Selecteer daarna de stations waarvan u de meetgegevens wilt opvragen.
-                                      De opgevraagde gegevens worden direct getoond. U kunt ze ook downloaden 
+                                      De opgevraagde gegevens worden direct getoond. Meteen kunt u ze ook downloaden 
                                       en op een ander moment weer inladen, 
-                                      zodat u niet elke keer hoeft te wachten.
-                                      LET OP/TODO dit werkt nog niet allemaal"),
+                                      zodat u niet elke keer hoeft te wachten."),
                             # Button om de luchtmeetnetsations op de kaart te zetten
                             actionButton("show_luchtmeetnet", "Laad locaties luchtmeetnetstations"),
                             # Output: tabel met de geslecteerde LML station, voor het downloaden van de data
@@ -59,24 +63,26 @@ tpData <- function(){
                             # Output: met de begin en eind datum erin, kan in stap1 worden ingesteld
                             textOutput('tijdreeks_tpdata_lml'),
                             # Button de gegevens van de luchtmeetnetstations op et halen via de API en om de LML data te downloaden
-                            downloadButton("downloadData_luchtmeetnet",'download metingen luchtmeetnetstations'),
+                            downloadButton("downloadData_luchtmeetnet",'Haal de metingen luchtmeetnetstations op en download'),
+                            # Button om de gegevens van de sensore op t halen via de API en om de sensor data te downloaden
+                            downloadButton("downloadData_luchtmeetnet2",'Extra: download de luchtmeetnetstations van de kaart'),
                             # Mogelijkheid om je eigen data in te laden:
                             fileInput("eigen_datafile_lml", "Laad dataset luchtmeetnetmetingen(csv-bestand): ",
                                       multiple = FALSE,
                                       accept = c("text/csv",
                                                  "text/comma-separated-values,text/plain",
                                                  ".csv")),
-                            p("Selecteer luchtmeetnetstations om de data op te halen. De eigenaar van het station staat erbij. DCMR, GGD Amsterdam, Provincie Limburg, ODRA, LML"),
                             h4("Toelichting"),
-                            p("",style = "font-size:12px")
+                            p("De gegevens worden opgehaald met de API van luchtmeetnet. Meer informatie over de gegevens is te vinden op:  ", a("luchtmeetnet.nl", href ='https://www.luchtmeetnet.nl/', target = 'blank')
+                              ,style = "font-size:12px")
+                            
                     ),
                     tabPanel("Stap 3: KNMI",
                              helpText("Laad eerst de locaties van de meetstations van het KNMI.
                                       Selecteer daarna de stations waarvan u de meetgegevens wilt opvragen.
-                                      De opgevraagde gegevens worden direct getoond. U kunt ze ook downloaden
+                                      De opgevraagde gegevens worden direct getoond. Meteen kunt u ze ook downloaden
                                       en op een ander moment weer inladen,
-                                      zodat u niet elke keer hoeft te wachten.
-                                      LET OP/TODO dit werkt nog niet allemaal"),
+                                      zodat u niet elke keer hoeft te wachten."),
                              # Button om de luchtmeetnetsations op de kaart te zetten
                              actionButton("show_knmi", "Laad locaties knmi-stations"),
                              # # Output: tabel met de geslecteerde knmi station, voor het downloaden van de data
@@ -84,7 +90,9 @@ tpData <- function(){
                              # Output: met de begin en eind datum erin, kan in stap1 worden ingesteld
                              textOutput('tijdreeks_tpdata_knmi'),
                              # # Button om de gegevens van de knmi-stations op te halen via de API en om de knmi data te downloaden
-                             downloadButton("downloadData_knmi",'download metingen knmi-stations'),
+                             downloadButton("downloadData_knmi",'Haal de metingen KNMI-stations op en download'),
+                             # Button om de gegevens van de sensore op t halen via de API en om de sensor data te downloaden
+                             downloadButton("downloadData_knmi2",'Extra: download de KNMI-stations van de kaart'),
                              # Mogelijkheid om je eigen data in te laden:
                              fileInput("eigen_datafile_knmi", "Laad dataset knmi-metingen(csv-bestand): ",
                                        multiple = FALSE,
@@ -92,8 +100,8 @@ tpData <- function(){
                                                   "text/comma-separated-values,text/plain",
                                                   ".csv")),
                              h4("Toelichting"),
-                             p("Zie knmi website voor meer informatie",style = "font-size:12px")
-                             )
+                             p("De gegevens worden opgehaald van het KNMI. Meer informatie over de gegevens is te vinden op:  ", a("KNMI", href = 'https://www.knmi.nl/kennis-en-datacentrum/achtergrond/data-ophalen-vanuit-een-script'), target = 'blank')
+                               ,style = "font-size:12px")
     )
   )
   

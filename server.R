@@ -891,7 +891,7 @@ function(input, output, session){
   
   ## GENEREER PLOTS -----
   
-  # Download de data van de geselecteerde LML stations ----
+  # Haal op en Download de data van de geselecteerde LML stations ----
   output$downloadData_luchtmeetnet <- downloadHandler(
     # geef de filename op, zou via interactieve kunnen
     filename = function(){
@@ -906,7 +906,20 @@ function(input, output, session){
                   row.names = FALSE)
     }
   )
-  # Download de data van de geselecteerde KNMI stations ----
+  # Download de data van de geselecteerde LML stations ----
+  output$downloadData_luchtmeetnet2 <- downloadHandler(
+    # geef de filename op, zou via interactieve kunnen
+    filename = function(){
+      paste('data_luchtmeetnet', 'csv', sep=".")
+    },
+    # Geef de data op: luchtmeetnetstations
+    content = function(file) {
+      write.table(lml_stations_reactive$lml_data, file, sep = ',',
+                  row.names = FALSE)
+    }
+  )
+  
+  # Haal op en Download de data van de geselecteerde KNMI stations ----
   output$downloadData_knmi <- downloadHandler(
     # geef de filename op, zou via interactieve kunnen
     filename = function(){
@@ -922,7 +935,20 @@ function(input, output, session){
     }
   )
   
-  # Download de data van de projectgeselecteerde sensoren ----
+  # Download de data van de geselecteerde KNMI stations ----
+  output$downloadData_knmi2 <- downloadHandler(
+    # geef de filename op, zou via interactieve kunnen
+    filename = function(){
+      paste('data_knmi', 'csv', sep=".")
+    },
+    # Geef de data op: knmi stations
+    content = function(file) {
+      write.table(knmi_stations_reactive$knmi_data, file, sep = ',',
+                  row.names = FALSE)
+    }
+  )
+  
+  # Haal op en Download de data van de projectgeselecteerde sensoren ----
   output$downloadData_sensor <- downloadHandler(
     # geef de filename op, zou via interactieve kunnen
     filename = function(){
@@ -935,6 +961,21 @@ function(input, output, session){
       insert_nieuwe_data_sensor()
       print('schrijf sensordata weg naar file: downloadwindow')
       Sys.sleep(10) # Zien of dan wel de download getriggerd wordt
+      write.table(sensor_reactive$sensor_data, file, sep = ',',
+                  row.names = FALSE)
+    }
+  )
+  
+  # Download de data van de projectgeselecteerde sensoren ----
+  # Op een of andere manier werkt de eerste button niet als de dataset te groot is.
+  # Daarom nog maar eentje die alleen download.
+  output$downloadData_sensor2 <- downloadHandler(
+    # geef de filename op, zou via interactieve kunnen
+    filename = function(){
+      paste('data_sensoren', 'csv', sep=".")
+    },
+    # Geef de data op: de sensordata
+    content = function(file) {
       write.table(sensor_reactive$sensor_data, file, sep = ',',
                   row.names = FALSE)
     }
