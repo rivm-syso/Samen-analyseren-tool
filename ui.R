@@ -11,12 +11,12 @@
 
 # HTML template voor de opmaak/styling ---- 
 htmlTemplate("./www/template_samenmeten.wide.html",
-             pageTitle=paste("Prototype Samen Analyseren tool: project ", projectnaam),
+             pageTitle="Samen Analyseren tool",
              
              aboutSite=div(
                h3("Gebruikershandleiding"),
                p("In de ", a("handleiding", href = "https://www.samenmetenaanluchtkwaliteit.nl/documenten/gebruikershandleiding-samen-analyseren-tool", 
-                             target = 'blank'), "vind je meer informatie over het algemene gebruik van de Samen Analyseren Tool."),
+                             target = 'blank'), "vindt u meer informatie over het algemene gebruik van de Samen Analyseren Tool."),
                h3("Verantwoording"),
                            
                            p("Dit dashboard is door het ", a("RIVM", href = "https://rivm.nl", target = 'blank'), "ontwikkeld voor snelle analyse van sensordata.
@@ -29,23 +29,26 @@ htmlTemplate("./www/template_samenmeten.wide.html",
                                De broncode van de tool is te vinden via",
                               a("GitHub",
                                 href = "https://github.com/rivm-syso/Samen-analyseren-tool", target = "_blank"),
-                                ", zodat we samen met jullie het dashboard verder kunnen ontwikkelen."),
+                                ", zodat we samen met u het dashboard verder kunnen ontwikkelen."),
                              
                              h4("Data"),
                              p("De getoonde sensordata zijn afkomstig uit de", 
                                a("Samen Meten database.",
                                  href = "https://samenmeten.rivm.nl/dataportaal/", target = 'blank'),
-                               "De sensormetingen die in dit prototype gevisualiseerd worden, zijn gedaan met goedkope fijnstofsensoren van het project",
+                               "De sensormetingen die in de voorbeelddata te zien zijn, zijn gedaan met goedkope fijnstofsensoren van het project",
                                a("Hollandse Luchten.",
                                  href = "https://hollandseluchten.waag.org/", target = 'blank'),
-                               "De gegevens worden eens per maand ge-update. De getoonde waarden geven een indicatie van de fijnstofconcentratie. 
+                               "De getoonde waarden geven een indicatie van de fijnstofconcentratie. 
                                De data zijn niet geschikt om te toetsen aan grenswaarden."
                              ),
-                             p("Elke sensor kan worden vergeleken met het dichtstbijzijnde meetstation van het", a("Luchtmeetnet",
-                                                                                                                  href = "https://luchtmeetnet.nl", target = 'blank'), ".
-        De windgegevens voor het berekenen van de windroos komen van het dichtstbijzijnde weerstation van het ", a("KNMI",
-                                                                                                                  href = "https://knmi.nl", target = 'blank'),".
+                             p("Elke sensor kan worden vergeleken met een meetstation van het", a("Luchtmeetnet", href = "https://luchtmeetnet.nl", target = 'blank'), ". 
+        De windgegevens voor het berekenen van de windroos komen van een weerstation van het ", a("KNMI",
+                                                                                                                  href = "https://knmi.nl", target = 'blank'),". 
         De locaties van de gebruikte luchtmeetnet- en weerstations worden met icoontjes op de kaart getoond."),
+                             p("In het tabblad 'Data laden en downloaden' kunt u de data van de sensoren van een project of gemeente, van de meetstations van het 
+                               luchtmeetnet en van de meetstations van het KNMI laden. Deze gegevens worden via API's bij de desbetreffende partij opgevraagd. 
+                               Het opvragen en ophalen van de gegevens kan enige tijd duren. Met de downloadfunctie kunt u de gegevens opslaan, zodat u niet
+                               iedere keer de gegevens opnieuw hoeft op te vragen."),
                              h4("Gekalibreerde waarden"),
                              p("Details over de kalibratieprocedure zijn te vinden op het", 
                                a("Samen Meten Kennisportaal.",
@@ -59,10 +62,17 @@ htmlTemplate("./www/template_samenmeten.wide.html",
         "
                              )),
                            h3("Nieuw in deze tool"),
-                           p("De tool is nog in ontwikkeling. Hieronder vindt u de laatste aanpassingen (sinds 12 juni 2020):"),
-                            tags$ul(tags$li("Layout: grotere kaart beschikbaar"),
-                           tags$li("Tijdreeksselectie: makkelijker vanaf een specifieke dag te filteren"),
-                           tags$li("Groepsselectie: makkelijker de sensoren te clusteren in een groep zodat groepsgemiddeldes kunnen worden vergeleken"))
+                           p("De tool is nog in ontwikkeling. Hieronder vindt u de laatste aanpassingen:"),
+               p("Sinds 26 augustus 2020"),
+                            tags$ul(tags$li("Layout: welkomstekst, tabblad voor het laden en downloaden van de data, tabblad voor het visualiseren en analyseren van de data"),
+                           tags$li("Voorbeelddata: kleine dataset om de tool uit te proberen"),
+                           tags$li("Data downloaden en analyseren: mogelijkheid om zelf de data van de sensoren van een project of gemeente, meetstations van luchtmeetnet en meetstations van het KNMI te analyseren en downloaden via API's")),
+               
+               p("Sinds 12 juni 2020"),
+               tags$ul(tags$li("Layout: grotere kaart beschikbaar"),
+                       tags$li("Tijdreeksselectie: makkelijker vanaf een specifieke dag te filteren"),
+                       tags$li("Groepsselectie: makkelijker de sensoren te clusteren in een groep zodat groepsgemiddeldes kunnen worden vergeleken"))
+               
                            ),
   # Vanaf hier begint de tool zelf ----
   fluidPage=fluidPage(

@@ -32,7 +32,7 @@ tpTimeplot <- function(){
 library(shiny)
   
  tp <-  tabPanel("Tijdreeks",
-                 helpText("Selecteer een sensor. Deze grafiek laat de tijdreeks van de sensor in vergelijking met het meetstation zien."),
+                 helpText("Deze grafiek laat de tijdreeks van de sensor in vergelijking met het meetstation zien."),
                     plotOutput("timeplot"),
                     h4("Toelichting"),
                     p("Als je één of meerdere sensoren aanklikt, zie je een tijdreeks van de uurlijkse sensorwaarden voor de geselecteerde periode. 
@@ -49,7 +49,7 @@ tpBarplot <- function(){
   library(shiny)
   
   tp <-  tabPanel("Barplot",
-                  helpText("Selecteer een sensor. Deze grafiek laat de tijdreeks van de sensor in vergelijking met het meetstation zien."),
+                  helpText("Deze grafiek laat de tijdreeks van de sensor in vergelijking met het meetstation zien."),
                   plotOutput("barplot"),
                   h4("Toelichting"),
                   p("Als je een sensor of groep sensoren selecteert, zie je het gemiddelde voor de geselecteerde tijdreeks. Vanaf een jaar data wordt het mogelijk om een jaargemiddelde concentratie te berekenen.",

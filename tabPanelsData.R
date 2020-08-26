@@ -100,10 +100,10 @@ tpData <- function(){
                                                   "text/comma-separated-values,text/plain",
                                                   ".csv")),
                              h4("Toelichting"),
-                             p("De gegevens worden opgehaald van het KNMI. Meer informatie over de gegevens is te vinden op:  ", a("KNMI", href = 'https://www.knmi.nl/kennis-en-datacentrum/achtergrond/data-ophalen-vanuit-een-script'), target = 'blank')
+                             p("De gegevens worden opgehaald van het KNMI. Meer informatie over de gegevens is te vinden via het ", a("KNMI", href = 'https://www.knmi.nl/kennis-en-datacentrum/achtergrond/data-ophalen-vanuit-een-script', target='blank')
                                ,style = "font-size:12px")
     )
-  )
+                  ))
   
   return(tp)
 } 
