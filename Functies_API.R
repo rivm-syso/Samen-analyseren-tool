@@ -443,11 +443,12 @@ GetSamenMetenAPI <- function(projectnaam, ymd_vanaf, ymd_tot, data_opslag = data
   
   # EQ,EQUALS is uniek voor elke gemeente en project
   # URL van de sensoren binnen een project
-  # url_things <- paste("https://api-samenmeten.rivm.nl/v1.0/Things?$filter=properties/",projectnaam,")", sep='')
-  # Ontwikkel api TEST of die ook werkt
-  url_things <- paste("https://ontw.api-samenmeten.rivm.nl/v1.0/Things?$filter=(properties/",projectnaam,")", sep='')
-  
+  url_things <- paste("https://api-samenmeten.rivm.nl/v1.0/Things?$filter=(properties/",projectnaam,")", sep='')
+ 
   url_things <- gsub(' ','%20', url_things)
+  
+  print('daadwerkelijke hoofdurl')
+  print(url_things)
   
   if(debug){print(paste0("URL things: ", url_things))}
   
