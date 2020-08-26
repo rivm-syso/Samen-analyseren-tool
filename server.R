@@ -284,8 +284,7 @@ function(input, output, session){
     # Data die er al is wordt overschreven, dus zet de hasdata op FALSE
     lml_stations_reactive$statinfo$hasdata <- FALSE
     lml_stations_reactive$statinfo$name_icon <- 'lml_grey'
-    lml_stations_reactive$statinfo$selected <- FALSE
-    
+
     if(overig_reactive$data_set=='API_luchtmeetnet'){
       # Haal de gegevens op van de stations via de luchtmeetnet API
       print('ophalen api luchtmeetnet')
@@ -294,8 +293,8 @@ function(input, output, session){
         validate('Selecteer een LML-station.')
       }
       lml_stations_reactive$lml_data <- get_lml_data_api()
-      
-      # Zet de namen van de componenten PM10 en PM25 naar kleine letters (dan is het hetzelfde als de sensordata)
+
+            # Zet de namen van de componenten PM10 en PM25 naar kleine letters (dan is het hetzelfde als de sensordata)
       lml_stations_reactive$lml_data$formula[which(lml_stations_reactive$lml_data$formula=='PM10')] <- 'pm10'
       lml_stations_reactive$lml_data$formula[which(lml_stations_reactive$lml_data$formula=='PM25')] <- 'pm25'
       
@@ -375,8 +374,7 @@ function(input, output, session){
     # Data die er al is wordt overschreven, dus zet de hasdata op FALSE
     knmi_stations_reactive$statinfo$hasdata <- FALSE
     knmi_stations_reactive$statinfo$name_icon <- 'knmi_grey'
-    knmi_stations_reactive$statinfo$selected <- FALSE
-    
+
     if(overig_reactive$data_set=='API_knmi'){
       # Haal de gegevens op van de stations via de KNMI API
       print('ophalen api KNMI')
@@ -425,6 +423,7 @@ function(input, output, session){
     # - If `value` is NULL, it will move the progress bar 1/5 of the remaining
     #   distance. If non-NULL, it will set the progress to that value.
     # - It also accepts optional detail text.
+    
     updateProgress <- function(value = NULL, detail = NULL) {
       if (is.null(value)) {
         value <- progress$getValue()
