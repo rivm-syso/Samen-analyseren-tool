@@ -23,7 +23,7 @@ tpData <- function(){
                     tabPanel("Stap 1: Sensoren",
                              helpText("Selecteer hieronder eerst het project of de gemeente waarvan u de data van de sensoren wilt opvragen.
                                       Vraag daarna de gegevens op. LET OP: het opvragen van de gegevens kan enkele minuten tot een half uur duren.
-                                      De opgevraagde data worden direct getoond als sensoren op de kaart. U kunt de data vervolgens downloaden en op een ander moment weer inladen. 
+                                      De opgevraagde data wordt direct getoond als sensoren op de kaart. U kunt de data vervolgens downloaden en op een ander moment weer inladen. 
                                       Zo hoeft u niet elke keer dat u de tool gebruikt, de data opnieuw op te halen."),
                              # Kies eerst waarvan je data wilt selecteren: gemeente of project
                              selectInput(inputId = "sensor_hoofdgroep", label = "Selecteer op project of gemeente:", choices = hoofd_choices, selected = 'gemeente', multiple = FALSE,
@@ -47,13 +47,13 @@ tpData <- function(){
                                                   "text/comma-separated-values,text/plain",
                                                   ".csv")),
                              h4("Toelichting"),
-                             p("De data van de sensoren worden opgehaald met de API van het Samen Meten dataportaal. Meer informatie is te vinden op:  ", a("Samenmeten.nl", href ='https://samenmeten.rivm.nl/dataportaal/', target = 'blank')
+                             p("De data van de sensoren wordt opgehaald met de API van het Samen Meten dataportaal. Meer informatie is te vinden op:  ", a("Samenmeten.nl", href ='https://samenmeten.rivm.nl/dataportaal/', target = 'blank')
                                ,style = "font-size:12px")
                              ),
                     tabPanel("Stap 2: Luchtmeetnet",
                              helpText("Laad eerst de locaties van de meetstations van Luchtmeetnet via de button. 
                                       Selecteer daarna de stations waarvan u de meetgegevens wilt opvragen.
-                                      De opgevraagde data worden direct getoond. Meteen kunt u ze ook downloaden 
+                                      De opgevraagde data wordt direct getoond. Meteen kunt u ze ook downloaden 
                                       en op een ander moment weer inladen, 
                                       zodat u niet elke keer hoeft te wachten."),
                             # Button om de luchtmeetnetsations op de kaart te zetten
@@ -80,7 +80,7 @@ tpData <- function(){
                     tabPanel("Stap 3: KNMI",
                              helpText("Laad eerst de locaties van de meetstations van het KNMI via de button.
                                       Selecteer daarna de stations waarvan u de meetgegevens wilt opvragen.
-                                      De opgevraagde data worden direct getoond. Meteen kunt u ze ook downloaden
+                                      De opgevraagde data wordt direct getoond. Meteen kunt u ze ook downloaden
                                       en op een ander moment weer inladen,
                                       zodat u niet elke keer hoeft te wachten."),
                              # Button om de luchtmeetnetsations op de kaart te zetten
