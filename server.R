@@ -283,6 +283,8 @@ function(input, output, session){
     
     # Data die er al is wordt overschreven, dus zet de hasdata op FALSE
     lml_stations_reactive$statinfo$hasdata <- FALSE
+    lml_stations_reactive$statinfo$name_icon <- 'lml_grey'
+    lml_stations_reactive$statinfo$selected <- FALSE
     
     if(overig_reactive$data_set=='API_luchtmeetnet'){
       # Haal de gegevens op van de stations via de luchtmeetnet API
@@ -373,6 +375,8 @@ function(input, output, session){
     # Data die er al is wordt overschreven, dus zet de hasdata op FALSE
     knmi_stations_reactive$statinfo$hasdata <- FALSE
     knmi_stations_reactive$statinfo$name_icon <- 'knmi_grey'
+    knmi_stations_reactive$statinfo$selected <- FALSE
+    
     if(overig_reactive$data_set=='API_knmi'){
       # Haal de gegevens op van de stations via de KNMI API
       print('ophalen api KNMI')
