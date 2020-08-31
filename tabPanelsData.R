@@ -87,6 +87,7 @@ tpData <- function(){
                              # Button om de luchtmeetnetsations op de kaart te zetten
                              actionButton("show_knmi", "Laad locaties knmi-stations"),
                              # # Output: tabel met de geslecteerde knmi station, voor het downloaden van de data
+                             p('Geslecteerde stations:'),
                              tableOutput("stations_knmi"),
                              # Output: met de begin en eind datum erin, kan in stap1 worden ingesteld
                              textOutput('tijdreeks_tpdata_knmi'),

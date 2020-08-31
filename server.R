@@ -232,6 +232,9 @@ function(input, output, session){
         set_lml_station_select(luchtmeetnetcode)
       }
       
+      # Laat de stations al op de kaart zien
+      add_lmlstat_map()
+      add_knmistat_map()      
       
     }else if(overig_reactive$data_set=='eigen_dataset_sensoren'){
       print('Sensor data inladen via eigen dataset csv')
@@ -1040,7 +1043,7 @@ function(input, output, session){
   })
   # Create tabel geselecteerde stations voor de download pagina ----
   output$stations_knmi <- renderTable({
-    stations_df <- data.frame('Selectie' = as.character(knmi_stations_reactive$statinfo[which(knmi_stations_reactive$statinfo$selected),'station_number']))
+    stations_df <- data.frame('Nummer' = as.character(knmi_stations_reactive$statinfo[which(knmi_stations_reactive$statinfo$selected),'station_number']))
   })
   
   # Create average bar plot met ggplot ----
