@@ -176,7 +176,7 @@ function(input, output, session){
     # Update map with new markers to show selected 
     proxy <- leafletProxy('map') # set up proxy map
     proxy %>% clearGroup("luchtmeetnetstations") # Clear sensor markers
-    proxy %>% addMarkers(data = station_loc, ~lon, ~lat, layerId = ~station_number, label = lapply(as.list(station_loc$station_number), HTML),
+    proxy %>% addMarkers(data = station_loc, ~lon, ~lat, layerId = ~station_number, label = lapply(as.list(station_loc$naam), HTML),
                                icon = ~icons_stations[name_icon], group = "luchtmeetnetstations")}
   
   # Functie om de zoom/view te centreren rond de sensoren
@@ -1007,7 +1007,10 @@ function(input, output, session){
   
   # Create tabel geselecteerde stations voor de download pagina ----
   output$stations_lml <- renderTable({
-    stations_df <- data.frame('Selectie' = lml_stations_reactive$statinfo[which(lml_stations_reactive$statinfo$selected),'station_number'])
+    stations_df <- data.frame('Naam' = lml_stations_reactive$statinfo[which(lml_stations_reactive$statinfo$selected),c('naam')],
+                              'Nummer' = lml_stations_reactive$statinfo[which(lml_stations_reactive$statinfo$selected),c('station_number')],
+                              'Organisatie' = lml_stations_reactive$statinfo[which(lml_stations_reactive$statinfo$selected),c('organisatie')],
+                              'type' = lml_stations_reactive$statinfo[which(lml_stations_reactive$statinfo$selected),c('stattype')])
   })
   # Create tabel geselecteerde stations voor de download pagina ----
   output$stations_knmi <- renderTable({

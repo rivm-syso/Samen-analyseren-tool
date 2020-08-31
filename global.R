@@ -93,8 +93,6 @@ lml_stations_all$kleur <- '#000000'
 lml_stations_all$lijn <- 'solid'
 lml_stations_all$groep <- geen_groep
 
-lml_labels <- as.list(lml_stations_all$station_number)
-
 ## Voor het kiezen van gemeente of rpoject voor het data ophalen van samenmeten API
 # hoofdkeuze 
 hoofd_choices <- data.frame('namen'=c('project', 'gemeente'), 'labels'=c('Project','Gemeente')) #LET op deze worden gebruikt in server voor if else, dus pas niet zomaar aan.

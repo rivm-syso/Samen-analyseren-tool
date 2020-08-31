@@ -15,7 +15,7 @@ tpData <- function(){
   tp <-  tabPanel("Data laden en downloaden",
                   tabsetPanel(
                     # tabPanel("Start",
-                    #          p("Welkom bij de Samen Anlayseren tool. 
+                    #          p("Welkom bij de Samen Analyseren tool
                     #            Klik op de button om de tool te testen met een voorbeeld data set. Wilt u de sensoren binnen uw eigen gemeente of project bekijken. Volg dan de stappen in de andere tabbladen."),
                     #          p("Real-time metingen van de sensoren kunt u vinden op het Samen Meten Dataportaal:", a("samenmeten.rivm.nl", href ='https://samenmeten.rivm.nl/dataportaal/', target = 'blank')),
                     #          # Button om terug te gaan naar de standaard voorbeeld data
@@ -59,6 +59,7 @@ tpData <- function(){
                             # Button om de luchtmeetnetsations op de kaart te zetten
                             actionButton("show_luchtmeetnet", "Laad locaties luchtmeetnetstations"),
                             # Output: tabel met de geslecteerde LML station, voor het downloaden van de data
+                            p('Geslecteerde stations:'),
                             tableOutput("stations_lml"),
                             # Output: met de begin en eind datum erin, kan in stap1 worden ingesteld
                             textOutput('tijdreeks_tpdata_lml'),
