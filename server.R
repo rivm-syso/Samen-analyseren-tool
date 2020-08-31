@@ -215,6 +215,24 @@ function(input, output, session){
       print('Sensor data inladen via API')
       # Haal de gegevens op van de sensoren via de samenmeten API
       sensor_reactive$sensor_data <- get_sensor_data_api()
+      # Bij de sensordata van de API zit ook informatie over de het dichtstbijzijnde knmistation en de luchtmeetnetstations
+      # Deze informatie wil je doorgeven aan de andere tabbladen zodat die stations meteen geselecteerd worden
+      knmicode_bij_sensor <- unique(sensor_reactive$sensor_data$knmicode)
+      luchtmeetnetcode_bij_sensor <- unique(tidyr::pivot_longer(sensor_reactive$sensor_data[,c('kit_id','pm10closecode',
+                                              'pm10regiocode','pm10stadcode','pm25closecode',
+                                              'pm25regiocode', 'pm25stadcode')], cols=-kit_id)$value)
+      # Zet de knmi stations alvast op geselecteerd
+      for (knmicode in knmicode_bij_sensor){
+        knmicode_id <- substr(knmicode, nchar(knmicode)-3+1, nchar(knmicode)) # Gebruik alleen de 3-cijferige code
+        set_knmi_station_select(knmicode_id)
+      }
+      
+      # Zet de luchtmeetnetstations alvast op geselecteerd
+      for(luchtmeetnetcode in luchtmeetnetcode_bij_sensor){
+        set_lml_station_select(luchtmeetnetcode)
+      }
+      
+      
     }else if(overig_reactive$data_set=='eigen_dataset_sensoren'){
       print('Sensor data inladen via eigen dataset csv')
       # Lees de csv uit en sla de gegevens op in interactive
@@ -223,6 +241,7 @@ function(input, output, session){
       sensor_reactive$sensor_data$date <- as.POSIXct(sensor_reactive$sensor_data$date, tryFormat=c("%d/%m/%Y %H:%M","%Y-%m-%d %H:%M:%S"), tz='UTC')
     }else if(overig_reactive$data_set=='voorbeeld'){
       print('Sensor data inladen via voorbeeld dataset csv')
+      
       # Lees de csv uit en sla de gegevens op in interactive
       sensor_reactive$sensor_data <- read.csv(sensor_file, sep=",")
       # Zet de date naar een posixct
@@ -576,7 +595,9 @@ function(input, output, session){
     # Deze worden samengevoegd in 1 wide tabel
     sensor_data_metingen <- dplyr::distinct(sensor_data_ruw$metingen)
 
-    sensor_data_all <- sp::merge(sensor_data_metingen, sensor_data_ruw$sensordata[,c('kit_id','lat','lon')],
+    sensor_data_all <- sp::merge(sensor_data_metingen, sensor_data_ruw$sensordata[,c('kit_id','lat','lon','knmicode','pm10closecode',
+                                                                                     'pm10regiocode','pm10stadcode','pm25closecode',
+                                                                                     'pm25regiocode', 'pm25stadcode')],
                                  all.x, by.x='kit_id', by.y='kit_id')
     
     print('data samenvoegen:')
@@ -735,6 +756,11 @@ function(input, output, session){
   # Observe of de voorbeeld dataset weer ingeladen moet worden----
   observeEvent({input$voorbeeld_data},{
     overig_reactive$data_set <- 'voorbeeld'
+    # Zet alles dat al geselecteerd is op deselect
+    lapply(lml_stations_reactive$statinfo$station_number[which(lml_stations_reactive$statinfo$selected)], set_lml_station_deselect)
+    lapply(knmi_stations_reactive$statinfo$station_number[which(knmi_stations_reactive$statinfo$selected)], set_knmi_station_deselect)
+    
+    # Laadt de voorbeeld datasets
     insert_nieuwe_data_sensor()
     insert_nieuwe_data_lml()
     insert_nieuwe_data_knmi()})

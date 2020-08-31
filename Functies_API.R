@@ -488,7 +488,15 @@ GetSamenMetenAPI <- function(projectnaam, ymd_vanaf, ymd_tot, data_opslag = data
                                                  'kit_id' = content_things_df[,'name'],
                                                  'project' = content_things_df$properties['project'],
                                                  'url_loc' = content_things_df[,'Locations@iot.navigationLink'],
-                                                 'url_datastream' = content_things_df[,'Datastreams@iot.navigationLink']))
+                                                 'url_datastream' = content_things_df[,'Datastreams@iot.navigationLink'],
+                                                 'knmicode' = content_things_df$properties['knmicode'],
+                                                 'pm10closecode' = content_things_df$properties['pm10closecode'],
+                                                 'pm10regiocode' = content_things_df$properties['pm10regiocode'],
+                                                 'pm10stadcode' = content_things_df$properties['pm10stadcode'],
+                                                 'pm25closecode' = content_things_df$properties['pm25closecode'],
+                                                 'pm25regiocode' = content_things_df$properties['pm25regiocode'],
+                                                 'pm25stadcode' = content_things_df$properties['pm25stadcode']                                                 
+                                                 ))
     
     # Kijk of er nog een pagina is die je dan wilt uitlezen
     if (length(content_things)>1){
