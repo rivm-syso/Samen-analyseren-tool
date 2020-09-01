@@ -71,9 +71,10 @@ knmi_stations$naam <- c("IJmuiden", "Schiphol", "De Bilt")
 knmi_labels <- as.list(paste("KNMI", knmi_stations$naam, sep = ": "))
 
 # Voor de lmlmarkers: locatie en labels opzetten
-lml_stations <- data.frame("code" = c("NL49014","NL49551","NL49572","NL49561","NL10636","NL49573","NL49570","NL49553","NL49012"))
-lml_stations$lat <- c(52.3597,52.463,52.4744,52.334,52.105,52.4789,52.4893,52.494,52.39)
-lml_stations$lon <- c(4.86621,4.60184,4.6288,4.77401,5.12446,4.57934,4.64053,4.60199,4.88781)
+lml_stations <- data.frame("code" = c("NL49014","NL49551","NL49572","NL49561","NL10636","NL49573","NL49570","NL49553","NL49012", "NL49546","NL49701","NL49704"))
+lml_stations$lat <- c(52.3597,52.463,52.4744,52.334,52.105,52.4789,52.4893,52.494,52.39,52.4202,52.448,52.428)
+lml_stations$lon <- c(4.86621,4.60184,4.6288,4.77401,5.12446,4.57934,4.64053,4.60199,4.88781,4.83206,4.81671,4.77348)
+
 
 # Maak in de labelling onderscheid tussen de LML en GGD stations
 lml_labels <- vector("list", length(lml_stations$code))
