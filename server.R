@@ -333,13 +333,13 @@ function(input, output, session){
       station_remove_pm25 <- NULL
       # Check welke stations geen pm10 en geen pm25 hebben doorgegeven
       if('pm10' %in% names(lml_stations_reactive$lml_data)){
-        lml_summary <- lml_stations_reactive$lml_data %>% group_by(station_number) %>% summarise(n(), sum(is.na(pm10)))
-        lml_summary_filter <- filter(lml_summary, lml_summary[,'sum(is.na(pm10))']==lml_summary[,'n()'])
+        lml_summary <- lml_stations_reactive$lml_data %>% dplyr::group_by(station_number) %>% dplyr::summarise(totaal=dplyr::n(), aantal_na=sum(is.na(pm10)))
+        lml_summary_filter <- filter(lml_summary, lml_summary[,'aantal_na']==lml_summary[,'totaal'])
         station_remove_pm10 <- lml_summary_filter$station_number
       }
       if('pm25' %in% names(lml_stations_reactive$lml_data)){
-        lml_summary <- lml_stations_reactive$lml_data %>% group_by(station_number) %>% summarise(n(), sum(is.na(pm25)))
-        lml_summary_filter <- filter(lml_summary, lml_summary[,'sum(is.na(pm25))']==lml_summary[,'n()'])
+        lml_summary <- lml_stations_reactive$lml_data %>% dplyr::group_by(station_number) %>% dplyr::summarise(totaal=dplyr::n(), aantal_na=sum(is.na(pm25)))
+        lml_summary_filter <- filter(lml_summary, lml_summary[,'aantal_na']==lml_summary[,'totaal'])
         station_remove_pm25 <- lml_summary_filter$station_number
       }
       
@@ -993,7 +993,10 @@ function(input, output, session){
       insert_nieuwe_data_sensor()
       print('schrijf sensordata weg naar file: downloadwindow')
       Sys.sleep(10) # Zien of dan wel de download getriggerd wordt
-      write.table(sensor_reactive$sensor_data, file, sep = ',',
+      write.table(sensor_reactive$sensor_data[,c('kit_id',	'date',	'lat',	'lon',	
+                                                 'pm10_kal',	'pm10',	'pm25_kal',	
+                                                 'pm25',	'rh',	'temp')], 
+                  file, sep = ',',
                   row.names = FALSE)
     }
   )
@@ -1008,7 +1011,10 @@ function(input, output, session){
     },
     # Geef de data op: de sensordata
     content = function(file) {
-      write.table(sensor_reactive$sensor_data, file, sep = ',',
+      write.table(sensor_reactive$sensor_data[,c('kit_id',	'date',	'lat',	'lon',	
+                                                 'pm10_kal',	'pm10',	'pm25_kal',	
+                                                 'pm25',	'rh',	'temp')], 
+                  file, sep = ',',
                   row.names = FALSE)
     }
   )
