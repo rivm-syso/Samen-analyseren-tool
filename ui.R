@@ -115,7 +115,7 @@ htmlTemplate("./www/template_samenmeten.wide.html",
                    br())),
                  # Set de opties voor de Data laden en downloaden
                  conditionalPanel(condition="input.tabset_data_analyse=='Data laden en downloaden'",  
-                                  div(h4("Welkom bij de Samen Anlayseren tool."),
+                                  div(h4("Welkom bij de Samen Analyseren tool"),
                                       p("Klik op de button om de tool te testen met een voorbeeld data set."),
                                       # Button om terug te gaan naar de standaard voorbeeld data
                                       actionButton("voorbeeld_data","Laad voorbeeld data"),
