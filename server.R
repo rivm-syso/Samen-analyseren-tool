@@ -1140,7 +1140,8 @@ function(input, output, session){
     # Check of er wel wat geselecteerd is om te plotten
     selected_sensor <- (TRUE %in% sensor_reactive$statinfo$selected)
     selected_lml <- (TRUE %in% lml_stations_reactive$statinfo$selected)
-    if(selected_lml==FALSE & selected_sensor==FALSE){
+    selected_lml_hasdata <- (TRUE %in% lml_stations_reactive$statinfo[which(lml_stations_reactive$statinfo$selected),'hasdata'])
+    if(selected_sensor==FALSE & selected_lml_hasdata == FALSE){
       validate("Selecteer een sensor of luchtmeetnetstation.")
     }
     
@@ -1263,11 +1264,15 @@ function(input, output, session){
     }
     
     selected_knmi <- knmi_stations_reactive$statinfo[which(knmi_stations_reactive$statinfo$selected),'station_number']
+    selected_knmi_hasdata <- (TRUE %in% knmi_stations_reactive$statinfo[which(knmi_stations_reactive$statinfo$selected),'hasdata'])
     if(is_empty(selected_knmi)){
       validate("Selecteer 1 KNMI-station.")
     }
     if(length(selected_knmi)>1){
       validate("U heeft meerdere KNMI-stations geslecteerd. Selecteer slechts 1 KNMI-station.")
+    }
+    if(!selected_knmi_hasdata){
+      validate("Er is geen data beschikbaar van dit KNMI-station.")
     }
     
     # Zorg voor de juiste gegevens van de sensoren
@@ -1285,10 +1290,15 @@ function(input, output, session){
   
   # Create windrose vanuit openair---- 
   output$windplot <- renderPlot({
+    # Check of er wel wat geselecteerd is om te plotten en dat er data is
     selected_id <- knmi_stations_reactive$statinfo[which(knmi_stations_reactive$statinfo$selected),'station_number']
+    selected_knmi_hasdata <- (TRUE %in% knmi_stations_reactive$statinfo[which(knmi_stations_reactive$statinfo$selected),'hasdata'])
     
     if(is_empty(selected_id)){
       validate("Selecteer een KNMI-station.")
+    }
+    if(!selected_knmi_hasdata){
+      validate("Er is geen data beschikbaar van dit KNMI-station.")
     }
     
     show_input <- filter_knmi_data_plot() 
@@ -1306,13 +1316,17 @@ function(input, output, session){
     }
     
     selected_knmi <- knmi_stations_reactive$statinfo[which(knmi_stations_reactive$statinfo$selected),'station_number']
+    selected_knmi_hasdata <- (TRUE %in% knmi_stations_reactive$statinfo[which(knmi_stations_reactive$statinfo$selected),'hasdata'])
+    
     if(is_empty(selected_knmi)){
       validate("Selecteer 1 KNMI-station.")
     }
     if(length(selected_knmi)>1){
       validate("U heeft meerdere KNMI-stations geslecteerd. Selecteer slechts 1 KNMI-station.")
     }
-    
+    if(!selected_knmi_hasdata){
+      validate("Er is geen data beschikbaar van dit KNMI-station.")
+    }
     
     # Zorg voor de juiste gegevens van de sensoren
     show_input <- filter_sensor_data_plot()
