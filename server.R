@@ -606,7 +606,13 @@ function(input, output, session){
     print('data samenvoegen:')
     
     # Omzetten naar een wide dataframe, dat er per kit_id en timestamp 1 rij data is
-    sensor_data_all_wide <- tidyr::pivot_wider(dplyr::distinct(sensor_data_all),names_from = 'grootheid', values_from='waarde')
+    # Om te zorgen dat er geen dubbelingen inzitten gebruik unieke rownumber
+    sensor_data_all_wide <-  sensor_data_all %>%
+           group_by(grootheid) %>%
+           mutate(row = row_number()) %>%
+           tidyr::pivot_wider(names_from = grootheid, values_from = waarde) %>%
+           select(-row)
+      
     print('head(sensor_data_all_wide)')
     print(head(sensor_data_all_wide))
     print('tail(sensor_data_all_wide)')
