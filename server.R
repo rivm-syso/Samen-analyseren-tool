@@ -377,7 +377,9 @@ function(input, output, session){
     station_metdata <- unique(lml_stations_reactive$lml_data$station_number)
     lml_stations_reactive$statinfo$hasdata[which(lml_stations_reactive$statinfo$station_number %in% station_metdata)] <- TRUE
     lml_stations_reactive$statinfo$name_icon[which(lml_stations_reactive$statinfo$station_number %in% station_metdata)] <- 'lml_black'
-    lml_stations_reactive$statinfo$selected[which(lml_stations_reactive$statinfo$station_number %in% station_metdata)] <- FALSE
+    
+    # Deselecteer voor de zekerheid alle stations
+    lml_stations_reactive$statinfo$selected <- FALSE
     
     # Verwijder alle factoren: zet om naar characters
     lml_stations_reactive$statinfo <- taRifx::remove.factors(lml_stations_reactive$statinfo)
@@ -681,6 +683,7 @@ function(input, output, session){
   check_selected_id <- function(id_select){
     # Bepaal of er op een sensr wordt geklikt, dus niet op lml station of knmi station.
     # Het lml station begint met 'NL', het knmi station is een numeric
+    print(paste0('SELECTED ID: ', id_select))
     if (is_empty(grep("^knmi|^NL", id_select)) & !is.numeric(id_select) ){
       # Check if sensor id already selected -> unselect sensor
       if((sensor_reactive$statinfo$selected[which(sensor_reactive$statinfo$kit_id == id_select)][1])){
