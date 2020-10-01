@@ -100,7 +100,7 @@ hoofd_choices = setNames(hoofd_choices$namen,hoofd_choices$labels)
 
 # Inladen overzicht projectnaam
 overzicht_project <- read.csv('./overzicht_projecten.csv',header=T)
-project_choices <- overzicht_project$project
+project_choices <- sort(overzicht_project$project)
 
 # Inladen overzicht gemeente code en naam
 overzicht_gemeente <- read.csv('./overzicht_code_gemeentes.csv',header=F)
