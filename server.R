@@ -607,19 +607,13 @@ function(input, output, session){
     print('data samenvoegen:')
     
     # Omzetten naar een wide dataframe, dat er per kit_id en timestamp 1 rij data is
-    # Om te zorgen dat er geen dubbelingen inzitten gebruik unieke rownumber
-    # Op een of andere manier werkt de pivor_wider niet goed wanneer er een grote dataset (11MB) (1,5 miljoen regels)
-    # wordt gebruikt. Maar kleinere sets wel. Dus hier splitsen per sensor en dan per sensor draaien
-    sensor_data_all_wide <- data.frame()
-    for(sens in unique(sensor_data_all$kit_id)){
-      sens_data <- filter(sensor_data_all, kit_id == sens)
-      sens_data_wide <- sens_data %>%
-        group_by(grootheid) %>%
-        mutate(row = row_number()) %>%
-        tidyr::pivot_wider(names_from = grootheid, values_from = waarde) %>%
-        select(-row)
-      sensor_data_all_wide <- plyr::rbind.fill(sensor_data_all_wide, sens_data_wide)
-    }
+    # Om te zorgen dat elke rij uniek is gebruik unieke rownumber
+    sensor_data_all_wide <- sensor_data_all %>%
+      group_by(kit_id, tijd, grootheid) %>%
+      mutate(row = row_number()) %>%
+      tidyr::pivot_wider(names_from = grootheid, values_from = waarde) %>%
+      select(-row)
+
       
     print('head(sensor_data_all_wide)')
     print(head(sensor_data_all_wide))
