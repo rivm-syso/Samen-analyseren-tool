@@ -193,7 +193,7 @@ function(input, output, session){
     for(groepen in unique(sensor_reactive$statinfo$groep)){
       if (groepen != geen_groep){
         # Haal de kit_ids van de sensoren in de groep op
-        sensor_groep <- sensor_reactive$statinfo[which(sensor_reactive$statinfo$groep == groepen),'kit_id']
+        sensor_groep <- sensor_reactive$statinfo$kit_id[which(sensor_reactive$statinfo$groep == groepen)]
         # Zoek de gegevens van de groep op
         te_middelen <- sensor_reactive$sensor_data[which(sensor_reactive$sensor_data$kit_id %in% sensor_groep),]
         # Bereken het gemiddelde van de groep. LET OP; vector middeling
@@ -641,7 +641,7 @@ function(input, output, session){
     show_input <- sensor_reactive$sensor_data[which(sensor_reactive$sensor_data$kit_id %in% selected_id),]    
 
     # Als er groepen zijn geselecteerd, bereken dan het gemiddelde
-    if (length(unique(sensor_reactive$statinfo$groep))>1){
+    if (length(unique(sensor_reactive$statinfo$groep))>1 | unique(sensor_reactive$statinfo$groep) != geen_groep){
       calc_groep_mean() # berekent groepsgemiddeldes
       show_input <- sp::merge(show_input,groepering_reactive$df_gem, all = T) } 
 
