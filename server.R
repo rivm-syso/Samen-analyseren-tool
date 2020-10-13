@@ -107,28 +107,22 @@ function(input, output, session){
   set_lml_station_select <- function(id_select){
     lml_stations_reactive$statinfo[lml_stations_reactive$statinfo$station_number == id_select, "selected"] <- TRUE
     lml_stations_reactive$statinfo[lml_stations_reactive$statinfo$station_number == id_select, "name_icon"] <- 'lml_white'
+    
     # Select een lijntype en geef dit mee aan het station
+    lijn_stat <- 'dashed' # Als er geen andere meer beschikbaar is, dan blijft het dit type
+    
     # Kies de eerste type in de lijst lijn_cat die aanwezig is
-    count  <- 1
-    # Zorg ervoor dat je blijft zoeken tot station een lijntype heeft of dat de lijntype op zijn
-    while (lijn_stat == "leeg" & count < length(lijn_cat)){
-      for (lijn_code in lijn_cat){
+    for (lijn_code in lijn_cat){
         if (lijn_code %in% unique(lml_stations_reactive$statinfo$lijn)){
-          count <- count + 1
           next # Als de type al is toebedeeld, sla deze dan over
         }else{ 
-          lijn_stat <- lijn_code # Vrije lijnstype voor de station
+          lijn_stat <- lijn_code # Vrije lijntype voor de station
+          break # Verlaat de forloop en ga met dit lijntype verder
         }
       }
-    }
-    # Als alle lijnen gebruikt zijn: kies dashed
-    if (count == length(lijn_cat)){
-      lijn_stat <- 'dashed'
-    }
     
     # Geef lijntype aan het station
     lml_stations_reactive$statinfo[lml_stations_reactive$statinfo$station_number == id_select, "lijn"] <- lijn_stat
-    lijn_stat <- "leeg"
   }
   
   # Functie: Set the stations as deselect and change color to base color
@@ -306,7 +300,8 @@ function(input, output, session){
     # Data die er al is wordt overschreven, dus zet de hasdata op FALSE
     lml_stations_reactive$statinfo$hasdata <- FALSE
     lml_stations_reactive$statinfo$name_icon <- 'lml_grey'
-
+    lml_stations_reactive$statinfo$lijn <- 'solid'
+      
     if(overig_reactive$data_set=='API_luchtmeetnet'){
       # Haal de gegevens op van de stations via de luchtmeetnet API
       print('ophalen api luchtmeetnet')

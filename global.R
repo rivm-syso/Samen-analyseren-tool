@@ -54,7 +54,6 @@ kleur_marker_sensor_no_data <- '#b8b8b8'
 geen_groep <- "" # default waarde als de sensor niet in een groep zit
 lijn_cat <- list('dashed', 'dotted', 'dotdash', 'longdash', 'twodash') # linetype: “blank”, “solid”, “dashed”, “dotted”, “dotdash”, “longdash”, “twodash”. 0123456
 
-lijn_stat <- "leeg"
 icons_stations <- iconList(
   knmi_black = makeIcon("symbol_knmi_black.svg"),
   lml_white = makeIcon("symbol_lml_white.svg"),
