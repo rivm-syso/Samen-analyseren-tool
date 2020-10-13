@@ -856,7 +856,7 @@ function(input, output, session){
     if(groepering_reactive$groepsnaamnaam %in% sensor_reactive$statinfo$groep){
       kleur_sensor <- sensor_reactive$statinfo[which(sensor_reactive$statinfo$groep == groepering_reactive$groepsnaamnaam),'kleur'][1]
     } else{
-      kleur_sensor <- sensor_reactive$statinfo[which(sensor_reactive$statinfo$huidig),'kleur'][1]
+      kleur_sensor <- sensor_reactive$statinfo$kleur[which(sensor_reactive$statinfo$huidig)][1]
     }
 
     # Geef aan dat de sensor bij die groep hoort.
