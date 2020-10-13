@@ -343,7 +343,7 @@ GetSamenMetenAPI <- function(projectnaam, ymd_vanaf, ymd_tot, data_opslag = data
     if(debug){print(paste0("grootheden ",grootheden ))}
     
     # Maak de output dataframe, met de url van de meetgevens per grootheid
-    output_df <- data_frame('url_meet' = overzicht_url_meetgegevens[,1], 'grootheid' = grootheden, 'kit_id' = kit_id)
+    output_df <- data.frame('url_meet' = overzicht_url_meetgegevens[,1], 'grootheid' = grootheden, 'kit_id' = kit_id)
     
     return(output_df)
   }
