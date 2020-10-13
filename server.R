@@ -666,6 +666,7 @@ function(input, output, session){
     # Deze functie maakt/filtert de lml data voor de visualisatie. De juiste component tijdreeks etc.
     # Geef aan welke stations zijn geselecteerd
     lml_selected_id <- lml_stations_reactive$statinfo[which(lml_stations_reactive$statinfo$selected),'station_number']
+
     # Zoek daarbij de gegevens op
     lml_show_input <- lml_stations_reactive$lml_data[which(lml_stations_reactive$lml_data$station_number %in% lml_selected_id),] 
 
@@ -1068,8 +1069,8 @@ function(input, output, session){
     
     # Check of er wel wat geselecteerd is om te plotten
     selected_sensor <- (TRUE %in% sensor_reactive$statinfo$selected)
-    selected_lml <- (TRUE %in% lml_stations_reactive$statinfo$selected)
-    if(selected_lml==FALSE & selected_sensor==FALSE){
+    selected_lml_hasdata <- (TRUE %in% lml_stations_reactive$statinfo[which(lml_stations_reactive$statinfo$selected),'hasdata'])
+    if(selected_sensor==FALSE & selected_lml_hasdata == FALSE){
       validate("Selecteer een sensor of luchtmeetnetstation.")
     }
     
@@ -1095,7 +1096,7 @@ function(input, output, session){
     }
     
     # Check of er een luchtmeetnet station geselecteerd is:
-    if(selected_lml){
+    if(selected_lml_hasdata){
       # Filter de lml data op de juiste gegevens
       lml_show_input <- filter_lml_data_plot()
       # Zorg ook voor het kleur en lijntype overzicht
@@ -1148,7 +1149,6 @@ function(input, output, session){
     
     # Check of er wel wat geselecteerd is om te plotten
     selected_sensor <- (TRUE %in% sensor_reactive$statinfo$selected)
-    selected_lml <- (TRUE %in% lml_stations_reactive$statinfo$selected)
     selected_lml_hasdata <- (TRUE %in% lml_stations_reactive$statinfo[which(lml_stations_reactive$statinfo$selected),'hasdata'])
     if(selected_sensor==FALSE & selected_lml_hasdata == FALSE){
       validate("Selecteer een sensor of luchtmeetnetstation.")
@@ -1174,10 +1174,11 @@ function(input, output, session){
       kit_kleur <- taRifx::remove.factors(kit_kleur)
     }
     
-    # Check of er een luchtmeetnet station geselecteerd is:
-    if(selected_lml){
+    # Check of er een luchtmeetnet station geselecteerd is met data:
+    if(selected_lml_hasdata){
       # Filter de lml data op de juiste gegevens
       lml_show_input <- filter_lml_data_plot()
+      
       # Zorg ook voor het kleur en lijntype overzicht
       lml_kit_kleur <- unique(lml_stations_reactive$statinfo[which(lml_stations_reactive$statinfo$selected),c('station_number','kleur','groep', 'lijn')])
       names(lml_kit_kleur)[names(lml_kit_kleur)=="station_number"] <- "kit_id"
