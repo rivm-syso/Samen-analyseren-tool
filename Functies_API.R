@@ -640,8 +640,8 @@ GetKNMIAPI <- function(stations, ymd_vanaf, ymd_tot){
   stns <- samengevoegd
 
   # Ophalen van de meetgegevens van de stations
-  knmi_uur_wget_string <- paste('wget -O - --post-data="stns=', stns, '&start=',ymdh_vanaf,'&end=',ymdh_tot,
-                                '&vars=DD:FF:T:U" http://projects.knmi.nl/klimatologie/uurgegevens/getdata_uur.cgi', sep="") 
+  knmi_uur_wget_string <- paste("wget -O - --post-data='stns=", stns, "&start=",ymdh_vanaf,"&end=",ymdh_tot,
+                                "&vars=DD:FF:T:U' http://projects.knmi.nl/klimatologie/uurgegevens/getdata_uur.cgi", sep="") 
   print(knmi_uur_wget_string)
   knmi_uur_raw <- system(knmi_uur_wget_string,intern=T)
   
