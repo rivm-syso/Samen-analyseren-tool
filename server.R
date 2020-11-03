@@ -12,8 +12,8 @@
 
 function(input, output, session){ 
   
-  # Limiet voor het uploaden van data bestanden aangepast naar 30MB
-  options(shiny.maxRequestSize=10.5*1024^2) 
+  # Limiet voor het uploaden van data bestanden 
+  options(shiny.maxRequestSize=100*1024^2) 
   
   ## INITIALISATIE ----
   # Generate base map----
