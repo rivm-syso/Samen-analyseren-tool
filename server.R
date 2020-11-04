@@ -1086,7 +1086,6 @@ function(input, output, session){
         kit_kleur[which(kit_kleur$groep != geen_groep),'kit_id'] <- kit_kleur[which(kit_kleur$groep != geen_groep),'groep']
         kit_kleur <- unique(kit_kleur)
       }
-      
       kit_kleur <- taRifx::remove.factors(kit_kleur)
     }
     
@@ -1116,21 +1115,16 @@ function(input, output, session){
     
     print(show_input)
     
-    # TODO: met het plotten van de errorbar en de N (aantal) gaat het niet goed als er een groep is
-    
     # maak de plot
     p_barplot <- ggplot(data = show_input, aes_string(x = 'kit_id', y=comp, group = "kit_id", fill="kit_id")) +
       geom_col() +
-      # geom_errorbar(aes_string(ymin=paste0(comp,'-se'), ymax=paste0(comp,'+se'))) +
       geom_linerange(aes_string(ymin=paste0(comp,'-se'), ymax=paste0(comp,'+se'))) +
       
       scale_fill_manual(values = kleur_array) +
       labs(x='', y = 'gemiddelde concentratie (ug/m3)', title=paste0('Component: ',comp)) +
-      geom_text(data=show_input,aes_string(x='kit_id',y=5,label='N'),vjust=0, colour='white') +
       theme_bw() +
       theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1))
     
-
     plot(p_barplot)
   })
   
