@@ -97,16 +97,16 @@ function(input, output, session){
   set_lml_station_deselect <- function(id_select){
     lml_stations_reactive$statinfo[lml_stations_reactive$statinfo$station_number == id_select, "selected"] <- FALSE 
     lml_stations_reactive$statinfo[lml_stations_reactive$statinfo$station_number == id_select& 
-                                     lml_stations_reactive$statinfo$hasdata == TRUE, "name_icon"]  <- 'lml_black'
+                                     lml_stations_reactive$statinfo$hasdata == TRUE, "name_icon"]  <- 'lml_hasdata'
     lml_stations_reactive$statinfo[lml_stations_reactive$statinfo$station_number == id_select& 
-                                     lml_stations_reactive$statinfo$hasdata == FALSE, "name_icon"]  <- 'lml_grey'
+                                     lml_stations_reactive$statinfo$hasdata == FALSE, "name_icon"]  <- 'lml_nodata'
     lml_stations_reactive$statinfo[lml_stations_reactive$statinfo$station_number == id_select, "lijn"] <- 'blank' 
   }
   
   # Functie: Set station as select and specify color
   set_lml_station_select <- function(id_select){
     lml_stations_reactive$statinfo[lml_stations_reactive$statinfo$station_number == id_select, "selected"] <- TRUE
-    lml_stations_reactive$statinfo[lml_stations_reactive$statinfo$station_number == id_select, "name_icon"] <- 'lml_white'
+    lml_stations_reactive$statinfo[lml_stations_reactive$statinfo$station_number == id_select, "name_icon"] <- 'lml_selected'
     
     # Select een lijntype en geef dit mee aan het station
     lijn_stat <- 'dashed' # Als er geen andere meer beschikbaar is, dan blijft het dit type
@@ -129,9 +129,9 @@ function(input, output, session){
   set_knmi_station_deselect <- function(id_select){
     knmi_stations_reactive$statinfo[knmi_stations_reactive$statinfo$station_number == id_select, "selected"] <- FALSE 
     knmi_stations_reactive$statinfo[knmi_stations_reactive$statinfo$station_number == id_select & 
-                                      knmi_stations_reactive$statinfo$hasdata == TRUE, "name_icon"] <- 'knmi_black'
+                                      knmi_stations_reactive$statinfo$hasdata == TRUE, "name_icon"] <- 'knmi_hasdata'
     knmi_stations_reactive$statinfo[knmi_stations_reactive$statinfo$station_number == id_select& 
-                                      knmi_stations_reactive$statinfo$hasdata == FALSE, "name_icon"] <- 'knmi_grey'
+                                      knmi_stations_reactive$statinfo$hasdata == FALSE, "name_icon"] <- 'knmi_nodata'
     
     
       }
@@ -139,7 +139,7 @@ function(input, output, session){
   # Functie: Set station as select and specify color
   set_knmi_station_select <- function(id_select){
     knmi_stations_reactive$statinfo[knmi_stations_reactive$statinfo$station_number == id_select, "selected"] <- TRUE 
-    knmi_stations_reactive$statinfo[knmi_stations_reactive$statinfo$station_number == id_select, "name_icon"] <- 'knmi_white'
+    knmi_stations_reactive$statinfo[knmi_stations_reactive$statinfo$station_number == id_select, "name_icon"] <- 'knmi_selected'
   }
   
   # Functie: plaats sensoren met juiste kleur op de kaart  
@@ -299,7 +299,7 @@ function(input, output, session){
     
     # Data die er al is wordt overschreven, dus zet de hasdata op FALSE
     lml_stations_reactive$statinfo$hasdata <- FALSE
-    lml_stations_reactive$statinfo$name_icon <- 'lml_grey'
+    lml_stations_reactive$statinfo$name_icon <- 'lml_nodata'
     lml_stations_reactive$statinfo$lijn <- 'solid'
       
     if(overig_reactive$data_set=='API_luchtmeetnet'){
@@ -371,7 +371,7 @@ function(input, output, session){
     # Geef aan van welke stations nu databeschikbaar is:
     station_metdata <- unique(lml_stations_reactive$lml_data$station_number)
     lml_stations_reactive$statinfo$hasdata[which(lml_stations_reactive$statinfo$station_number %in% station_metdata)] <- TRUE
-    lml_stations_reactive$statinfo$name_icon[which(lml_stations_reactive$statinfo$station_number %in% station_metdata)] <- 'lml_black'
+    lml_stations_reactive$statinfo$name_icon[which(lml_stations_reactive$statinfo$station_number %in% station_metdata)] <- 'lml_hasdata'
     
     # Deselecteer voor de zekerheid alle stations
     lml_stations_reactive$statinfo$selected <- FALSE
@@ -392,7 +392,7 @@ function(input, output, session){
     # reactive values opgeslagen en getoond op de kaart
     # Data die er al is wordt overschreven, dus zet de hasdata op FALSE
     knmi_stations_reactive$statinfo$hasdata <- FALSE
-    knmi_stations_reactive$statinfo$name_icon <- 'knmi_grey'
+    knmi_stations_reactive$statinfo$name_icon <- 'knmi_nodata'
 
     if(overig_reactive$data_set=='API_knmi'){
       # Haal de gegevens op van de stations via de KNMI API
@@ -421,7 +421,7 @@ function(input, output, session){
      # Geef aan van welke stations nu databeschikbaar is:
      station_metdata <- unique(knmi_stations_reactive$knmi_data$station_number)
      knmi_stations_reactive$statinfo$hasdata[which(knmi_stations_reactive$statinfo$station_number %in% station_metdata)] <- TRUE
-     knmi_stations_reactive$statinfo$name_icon[which(knmi_stations_reactive$statinfo$station_number %in% station_metdata)] <- 'knmi_black'
+     knmi_stations_reactive$statinfo$name_icon[which(knmi_stations_reactive$statinfo$station_number %in% station_metdata)] <- 'knmi_hasdata'
      knmi_stations_reactive$statinfo$selected[which(knmi_stations_reactive$statinfo$station_number %in% station_metdata)] <- FALSE
      
      # Verwijder alle factoren: zet om naar characters

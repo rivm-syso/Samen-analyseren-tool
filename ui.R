@@ -95,7 +95,7 @@ htmlTemplate("./www/template_samenmeten.wide.html",
                           z-index: 1100;}")),
     conditionalPanel(condition="$('html').hasClass('shiny-busy')",
                      tags$div("De gegevens worden opgehaald, dit kan een tijd duren....",id="loadmessage")),
-  # Sidebar layout met input en output definities
+  # Sidebar layout met input en output definities ----
   sidebarLayout( 
     # Sidebar panel voor leaflet map om sensoren te selecteren
     sidebarPanel(width=3,
@@ -105,13 +105,13 @@ htmlTemplate("./www/template_samenmeten.wide.html",
                    div(
                    div("Sensor: ", br(),img(src="symbol_sensor_black.svg"), "Met gegevens"),
                    div(img(src="symbol_sensor_grey.svg"), "Zonder gegevens"),
-                   div(img(src="symbol_sensor_pink.svg"), "Geselecteerd"),
+                   div(img(src="symbol_sensor_geel.svg"), "Geselecteerd"),
                    div("KNMI-station: ", br(),img(src="symbol_knmi_black.svg"), "Met gegevens"),
                    div(img(src="symbol_knmi_grey.svg"), "Zonder gegevens"),
-                   div(img(src="symbol_knmi_white.svg"), "Geselecteerd"),
+                   div(img(src="symbol_knmi_wijnrood.svg"), "Geselecteerd"),
                    div("Luchtmeetnet-station: ", br(),img(src="symbol_lml_black.svg"), "Met gegevens"),
                    div(img(src="symbol_lml_grey.svg"), "Zonder gegevens"),
-                   div(img(src="symbol_lml_white.svg"), "Geselecteerd"),
+                   div(img(src="symbol_lml_wijnrood.svg"), "Geselecteerd"),
                    br())),
                  # Set de opties voor de Data laden en downloaden
                  conditionalPanel(condition="input.tabset_data_analyse=='Data laden en downloaden'",  
@@ -162,7 +162,7 @@ htmlTemplate("./www/template_samenmeten.wide.html",
                    )
       ),
     
-    # Main panel voor outputs 
+    # Main panel voor outputs ----
     mainPanel(width=9,
       #Output: Leaflet map voor sensorselectie
       leafletOutput("map", height = "300px"),

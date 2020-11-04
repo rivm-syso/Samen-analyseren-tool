@@ -47,7 +47,8 @@ lml_file <- "Voorbeeld_HLL_LML.csv"
 knmi_file <- "Voorbeeld_HLL_KNMI.csv" 
 
 choices <- c( "PM10 - gekalibreerd", "PM2.5 - gekalibreerd","PM10", "PM2.5") #set up choices for shiny app
-kleur_cat <- list('#42145f','#ffb612','#a90061','#777c00','#007bc7','#673327','#e17000','#39870c', '#94710a','#01689b','#f9e11e','#76d2b6','#d52b1e','#8fcae7','#ca005d','#275937','#f092cd')
+kleur_cat <- list('#ffb612','#42145f','#777c00','#007bc7','#673327','#e17000','#39870c', '#94710a','#01689b','#f9e11e','#76d2b6','#d52b1e','#8fcae7','#ca005d','#275937','#f092cd')
+kleur_cat<-rev(kleur_cat) # Dan komen de kleuren wel goed om, namelijk de meest saturated eerst
 kleur_sensor <- "leeg"
 kleur_marker_sensor <- "#000000" # default kleur sensor grey=#525252 black=000000
 kleur_marker_sensor_no_data <- '#b8b8b8'
@@ -56,11 +57,19 @@ lijn_cat <- list('dashed', 'dotted', 'dotdash', 'longdash', 'twodash') # linetyp
 
 icons_stations <- iconList(
   knmi_black = makeIcon("symbol_knmi_black.svg"),
-  lml_white = makeIcon("symbol_lml_white.svg"),
-  knmi_white = makeIcon("symbol_knmi_white.svg"),
+  lml_white = makeIcon("symbol_lml_wijnrood.svg"),
+  knmi_white = makeIcon("symbol_knmi_wijnrood.svg"),
   lml_black = makeIcon("symbol_lml_black.svg"),
   knmi_grey = makeIcon("symbol_knmi_grey.svg"),
   lml_grey = makeIcon("symbol_lml_grey.svg"))
+
+icons_stations <- iconList(
+  knmi_hasdata = makeIcon("symbol_knmi_black.svg"),
+  lml_selected = makeIcon("symbol_lml_wijnrood.svg"),
+  knmi_selected = makeIcon("symbol_knmi_wijnrood.svg"),
+  lml_hasdata = makeIcon("symbol_lml_black.svg"),
+  knmi_nodata = makeIcon("symbol_knmi_grey.svg"),
+  lml_nodata = makeIcon("symbol_lml_grey.svg"))
 
 input_df <- NULL
 sensor_unique <- NULL
@@ -79,7 +88,7 @@ knmi_stations_all$statcode <- paste0("KNMI", knmi_stations_all$station_number)
 knmi_stations_all <- knmi_stations_all[which(knmi_stations_all$station_number %in% nummers_knmi),]
 knmi_stations_all$selected <- FALSE
 knmi_stations_all$hasdata <- FALSE
-knmi_stations_all$name_icon <- 'knmi_grey'
+knmi_stations_all$name_icon <- 'knmi_nodata'
 knmi_labels <- as.list(paste("KNMI", knmi_stations_all$station_number, sep = ": "))
 
 
@@ -87,8 +96,9 @@ knmi_labels <- as.list(paste("KNMI", knmi_stations_all$station_number, sep = ": 
 lml_stations_all <- GetLMLallstatinfoAPI()
 lml_stations_all$selected <- FALSE
 lml_stations_all$hasdata <- FALSE
-lml_stations_all$name_icon <- 'lml_grey'
+lml_stations_all$name_icon <- 'lml_nodata'
 lml_stations_all$kleur <- '#000000'
+lml_stations_all$kleur <- '#a90061'
 lml_stations_all$lijn <- 'solid'
 lml_stations_all$groep <- geen_groep
 
