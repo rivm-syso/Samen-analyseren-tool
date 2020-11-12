@@ -1119,7 +1119,6 @@ function(input, output, session){
     p_barplot <- ggplot(data = show_input, aes_string(x = 'kit_id', y=comp, group = "kit_id", fill="kit_id")) +
       geom_col() +
       geom_linerange(aes_string(ymin=paste0(comp,'-se'), ymax=paste0(comp,'+se'))) +
-      
       scale_fill_manual(values = kleur_array) +
       labs(x='', y = 'gemiddelde concentratie (ug/m3)', title=paste0('Component: ',comp)) +
       theme_bw() +

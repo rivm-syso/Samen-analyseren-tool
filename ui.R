@@ -14,66 +14,43 @@ htmlTemplate("./www/template_samenmeten.wide.html",
              pageTitle="Samen Analyseren tool",
              
              aboutSite=div(
-               h3("Gebruikershandleiding"),
-               p("In de ", a("handleiding", href = "https://www.samenmetenaanluchtkwaliteit.nl/documenten/gebruikershandleiding-samen-analyseren-tool", 
-                             target = 'blank'), "vindt u meer informatie over het algemene gebruik van de Samen Analyseren Tool."),
-               h3("Verantwoording"),
-                           
-                           p("Dit dashboard is door het ", a("RIVM", href = "https://rivm.nl", target = 'blank'), "ontwikkeld voor snelle analyse van sensordata.
-                             Het maakt gebruik van de R-package",
-                             a("openair.", 
-                               href = "http://davidcarslaw.github.io/openair/", target="_blank"),
-                             
-                             p("Het huidige dashboard is een prototype en nog volop in ontwikkeling. 
-                               Het wordt gebruikt om verschillende analyses en visualisaties te testen.
-                               De broncode van de tool is te vinden via",
-                              a("GitHub",
-                                href = "https://github.com/rivm-syso/Samen-analyseren-tool", target = "_blank"),
-                                ", zodat we samen met u het dashboard verder kunnen ontwikkelen."),
-                             
-                             h4("Data"),
-                             p("De getoonde sensordata zijn afkomstig uit de", 
-                               a("Samen Meten database.",
-                                 href = "https://samenmeten.rivm.nl/dataportaal/", target = 'blank'),
-                               "De sensormetingen die in de voorbeelddata te zien zijn, zijn gedaan met goedkope fijnstofsensoren van het project",
-                               a("Hollandse Luchten.",
-                                 href = "https://hollandseluchten.waag.org/", target = 'blank'),
-                               "De getoonde waarden geven een indicatie van de fijnstofconcentratie. 
-                               De data zijn niet geschikt om te toetsen aan grenswaarden."
-                             ),
-                             p("Elke sensor kan worden vergeleken met een meetstation van het", a("Luchtmeetnet", href = "https://luchtmeetnet.nl", target = 'blank'), ". 
-        De windgegevens voor het berekenen van de windroos komen van een weerstation van het ", a("KNMI",
-                                                                                                                  href = "https://knmi.nl", target = 'blank'),". 
-        De locaties van de gebruikte luchtmeetnet- en weerstations worden met icoontjes op de kaart getoond."),
-                             p("In het tabblad 'Data laden en downloaden' kunt u de data van de sensoren van een project of gemeente, van de meetstations van het 
-                               luchtmeetnet en van de meetstations van het KNMI laden. Deze gegevens worden via API's bij de desbetreffende partij opgevraagd. 
-                               Het opvragen en ophalen van de gegevens kan enige tijd duren. Met de downloadfunctie kunt u de gegevens opslaan, zodat u niet
-                               iedere keer de gegevens opnieuw hoeft op te vragen."),
-                             h4("Gekalibreerde waarden"),
-                             p("Details over de kalibratieprocedure zijn te vinden op het", 
-                               a("Samen Meten Kennisportaal.",
+               p("De Samen Analyseren Tool is door het RIVM ontwikkeld voor het downloaden en analyseren van sensordata. 
+                 Daarnaast kun je met deze tool de sensordata  eenvoudig combineren met officiële meetdata van het 
+                 Landelijk Luchtmeetnet en met de weergegevens van het KNMI. De tool maakt gebruik van het R package",
+                 a("openair", href = "http://davidcarslaw.github.io/openair/", target="_blank"),
+                 " en wordt geheel open source aangeboden. "),
+               h3("Data"),
+               p("De sensordata is afkomstig uit de",
+                 a("Samen Meten database", href = "https://samenmeten.rivm.nl/dataportaal/", target = 'blank'),
+                 ". De getoonde waarden geven een indicatie van de fijnstofconcentratie. De data is niet geschikt 
+                 om te toetsen aan grenswaarden."),
+               p("Elke sensor kan worden vergeleken met een meetstation van het ", 
+                 a("Luchtmeetnet", href = "https://luchtmeetnet.nl", target = 'blank'), 
+                 ". De windgegevens voor het berekenen van de windroos komen van een weerstation van het KNMI. 
+                 De locaties van de gebruikte luchtmeetnet- en weerstations worden met icoontjes op de kaart getoond."),
+               p("In het tabblad 'Data laden en downloaden' kunt u de data van de sensoren van een project of gemeente, 
+                 van de meetstations van het luchtmeetnet en van de meetstations van het KNMI laden. Deze gegevens worden 
+                 via API's bij de desbetreffende partij opgevraagd. Het opvragen en ophalen van de gegevens kan enige 
+                 tijd duren. Met de downloadfunctie kunt u de gegevens opslaan, zodat u niet iedere keer de gegevens 
+                 opnieuw hoeft op te vragen."),
+               h3("Gekalibreerde waarden"),
+               p("De gedownloade data bevat ruwe én gekalibreerde data. Details over de kalibratieprocedure zijn te 
+                 vinden op het", a("Samen Meten Kennisportaal.",
                                  href = "https://www.samenmetenaanluchtkwaliteit.nl/dataportaal/kalibratie-van-fijnstofsensoren", target = 'blank'),
-                               "De kalibratie is nog niet met terugwerkende kracht uitgevoerd. Hierdoor kan er minder gekalibreerde data aanwezig zijn. 
-        We krijgen steeds meer begrip van situaties waarin sensoren – ook na kalibratie – minder betrouwbare waarden geven. 
-        Dit zijn bijvoorbeeld situaties met zeer hoge luchtvochtigheid (vanaf 97 à 98% zoals gemeten op KNMI stations). 
-        Met name in de wintermaanden in de nacht en vroege ochtend kan de luchtvochtigheid zeer hoog kan zijn. 
-        Maar het kan ook gaan om sensoren die altijd of vaak afwijken van de patronen die andere sensoren laten zien.  
-        Het is op dit moment nog niet mogelijk om de meetwaarden van deze uren of sensoren uit de gegevens te filteren. Daar werken we wel aan.
-        "
-                             )),
-                           h3("Nieuw in deze tool"),
-                           p("De tool is nog in ontwikkeling. Hieronder vindt u de laatste aanpassingen:"),
-               p("Sinds 26 augustus 2020"),
-                            tags$ul(tags$li("Layout: welkomstekst, tabblad voor het laden en downloaden van de data, tabblad voor het visualiseren en analyseren van de data"),
-                           tags$li("Voorbeelddata: kleine dataset om de tool uit te proberen"),
-                           tags$li("Data downloaden en analyseren: mogelijkheid om zelf de data van de sensoren van een project of gemeente, meetstations van luchtmeetnet en meetstations van het KNMI te analyseren en downloaden via API's")),
-               
-               p("Sinds 12 juni 2020"),
-               tags$ul(tags$li("Layout: grotere kaart beschikbaar"),
-                       tags$li("Tijdreeksselectie: makkelijker vanaf een specifieke dag te filteren"),
-                       tags$li("Groepsselectie: makkelijker de sensoren te clusteren in een groep zodat groepsgemiddeldes kunnen worden vergeleken"))
-               
-                           ),
+                 " De kalibratie van sensordata wordt gedaan met behulp van secundaire data die niet altijd beschikbaar zijn. 
+                 Het kan daarom voorkomen dat voor sommige tijdsperioden geen gekalibreerde waarden in de database aanwezig zijn. "),
+               p("We krijgen steeds meer begrip van situaties waarin de sensoren – ook na kalibratie – minder betrouwbare
+                 waarden geven. Dit zijn bijvoorbeeld situaties met zeer hoge luchtvochtigheid (vanaf 97 à 98% zoals 
+                 gemeten op KNMI stations). Met name in de wintermaanden in de nacht en vroege ochtend kan de luchtvochtigheid 
+                 zeer hoog kan zijn. Daarnaast kan het zijn dat deze sensoren altijd of vaak afwijken van de patronen die andere 
+                 sensoren laten zien. Het is op dit moment nog niet mogelijk om de meetwaarden van deze uren of sensoren uit de 
+                 gegevens te filteren. Daar werken we wel aan."),
+               h3("Open source"),
+               p("De broncode voor deze tool wordt geheel open source aangeboden via onze ",
+                 a("GitHub-pagina",
+                   href = "https://github.com/rivm-syso/Samen-analyseren-tool", target = "_blank"),
+                 ". Iedereen mag deze tool verder ontwikkelen of aanpassen, mits de aanpassingen weer open source beschikbaar komen.")
+),
   # Vanaf hier begint de tool zelf ----
   fluidPage=fluidPage(
     
