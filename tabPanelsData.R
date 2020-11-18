@@ -59,7 +59,7 @@ tpData <- function(){
                             # Button om de luchtmeetnetsations op de kaart te zetten
                             actionButton("show_luchtmeetnet", "Laad locaties luchtmeetnetstations"),
                             # Output: tabel met de geslecteerde LML station, voor het downloaden van de data
-                            p('Geslecteerde stations:'),
+                            p('Geselecteerde stations:'),
                             tableOutput("stations_lml"),
                             # Output: met de begin en eind datum erin, kan in stap1 worden ingesteld
                             textOutput('tijdreeks_tpdata_lml'),
@@ -87,7 +87,7 @@ tpData <- function(){
                              # Button om de luchtmeetnetsations op de kaart te zetten
                              actionButton("show_knmi", "Laad locaties knmi-stations"),
                              # # Output: tabel met de geslecteerde knmi station, voor het downloaden van de data
-                             p('Geslecteerde stations:'),
+                             p('Geselecteerde stations:'),
                              tableOutput("stations_knmi"),
                              # Output: met de begin en eind datum erin, kan in stap1 worden ingesteld
                              textOutput('tijdreeks_tpdata_knmi'),
