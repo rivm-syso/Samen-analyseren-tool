@@ -208,7 +208,7 @@ function(input, output, session){
     if(overig_reactive$data_set=='API_samenmeten'){
       print('Sensor data inladen via API')
       # Haal de gegevens op van de sensoren via de samenmeten API
-      sensor_reactive$sensor_data <- get_sensor_data_api()
+      sensor_reactive$sensor_data <- as.data.frame(get_sensor_data_api())
       # Bij de sensordata van de API zit ook informatie over de het dichtstbijzijnde knmistation en de luchtmeetnetstations
       # Deze informatie wil je doorgeven aan de andere tabbladen zodat die stations meteen geselecteerd worden
       knmicode_bij_sensor <- unique(sensor_reactive$sensor_data$knmicode)
