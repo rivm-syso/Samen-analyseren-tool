@@ -15,14 +15,14 @@
 # ook ge-update worden, dus verwijder zo nu en dan je www folder.
 # Let op: zorg ervoor dat je niet zelf ook een folder 'www' hebt, anders worden de bestanden niet
 # opgehaald. 
-if (!dir.exists('www')){
-  download.file('https://github.com/rivm-syso/RIVM-huisstijl-shiny/archive/master.zip', destfile = "wwwdest.zip")
-  unzip('wwwdest.zip', exdir='.')
-  file.rename('RIVM-huisstijl-shiny-master', 'www')
-}
+# if (!dir.exists('www')){
+#   download.file('https://github.com/rivm-syso/RIVM-huisstijl-shiny/archive/master.zip', destfile = "wwwdest.zip")
+#   unzip('wwwdest.zip', exdir='.')
+#   file.rename('RIVM-huisstijl-shiny-master', 'www')
+# }
 
 # HTML template voor de opmaak/styling
-htmlTemplate("./www/template.wide.html",
+htmlTemplate("./www_totaal/template.wide.html",
              pageTitle=paste("Prototype Samen Analyseren tool: project ", projectnaam),
              
              aboutSite=div(h3("Verantwoording"),
