@@ -37,7 +37,7 @@ source("tabPanels.R", local = TRUE)
 ## Initialise ----
 projectnaam <- "Hollandse Luchten"
 file <- "HLL_voorbeeld_data.RDS"
-file <- "HLL_20190401_20200701.RDS"
+file <- "HLL_20190401_20201201.RDS"
 kwal_file <- "kwalindex_uur_HLL.RDS"
 # # 
 # file <- "testdata_BB.RDS"
