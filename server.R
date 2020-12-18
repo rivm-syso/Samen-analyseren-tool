@@ -1049,8 +1049,7 @@ function(input, output, session){
   output$stations_lml <- renderTable({
     stations_df <- data.frame('Naam' = lml_stations_reactive$statinfo[which(lml_stations_reactive$statinfo$selected),c('naam')],
                               'Nummer' = lml_stations_reactive$statinfo[which(lml_stations_reactive$statinfo$selected),c('station_number')],
-                              'Organisatie' = lml_stations_reactive$statinfo[which(lml_stations_reactive$statinfo$selected),c('organisatie')],
-                              'type' = lml_stations_reactive$statinfo[which(lml_stations_reactive$statinfo$selected),c('stattype')])
+                              'Organisatie' = lml_stations_reactive$statinfo[which(lml_stations_reactive$statinfo$selected),c('organisatie')])
   })
   # Create tabel geselecteerde stations voor de download pagina ----
   output$stations_knmi <- renderTable({
