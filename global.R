@@ -42,9 +42,9 @@ source("Functies_API.R", local = TRUE)
 
 ## Initialise ----
 projectnaam <- "Hollandse Luchten"
-sensor_file <- "Voorbeeld_HLL_sensoren.csv" 
-lml_file <- "Voorbeeld_HLL_LML.csv" 
-knmi_file <- "Voorbeeld_HLL_KNMI.csv" 
+sensor_file <- "Voorbeeld_sensoren.csv" 
+lml_file <- "Voorbeeld_luchtmeetnet.csv" 
+knmi_file <- "Voorbeeld_knmi.csv" 
 
 choices <- c( "PM10 - gekalibreerd", "PM2.5 - gekalibreerd","PM10", "PM2.5") #set up choices for shiny app
 kleur_cat <- list('#ffb612','#42145f','#777c00','#007bc7','#673327','#e17000','#39870c', '#94710a','#01689b','#f9e11e','#76d2b6','#d52b1e','#8fcae7','#ca005d','#275937','#f092cd')
