@@ -263,7 +263,7 @@ function(input, output, session){
     # Check of er wel metingen zijn, bij de API kan het zo zijn dat er alleen maar de locatie
     # wordt opgehaald. Er zijn dan geen tijdwaardes en metingen
     sensor_reactive$sensor_data <- dplyr::filter(sensor_reactive$sensor_data, !(is.na(date)))
-    
+
     # Voor de sensormarkers: locatie, label en kleur etc. Per sensor één unieke locatie
     sensor_unique <- unique(sensor_reactive$sensor_data[,c('kit_id','lat','lon')])
     sensor_unique$selected <- FALSE
@@ -1084,6 +1084,9 @@ function(input, output, session){
     # Geef aan welk component geplot moet worden
     comp <- input$Component
     
+    # Neem daarbij het juiste label
+    comp_label <- filter(overzicht_component, component==comp)['label']
+    
     # Check of er wel wat geselecteerd is om te plotten
     selected_sensor <- (TRUE %in% sensor_reactive$statinfo$selected)
     selected_lml_hasdata <- (TRUE %in% lml_stations_reactive$statinfo[which(lml_stations_reactive$statinfo$selected),'hasdata'])
@@ -1142,14 +1145,14 @@ function(input, output, session){
       geom_col() +
       geom_linerange(aes_string(ymin=paste0(comp,'-se'), ymax=paste0(comp,'+se'))) +
       scale_fill_manual(values = kleur_array) +
-      labs(x='', y = 'gemiddelde concentratie (ug/m3)', title=paste0('Component: ',comp)) +
+      labs(x='',  y = expression(paste("Gemiddelde concentratie (", mu, "g/",m^3,")")), title=paste0('Component: ',comp_label)) +
       theme_bw() +
       theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1))
     
     plot(p_barplot)
   })
   
-  
+
   
   
   # Create time plot met ggplot ----
@@ -1157,6 +1160,9 @@ function(input, output, session){
     # Geef aan welk component geplot moet worden
     comp <- input$Component
     
+    # Neem daarbij het juiste label
+    comp_label <- filter(overzicht_component, component==comp)['label']
+
     # Check of er wel wat geselecteerd is om te plotten
     selected_sensor <- (TRUE %in% sensor_reactive$statinfo$selected)
     selected_lml_hasdata <- (TRUE %in% lml_stations_reactive$statinfo[which(lml_stations_reactive$statinfo$selected),'hasdata'])
@@ -1215,7 +1221,7 @@ function(input, output, session){
       geom_line(aes(linetype= kit_id, col=kit_id)) +
       scale_color_manual(values = kleur_array) +
       scale_linetype_manual(values = lijn_array) +
-      labs(x = "Tijd", y = 'concentratie (ug/m3)', title=paste0('Component: ',comp)) +
+      labs(x = "", y = expression(paste("Concentratie (", mu, "g/",m^3,")")), title=paste0('Component: ', comp_label)) +
       expand_limits(y=0) + # Zodat er geen negatieve waardes worden getoond
       theme_bw()
 
@@ -1243,6 +1249,12 @@ function(input, output, session){
   
   # Create timevariation functie vanuit openair ----
   output$timevariation <- renderPlot({
+    # Geef aan welk component geplot moet worden
+    comp <- input$Component
+    
+    # Neem daarbij het juiste label
+    comp_label <- filter(overzicht_component, component==comp)['label']
+    print(comp_label)
     # Check of er wel wat geselecteerd is om te plotten
     selected_sensor <- (TRUE %in% sensor_reactive$statinfo$selected)
     if(selected_sensor==FALSE){
@@ -1268,8 +1280,9 @@ function(input, output, session){
     kleur_array <- kit_kleur_sort$kleur
     
     try(timeVariation(show_input,
-                      pollutant = input$Component, normalise = FALSE, group = "kit_id",
+                      pollutant = input$Component, name.pol="test wat staat hier", normalise = FALSE, group = "kit_id",
                       alpha = 0.1, cols = kleur_array, local.tz="Europe/Amsterdam",
+                      
                       ylim = c(0,NA))) 
     # Call in try() zodat er geen foutmelding wordt getoond als er geen enkele sensor is aangeklikt 
     
