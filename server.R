@@ -667,7 +667,12 @@ function(input, output, session){
 
     # Maak een selectie op de geselecteerde tijdreeks
     lml_show_input <- openair::selectByDate(mydata = lml_show_input,start = tijdreeks_reactive$startdatum, end = tijdreeks_reactive$einddatum)
-    lml_show_input$kit_id <- lml_show_input$station_number
+    
+    # Geef de naam van het station mee als kit_id dan komt die in de labels van de grafieken
+    lml_show_input <- merge(lml_show_input, lml_stations_reactive$statinfo[,c("station_number", "naam")], 
+                            by.x="station_number", by.y="station_number",
+                            all.x=T)
+    lml_show_input$kit_id <- lml_show_input$naam
 
     # Zet de waardes ook in de pm10_kal en pm25_kal. Voor de luchtmeetnet stations zijn die gelijk aan pm10 en pm25
     lml_show_input$pm10_kal <- lml_show_input$pm10
