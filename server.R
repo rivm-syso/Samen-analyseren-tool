@@ -51,6 +51,18 @@ function(input, output, session){
   
   ## FUNCTIES ----
   
+  # Functie: Check of de alle kolommem voor de sensordata aanwezig zijn,
+  # zo niet vul deze dan aan met NA
+  check_kolommen_sensor <- function(){
+    namen_nodig <- c('kit_id',	'date',	'lat',	'lon', 'pm10_kal',	'pm10',	'pm25_kal',	'pm25',	'rh',	'temp')
+    namen_huidig <- names(sensor_reactive$sensor_data)
+    for(naam in namen_nodig){
+      if(!(naam %in% namen_huidig)){
+        sensor_reactive$sensor_data[naam] <- NA
+      }
+    }
+  }
+  
   # Functie: Set the sensor as deselect and change color to base color
   set_sensor_deselect <- function(id_select){
     # Als de sensor geen data heeft, dan moet je er ook niet op kunnen klikken
@@ -244,7 +256,10 @@ function(input, output, session){
       # Zet de date naar een posixct
       sensor_reactive$sensor_data$date <- as.POSIXct(sensor_reactive$sensor_data$date, tryFormat=c("%d/%m/%Y %H:%M","%Y-%m-%d %H:%M:%S"), tz='UTC')
     }
-
+    
+    # Check of alle benodigde kolommen aanwezig zijn 
+    check_kolommen_sensor()
+    
     # Voor de sensormarkers: locatie, label en kleur etc. Per sensor één unieke locatie
     sensor_unique <- unique(sensor_reactive$sensor_data[,c('kit_id','lat','lon')])
     sensor_unique$selected <- FALSE
@@ -1002,7 +1017,6 @@ function(input, output, session){
       overig_reactive$data_set <- 'API_samenmeten'
       insert_nieuwe_data_sensor()
       print('schrijf sensordata weg naar file: downloadwindow')
-      Sys.sleep(10) # Zien of dan wel de download getriggerd wordt
       write.table(sensor_reactive$sensor_data[,c('kit_id',	'date',	'lat',	'lon',	
                                                  'pm10_kal',	'pm10',	'pm25_kal',	
                                                  'pm25',	'rh',	'temp')], 
