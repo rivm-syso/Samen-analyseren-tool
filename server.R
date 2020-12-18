@@ -260,6 +260,10 @@ function(input, output, session){
     # Check of alle benodigde kolommen aanwezig zijn 
     check_kolommen_sensor()
     
+    # Check of er wel metingen zijn, bij de API kan het zo zijn dat er alleen maar de locatie
+    # wordt opgehaald. Er zijn dan geen tijdwaardes en metingen
+    sensor_reactive$sensor_data <- dplyr::filter(sensor_reactive$sensor_data, !(is.na(date)))
+    
     # Voor de sensormarkers: locatie, label en kleur etc. Per sensor één unieke locatie
     sensor_unique <- unique(sensor_reactive$sensor_data[,c('kit_id','lat','lon')])
     sensor_unique$selected <- FALSE
