@@ -38,7 +38,7 @@ function(input, output, session){
   # Zet reactive values op----
   groepering_reactive <- reactiveValues(groepsnaam = geen_groep, df_gem = data.frame())
   tijdreeks_reactive <- reactiveValues(startdatum = 0, einddatum = 0, startdatum_tpdata = 0, einddatum_tpdata = 0)
-  overig_reactive <- reactiveValues(data_set = 'voorbeeld')
+  overig_reactive <- reactiveValues(data_set = 'voorbeeld', data_grafiek = data.frame())
   overzicht_shapes <- reactiveValues(add = 0, delete = 0) # nodig om selectie ongedaan te maken
   choices_api_reactive <- reactiveValues(choices=gemeente_choices)
   
@@ -1027,6 +1027,20 @@ function(input, output, session){
   
   ## GENEREER PLOTS -----
   
+  # Download de data uit de grafiek ----
+  output$downloadData_grafiek <- downloadHandler(
+    # geef de filename op, zou via interactieve kunnen
+    filename = function(){
+      paste('data_grafiek', 'csv', sep=".")
+    },
+    # Geef de data op: deze wordt eerst met de API opgehaald
+    content = function(file) {
+      print("Download data uit de grafiek.")
+      write.table(overig_reactive$data_grafiek, file, sep = ',',
+                  row.names = FALSE)
+    }
+  )
+  
   # Haal op en Download de data van de geselecteerde LML stations ----
   output$downloadData_luchtmeetnet <- downloadHandler(
     # geef de filename op, zou via interactieve kunnen
@@ -1210,6 +1224,9 @@ function(input, output, session){
     # Maak ook voor de lijntype een array
     lijn_array <- kit_kleur_sort$lijn
     
+    # Zet de data klaar om gedownload te worden
+    overig_reactive$data_grafiek <- show_input
+    
     # Bereken de statistic summary
     show_input <- Rmisc::summarySE(show_input, comp, groupvars='kit_id', na.rm = T)
     
@@ -1279,9 +1296,6 @@ function(input, output, session){
       kit_kleur <- rbind(kit_kleur, lml_kit_kleur)
     }
     
-    print(kit_kleur)
-    
-    
     # Bepaal de kleuren en lijntypes voor in de plot
     # Sort by kit_id
     kit_kleur_sort <- kit_kleur[order(kit_kleur$kit_id),]
@@ -1290,7 +1304,9 @@ function(input, output, session){
     # Maak ook voor de lijntype een array
     lijn_array <- kit_kleur_sort$lijn
     
-    glimpse(show_input)
+    # Zet de data klaar om gedownload te worden
+    overig_reactive$data_grafiek <- show_input
+
     # maak de plot
     p_timeplot <- ggplot(data = show_input, aes_string(x = "date", y = comp, group = "kit_id")) +
       geom_line(aes(linetype= kit_id, col=kit_id)) +
@@ -1354,10 +1370,12 @@ function(input, output, session){
     # create colour array
     kleur_array <- kit_kleur_sort$kleur
     
+    # Zet de data klaar om gedownload te worden
+    overig_reactive$data_grafiek <- show_input
+    
     try(timeVariation(show_input,
-                      pollutant = input$Component, name.pol="test wat staat hier", normalise = FALSE, group = "kit_id",
+                      pollutant = input$Component, normalise = FALSE, group = "kit_id",
                       alpha = 0.1, cols = kleur_array, local.tz="Europe/Amsterdam",
-                      
                       ylim = c(0,NA))) 
     # Call in try() zodat er geen foutmelding wordt getoond als er geen enkele sensor is aangeklikt 
     
@@ -1391,10 +1409,12 @@ function(input, output, session){
     # Voeg de winddata aan de sensordata toe
     show_input <- sp::merge(show_input, knmi_data_wdws, all.x=T, by.x='date', by.y='date')
     
+    # Zet de data klaar om gedownload te worden
+    overig_reactive$data_grafiek <- show_input
+    
     try(pollutionRose(show_input,
                       pollutant = input$Component, wd = 'wd', ws = 'ws', type = 'kit_id' , local.tz="Europe/Amsterdam", cols = "Purples", statistic = 'prop.mean',breaks=c(0,20,60,100))) 
   })
-  
   
   # Create windrose vanuit openair---- 
   output$windplot <- renderPlot({
@@ -1410,6 +1430,9 @@ function(input, output, session){
     }
     
     show_input <- filter_knmi_data_plot() 
+    
+    # Zet de data klaar om gedownload te worden
+    overig_reactive$data_grafiek <- show_input
     
     # TODO Check of er wel data is, of dat ws en wd NA zijn.
     try(windRose(show_input, wd = 'wd', ws = 'ws', type = 'station_code' , local.tz="Europe/Amsterdam", cols = "Purples")) 
@@ -1443,6 +1466,9 @@ function(input, output, session){
     
     # Voeg de winddata aan de sensordata toe
     show_input <- sp::merge(show_input, knmi_data_wdws, all.x=T, by.x='date', by.y='date')
+    
+    # Zet de data klaar om gedownload te worden
+    overig_reactive$data_grafiek <- show_input
     
     try(percentileRose(show_input,
                        pollutant = input$Component, wd = 'wd', type = 'kit_id', local.tz="Europe/Amsterdam", percentile = NA)) 

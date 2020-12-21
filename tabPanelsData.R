@@ -37,15 +37,15 @@ tpData <- function(){
                              dateInput("DateEind_tpData", label="Selecteer einde tijdreeks:", format='dd-mm-yyyy', value = Sys.Date()
                              ),
                              # Button om de gegevens van de sensore op t halen via de API en om de sensor data te downloaden
-                             downloadButton("downloadData_sensor",'Haal de metingen van de sensoren op en download'),
+                             div(style="padding-top: 0px;", downloadButton("downloadData_sensor",'Haal de metingen van de sensoren op en download')),
                              # Button om de gegevens van de sensore op t halen via de API en om de sensor data te downloaden
-                             downloadButton("downloadData_sensor2",'Extra: download de sensoren van de kaart'),
+                             div(style="padding-top: 5px;", downloadButton("downloadData_sensor2",'Extra: download de sensoren van de kaart')),
                              # Mogelijkheid om je eigen data in te laden:
-                             fileInput("eigen_datafile_sensoren", "Laad dataset sensormetingen(csv-bestand): ",
+                             div(style="padding-top: 10px;",fileInput("eigen_datafile_sensoren", "Laad dataset sensormetingen(csv-bestand): ",
                                        multiple = FALSE,
                                        accept = c("text/csv",
                                                   "text/comma-separated-values,text/plain",
-                                                  ".csv")),
+                                                  ".csv"))),
                              h4("Toelichting"),
                              p("De data van de sensoren wordt opgehaald met de API van het Samen Meten dataportaal. Meer informatie is te vinden op:  ", a("Samenmeten.nl", href ='https://samenmeten.rivm.nl/dataportaal/', target = 'blank')
                                ,style = "font-size:12px")
@@ -64,15 +64,15 @@ tpData <- function(){
                             # Output: met de begin en eind datum erin, kan in stap1 worden ingesteld
                             textOutput('tijdreeks_tpdata_lml'),
                             # Button de gegevens van de luchtmeetnetstations op et halen via de API en om de LML data te downloaden
-                            downloadButton("downloadData_luchtmeetnet",'Haal de metingen luchtmeetnetstations op en download'),
+                            div(style="padding-top: 5px;", downloadButton("downloadData_luchtmeetnet",'Haal de metingen luchtmeetnetstations op en download')),
                             # Button om de gegevens van de sensore op t halen via de API en om de sensor data te downloaden
-                            downloadButton("downloadData_luchtmeetnet2",'Extra: download de luchtmeetnetstations van de kaart'),
+                            div(style="padding-top: 5px;", downloadButton("downloadData_luchtmeetnet2",'Extra: download de luchtmeetnetstations van de kaart')),
                             # Mogelijkheid om je eigen data in te laden:
-                            fileInput("eigen_datafile_lml", "Laad dataset luchtmeetnetmetingen(csv-bestand): ",
+                            div(style="padding-top: 5px;",fileInput("eigen_datafile_lml", "Laad dataset luchtmeetnetmetingen(csv-bestand): ",
                                       multiple = FALSE,
                                       accept = c("text/csv",
                                                  "text/comma-separated-values,text/plain",
-                                                 ".csv")),
+                                                 ".csv"))),
                             h4("Toelichting"),
                             p("De gegevens worden opgehaald met de API van luchtmeetnet. Meer informatie over de gegevens is te vinden op:  ", a("luchtmeetnet.nl", href ='https://www.luchtmeetnet.nl/', target = 'blank')
                               ,style = "font-size:12px")
@@ -92,15 +92,15 @@ tpData <- function(){
                              # Output: met de begin en eind datum erin, kan in stap1 worden ingesteld
                              textOutput('tijdreeks_tpdata_knmi'),
                              # # Button om de gegevens van de knmi-stations op te halen via de API en om de knmi data te downloaden
-                             downloadButton("downloadData_knmi",'Haal de metingen KNMI-stations op en download'),
+                             div(style="padding-top: 5px;", downloadButton("downloadData_knmi",'Haal de metingen KNMI-stations op en download')),
                              # Button om de gegevens van de sensore op t halen via de API en om de sensor data te downloaden
-                             downloadButton("downloadData_knmi2",'Extra: download de KNMI-stations van de kaart'),
+                             div(style="padding-top: 5px;", downloadButton("downloadData_knmi2",'Extra: download de KNMI-stations van de kaart')),
                              # Mogelijkheid om je eigen data in te laden:
-                             fileInput("eigen_datafile_knmi", "Laad dataset knmi-metingen(csv-bestand): ",
+                             div(style="padding-top: 5px;", fileInput("eigen_datafile_knmi", "Laad dataset knmi-metingen(csv-bestand): ",
                                        multiple = FALSE,
                                        accept = c("text/csv",
                                                   "text/comma-separated-values,text/plain",
-                                                  ".csv")),
+                                                  ".csv"))),
                              h4("Toelichting"),
                              p("De gegevens worden opgehaald van het KNMI. Meer informatie over de gegevens is te vinden via het ", a("KNMI", href = 'https://www.knmi.nl/kennis-en-datacentrum/achtergrond/data-ophalen-vanuit-een-script', target='blank')
                                ,style = "font-size:12px")
