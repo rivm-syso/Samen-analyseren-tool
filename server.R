@@ -52,14 +52,58 @@ function(input, output, session){
   ## FUNCTIES ----
   
   # Functie: Check of de alle kolommem voor de sensordata aanwezig zijn,
-  # zo niet vul deze dan aan met NA
+  # zo niet vul deze dan aan met NA, en geef een waarschuwing
   check_kolommen_sensor <- function(){
+    MaakBericht <- F
     namen_nodig <- c('kit_id',	'date',	'lat',	'lon', 'pm10_kal',	'pm10',	'pm25_kal',	'pm25',	'rh',	'temp')
     namen_huidig <- names(sensor_reactive$sensor_data)
     for(naam in namen_nodig){
       if(!(naam %in% namen_huidig)){
         sensor_reactive$sensor_data[naam] <- NA
+        MaakBericht <- T
       }
+    }
+    if(MaakBericht){
+      if(overig_reactive$data_set=='API_samenmeten'){
+        showNotification(paste("Let op: de sensordata mist een aantal gegevens."), duration = 0, type="warning")
+      }
+      if(overig_reactive$data_set=='eigen_dataset_sensoren'){
+        showNotification(paste("Let op: de sensordata mist een aantal gegevens. Check of het juiste bestand is ingeladen."), duration = 0, type="warning")
+      }
+    }
+  }
+  
+  # Functie: Check of de alle kolommem voor de luchtmeetnetdata aanwezig zijn,
+  # zo niet vul deze dan aan met NA, en geef een waarschuwing
+  check_kolommen_lml <- function(){
+    MaakBericht <- F
+    namen_nodig <- c('station_number', 'date',	'pm10',	'pm25')
+    namen_huidig <- names(lml_stations_reactive$lml_data)
+    for(naam in namen_nodig){
+      if(!(naam %in% namen_huidig)){
+        lml_stations_reactive$lml_data[naam] <- NA
+        MaakBericht <- T
+      }
+    }
+    if(MaakBericht){
+        showNotification(paste("Let op: de luchtmeetnetdata mist een aantal gegevens. Check of het juiste bestand is ingeladen."), duration = 0, type="warning")
+    }
+  }
+  
+  # Functie: Check of de alle kolommem voor de KNMI-data aanwezig zijn,
+  # zo niet vul deze dan aan met NA, en geef een waarschuwing
+  check_kolommen_knmi <- function(){
+    MaakBericht <- F
+    namen_nodig <- c('station_number',	'wd',	'ws',	'temp',	'rh',	'date',	'station_code')
+    namen_huidig <- names(knmi_stations_reactive$knmi_data)
+    for(naam in namen_nodig){
+      if(!(naam %in% namen_huidig)){
+        knmi_stations_reactive$knmi_data[naam] <- NA
+        MaakBericht <- T
+      }
+    }
+    if(MaakBericht){
+      showNotification(paste("Let op: de KNMI-data mist een aantal gegevens. Check of het juiste bestand is ingeladen."), duration = 0, type="warning")
     }
   }
   
@@ -394,6 +438,9 @@ function(input, output, session){
       lml_stations_reactive$lml_data$date <- as.POSIXct(lml_stations_reactive$lml_data$date , tryFormat=c("%d/%m/%Y %H:%M","%Y-%m-%d %H:%M:%S"), tz='UTC')
     }
 
+    #  Check of alle benodigde kolommen aanwezig zijn 
+    check_kolommen_lml()
+    
     # Geef aan van welke stations nu databeschikbaar is:
     station_metdata <- unique(lml_stations_reactive$lml_data$station_number)
     lml_stations_reactive$statinfo$hasdata[which(lml_stations_reactive$statinfo$station_number %in% station_metdata)] <- TRUE
@@ -443,6 +490,9 @@ function(input, output, session){
       # Zet de date naar een posixct
       knmi_stations_reactive$knmi_data$date <- as.POSIXct(knmi_stations_reactive$knmi_data$date , tryFormat=c("%d/%m/%Y %H:%M","%Y-%m-%d %H:%M:%S"), tz='UTC')
     }
+    
+    #  Check of alle benodigde kolommen aanwezig zijn 
+    check_kolommen_knmi()
     
      # Geef aan van welke stations nu databeschikbaar is:
      station_metdata <- unique(knmi_stations_reactive$knmi_data$station_number)
