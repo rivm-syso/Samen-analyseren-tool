@@ -1244,9 +1244,6 @@ function(input, output, session){
     plot(p_barplot)
   })
   
-
-  
-  
   # Create time plot met ggplot ----
   output$timeplot <- renderPlot({
     # Geef aan welk component geplot moet worden
@@ -1309,7 +1306,7 @@ function(input, output, session){
 
     # maak de plot
     p_timeplot <- ggplot(data = show_input, aes_string(x = "date", y = comp, group = "kit_id")) +
-      geom_line(aes(linetype= kit_id, col=kit_id)) +
+      geom_line(aes(linetype=kit_id, col=kit_id)) +
       scale_color_manual(values = kleur_array) +
       scale_linetype_manual(values = lijn_array) +
       labs(x = "", y = expression(paste("Concentratie (", mu, "g/",m^3,")")), title=paste0('Component: ', comp_label)) +
@@ -1436,6 +1433,39 @@ function(input, output, session){
     
     # TODO Check of er wel data is, of dat ws en wd NA zijn.
     try(windRose(show_input, wd = 'wd', ws = 'ws', type = 'station_code' , local.tz="Europe/Amsterdam", cols = "Purples")) 
+  })
+  
+  # Create Tijdreeks voor de winddata ---- 
+  output$wind_timeplot <- renderPlot({
+    # Check of er wel wat geselecteerd is om te plotten en dat er data is
+    selected_id <- knmi_stations_reactive$statinfo[which(knmi_stations_reactive$statinfo$selected),'station_number']
+    selected_knmi_hasdata <- (TRUE %in% knmi_stations_reactive$statinfo[which(knmi_stations_reactive$statinfo$selected),'hasdata'])
+    
+    if(is_empty(selected_id)){
+      validate("Selecteer een KNMI-station.")
+    }
+    if(!selected_knmi_hasdata){
+      validate("Er is geen data beschikbaar van dit KNMI-station.")
+    }
+    
+    show_input <- filter_knmi_data_plot() 
+    
+    # Zet de data klaar om gedownload te worden
+    overig_reactive$data_grafiek <- show_input
+    
+    # Zet de kleurenlijst om naar een string
+    kleur_array <- unlist(kleur_cat)
+    print(kleur_array)
+    
+    # maak de plot
+    p_wind_timeplot <- ggplot(data = show_input, aes_string(x = "date", y = "wd", col="station_code")) +
+      geom_line() +
+      scale_color_manual(values = kleur_array, name="") +
+      labs(x = "", y = "Windrichting", title="Tijdreeks windrichting") +
+      coord_cartesian(ylim=c(-1,365)) +
+      theme_bw() 
+    
+    plot(p_wind_timeplot)
   })
   
   # Create percentilerose functie vanuit openair ----

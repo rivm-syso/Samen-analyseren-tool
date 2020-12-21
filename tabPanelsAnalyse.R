@@ -106,6 +106,7 @@ tpWindRose<- function(){
                   p("LET OP: als het KNMI-station geen gegevens over de wind heeft, kan er geen windroos worden getoond."),
                   
                   plotOutput("windplot"),
+                  div(style="padding-top:10px;",plotOutput("wind_timeplot")),
                       h4("Toelichting"),
                       p("Als je een sensor aanklikt, wordt een windroos getoond.
                         Deze windroos laat de windsnelheid en -richting zien van het dichtstbijzijnde KNMI-station. Voor elke windsector toont de 
