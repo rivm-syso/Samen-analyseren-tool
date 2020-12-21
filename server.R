@@ -221,6 +221,13 @@ function(input, output, session){
       print('Sensor data inladen via API')
       # Haal de gegevens op van de sensoren via de samenmeten API
       sensor_reactive$sensor_data <- as.data.frame(get_sensor_data_api())
+      
+      # Check of er wel gegevens zijn opgehaald. Laat anders een melding zien.
+      if(is_empty(sensor_reactive$sensor_data)){
+        showNotification(paste("Er is geen sensordata beschikbaar. Kies een ander project of andere gemeente."), duration = 0, type="error")
+      }
+      validate(need(!is_empty(sensor_reactive$sensor_data),'Geen sensordata beschikbaar.'))
+      
       # Bij de sensordata van de API zit ook informatie over de het dichtstbijzijnde knmistation en de luchtmeetnetstations
       # Deze informatie wil je doorgeven aan de andere tabbladen zodat die stations meteen geselecteerd worden
       knmicode_bij_sensor <- unique(sensor_reactive$sensor_data$knmicode)
@@ -330,7 +337,7 @@ function(input, output, session){
       }
       lml_stations_reactive$lml_data <- get_lml_data_api()
 
-            # Zet de namen van de componenten PM10 en PM25 naar kleine letters (dan is het hetzelfde als de sensordata)
+      # Zet de namen van de componenten PM10 en PM25 naar kleine letters (dan is het hetzelfde als de sensordata)
       lml_stations_reactive$lml_data$formula[which(lml_stations_reactive$lml_data$formula=='PM10')] <- 'pm10'
       lml_stations_reactive$lml_data$formula[which(lml_stations_reactive$lml_data$formula=='PM25')] <- 'pm25'
       
@@ -366,7 +373,7 @@ function(input, output, session){
       
       print('stations zonder pm25: ')
       print(station_remove_pm25)
-
+      
     }else if(overig_reactive$data_set=='eigen_dataset_lml'){
        # Haal de gegevens op van de stations via een ingeladen csv
        print('ophalen csv luchtmeetnet')
@@ -599,9 +606,21 @@ function(input, output, session){
     print('aanroepen api')
     print(paste0('projectnaam: ', projectnaam, ' startdatum: ',tijdreeks_reactive$startdatum_tpdata, ' einddatum: ', tijdreeks_reactive$einddatum_tpdata))
     # Aanroepen van de API
-    sensor_data_ruw <- GetSamenMetenAPI(projectnaam, format(tijdreeks_reactive$startdatum_tpdata, '%Y%m%d'), 
-                                        format(tijdreeks_reactive$einddatum_tpdata, '%Y%m%d'), data_opslag_list,
-                                        updateProgress) 
+    # Let op als er geen sensoren zijn, dan ook geen data. Deze error afvangen.
+    sensor_data_ruw <- tryCatch({
+      GetSamenMetenAPI(projectnaam, format(tijdreeks_reactive$startdatum_tpdata, '%Y%m%d'), 
+                       format(tijdreeks_reactive$einddatum_tpdata, '%Y%m%d'), data_opslag_list,
+                       updateProgress) 
+    }, error = function(e){
+      print('Er is geen sensordata beschikbaar.')
+      return(NULL)
+    })
+    
+    # Als er geen gegevens zijn, return NULL
+    if(is_empty(sensor_data_ruw)){
+      return(NULL)
+    }
+    
     print('api opgehaald:')
     print('summary(sensor_data_ruw)')
     print(summary(sensor_data_ruw))

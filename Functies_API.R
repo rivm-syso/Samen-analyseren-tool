@@ -95,10 +95,6 @@ GetLMLstatinfoAPI <- function(station){
   return(stat_info_df)
 }
 
-TEST <- GetLMLstatdataAPI("NL01908", "20190505", "20190510")
-station <- "NL01908"
-ymd_tot <- "20190510"
-ymd_vanaf <- "20190505"
 GetLMLstatdataAPI <- function(station, ymd_vanaf, ymd_tot){
   # Functie om de meetwaardes van een luchtmeetstation op te halen voor een bepaalde periode
   # het kan zijn dat er meer data wordt opgehaal dan gespecificeerd.
@@ -199,7 +195,7 @@ GetLMLAPI <- function(station, ymd_vanaf, ymd_tot){
   # Dat is nl heel onhandig bij het doorgeven van strings naar de API
   options(stringsAsFactors = FALSE)
   
-  ## Ophalen van de ststionsinformatie ----
+  ## Ophalen van de stationsinformatie ----
   stat_info_df <- GetLMLstatinfoAPI(station)
   
   ## Ophalen van de meetgegevens ----
