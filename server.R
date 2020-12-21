@@ -37,7 +37,7 @@ function(input, output, session){
 
   # Zet reactive values op----
   groepering_reactive <- reactiveValues(groepsnaam = geen_groep, df_gem = data.frame())
-  tijdreeks_reactive <- reactiveValues(startdatum = 0, einddatum=0, startdatum_tpdata = 0, einddatum_tpdata=0)
+  tijdreeks_reactive <- reactiveValues(startdatum = 0, einddatum = 0, startdatum_tpdata = 0, einddatum_tpdata = 0)
   overig_reactive <- reactiveValues(data_set = 'voorbeeld')
   overzicht_shapes <- reactiveValues(add = 0, delete = 0) # nodig om selectie ongedaan te maken
   choices_api_reactive <- reactiveValues(choices=gemeente_choices)
@@ -836,6 +836,12 @@ function(input, output, session){
   observeEvent({input$DateEind_tpData},{
     tijdreeks_reactive$einddatum_tpdata <- input$DateEind_tpData
   })
+  
+  # Observe of de begindatum is aangepast, zorg dan dat de einddatum alleen later dan 
+  # de begindatum kan worden gekozen. (minimaal 1 dag daarna)
+  observe({
+    updateDateInput(session, "DateEind_tpData", min =  tijdreeks_reactive$startdatum_tpdata + 1
+    )})
   
   # Observe if user selects a sensor ----
   observeEvent({input$map_marker_click$id}, {
