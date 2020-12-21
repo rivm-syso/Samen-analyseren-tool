@@ -135,7 +135,10 @@ htmlTemplate("./www/template_samenmeten.wide.html",
                                 
                                     
                                # Button om de alles wat geselecteerd is te resetten
-                               actionButton("reset_all", "Reset alle sensoren")
+                               actionButton("reset_all", "Reset alle sensoren"),
+                               
+                               # Button om de gegevens zoals getoond in de grafiek te downloaden
+                               div(style="padding-top: 10px;",downloadButton("downloadData_grafiek",'Download data uit grafiek'))
                    )
       ),
     
