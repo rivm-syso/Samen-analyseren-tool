@@ -95,6 +95,10 @@ GetLMLstatinfoAPI <- function(station){
   return(stat_info_df)
 }
 
+TEST <- GetLMLstatdataAPI("NL01908", "20190505", "20190510")
+station <- "NL01908"
+ymd_tot <- "20190510"
+ymd_vanaf <- "20190505"
 GetLMLstatdataAPI <- function(station, ymd_vanaf, ymd_tot){
   # Functie om de meetwaardes van een luchtmeetstation op te halen voor een bepaalde periode
   # het kan zijn dat er meer data wordt opgehaal dan gespecificeerd.
@@ -122,11 +126,12 @@ GetLMLstatdataAPI <- function(station, ymd_vanaf, ymd_tot){
   options(stringsAsFactors = FALSE)
   
   ## Ophalen van de meetgegevens ----
-  ymd_vanaf <- as.POSIXct(ymd_vanaf, format="%Y%m%d") 
-  ymd_tot <- as.POSIXct(ymd_tot, format="%Y%m%d") + 60*60*24*7 # neem een week extra, voor de cut functie
+  ymd_vanaf <- as.POSIXct(ymd_vanaf, format="%Y%m%d", tz="UTC") 
+  ymd_tot <- as.POSIXct(ymd_tot, format="%Y%m%d", tz="UTC")
+  ymd_tot_extra <- ymd_tot + 60*60*24*7 # neem een week extra, voor de cut functie
   
   # Deel de tijdsperiode op in weken, de api kan maar 1 week data leveren per keer
-  week_opdeling <- cut(c(ymd_vanaf, ymd_tot),"weeks")
+  week_opdeling <- cut(c(ymd_vanaf, ymd_tot_extra),"weeks")
   
   # Ga elke week af en haal de gegevens op
   for(index_week in seq(1,length(levels(week_opdeling))-1)){
@@ -155,7 +160,10 @@ GetLMLstatdataAPI <- function(station, ymd_vanaf, ymd_tot){
       metingen_df <- rbind(metingen_df, measurements_data)
     }
   }
-
+  
+  # Filter de data dat alleen de gegevens van de gevraagde periode erbij zitten
+  metingen_df <- dplyr::filter(metingen_df, timestamp_measured <= ymd_tot & timestamp_measured >= ymd_vanaf )
+  
   print("Alle data van Luchtmeetnet opgehaald")
   return(metingen_df)
 }
