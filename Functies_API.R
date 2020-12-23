@@ -140,7 +140,7 @@ GetLMLstatdataAPI <- function(station, ymd_vanaf, ymd_tot){
     # print(url_week)
     # Haal de gegevens op
     content_measurements <- GetAPIDataframe(url_week)
-    print("URL week van Luchtmeetnet opgehaald")
+    # print("URL week van Luchtmeetnet opgehaald")
     if (length(content_measurements) == 1) {
       # Dan is er een error teruggekomen, bijvoorbeeld 502
       print(content_measurements)
@@ -160,7 +160,7 @@ GetLMLstatdataAPI <- function(station, ymd_vanaf, ymd_tot){
   # Filter de data dat alleen de gegevens van de gevraagde periode erbij zitten
   metingen_df <- dplyr::filter(metingen_df, timestamp_measured <= ymd_tot & timestamp_measured >= ymd_vanaf )
   
-  print("Alle data van Luchtmeetnet opgehaald")
+  print(paste0("Data van Luchtmeetnet opgehaald van station: ", station))
   return(metingen_df)
 }
 
@@ -204,7 +204,7 @@ GetLMLAPI <- function(station, ymd_vanaf, ymd_tot){
   # Maak een named list voor de output
   lml_info_data <- list(info=stat_info_df, data=metingen_df)
   
-  print("Alle data van Luchtmeetnet opgehaald")
+  print(paste0("Meetgegevens en info van Luchtmeetnet opgehaald van station: ", station))
   return(lml_info_data)
 }
 
@@ -255,7 +255,7 @@ GetAPIDataframe <- function(url_api){
 ##################### ----
 # Hoofdfunctie ----
 ##################### ----
-GetSamenMetenAPI <- function(projectnaam, ymd_vanaf, ymd_tot, data_opslag = data_opslag_list, updateProgress=NULL, debug=F){
+GetSamenMetenAPI <- function(projectnaam, ymd_vanaf, ymd_tot, data_opslag = list(), updateProgress=NULL, debug=F){
   # Functie die de sensordata van het samenmetenportaal haalt
   # Voorbeeld: TEST <- GetSamenMetenAPI("project,'Amersfoort'","20190909", "20190912")
   # input:
@@ -647,7 +647,9 @@ GetKNMIAPI <- function(stations, ymd_vanaf, ymd_tot){
   knmi_uur_wget_string <- paste("wget -O - --post-data='stns=", stns, "&start=",ymdh_vanaf,"&end=",ymdh_tot,
                                 "&vars=DD:FF:T:U' http://projects.knmi.nl/klimatologie/uurgegevens/getdata_uur.cgi", sep="") 
   print(knmi_uur_wget_string)
-  knmi_uur_raw <- system(knmi_uur_wget_string,intern=T)
+  
+  # Ophalen van de gegevens van de url
+  knmi_uur_raw <- system(knmi_uur_wget_string, intern=T)
   
   print('KNMI: ruwe data opgehaald')
   
@@ -656,7 +658,7 @@ GetKNMIAPI <- function(stations, ymd_vanaf, ymd_tot){
   
   # Haal de kolomnamen op: 
   # Dit gaat bijna goed: nog 2 schoonheidsfoutjes: '# STN' en 'TRUE' ( de T van temperatuur wordt vertaald naar TRUE)
-  header_names <- as.character(read.csv(textConnection(knmi_uur_raw[aantal_headers-1]),header=F, strip.white=T, stringsAsFactors=F))
+  header_names <- as.character(read.csv(textConnection(knmi_uur_raw[aantal_headers-1]), header=F, strip.white=T, stringsAsFactors=F))
   header_names[1] <- 'STNS'
   header_names[grep("TRUE",header_names)] <- 'TEMP'
   
