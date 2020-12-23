@@ -26,8 +26,9 @@ htmlTemplate("./www/template_samenmeten.wide.html",
                  om te toetsen aan grenswaarden."),
                p("Elke sensor kan worden vergeleken met een meetstation van het ", 
                  a("Luchtmeetnet", href = "https://luchtmeetnet.nl", target = 'blank'), 
-                 ". De windgegevens voor het berekenen van de windroos komen van een weerstation van het KNMI. 
-                 De locaties van de gebruikte luchtmeetnet- en weerstations worden met icoontjes op de kaart getoond."),
+                 ". De windgegevens voor het berekenen van de windroos komen van een weerstation van het", 
+                 a("KNMI", href = "http://projects.knmi.nl/klimatologie/uurgegevens/selectie.cgi", target="blank"), 
+                 ". De locaties van de gebruikte luchtmeetnet- en weerstations worden met icoontjes op de kaart getoond."),
                p("In het tabblad 'Data laden en downloaden' kunt u de data van de sensoren van een project of gemeente, 
                  van de meetstations van het luchtmeetnet en van de meetstations van het KNMI laden. Deze gegevens worden 
                  via API's bij de desbetreffende partij opgevraagd. Het opvragen en ophalen van de gegevens kan enige 
