@@ -356,7 +356,13 @@ function(input, output, session){
     
     # Pas ook de Tijdreeks aan voor het analyse gedeelte
     updateDateInput(session,"DateStart", value = min(sensor_reactive$sensor_data$date, na.rm = T))
+    updateDateInput(session, "DateEind", min = min(sensor_reactive$sensor_data$date, na.rm = T) + 86400)
     updateDateInput(session, "DateEind", value = max(sensor_reactive$sensor_data$date, na.rm = T))
+    
+    # Pas ook de Tijdreeks aan voor het download gedeelte -> handig als eigen data is ingeladen
+    updateDateInput(session, "DateStart_tpData", value = min(sensor_reactive$sensor_data$date, na.rm = T))
+    updateDateInput(session, "DateEind_tpData", min = min(sensor_reactive$sensor_data$date, na.rm = T) + 86400)
+    updateDateInput(session, "DateEind_tpData", value = max(sensor_reactive$sensor_data$date, na.rm = T))
     
   } 
   
@@ -829,8 +835,6 @@ function(input, output, session){
   observe({
     updateSelectInput(session, "sensor_specificeer",choices = choices_api_reactive$choices
     )})
-  
-  
 
   #Print welke datagroep bij samenmeten api wordt opgevraagd
   observeEvent({input$sensor_specificeer},{
@@ -899,7 +903,7 @@ function(input, output, session){
     tijdreeks_reactive$einddatum <- input$DateEind
   })
   
-  # Observe of de datum wordt aangepast voor de api (dus het data gedeelte----
+  # Observe of de datum wordt aangepast voor de api, dus het data gedeelte----
   observeEvent({input$DateStart_tpData},{
     tijdreeks_reactive$startdatum_tpdata <- input$DateStart_tpData
   })
@@ -908,11 +912,13 @@ function(input, output, session){
     tijdreeks_reactive$einddatum_tpdata <- input$DateEind_tpData
   })
   
-  # Observe of de begindatum is aangepast, zorg dan dat de einddatum alleen later dan 
+  # Observe of de begindatum is aangepast, zorg dan dat de einddatum alleen later dan  ----
   # de begindatum kan worden gekozen. (minimaal 1 dag daarna)
-  observe({
-    updateDateInput(session, "DateEind_tpData", min =  tijdreeks_reactive$startdatum_tpdata + 1
-    )})
+  observeEvent({input$DateStart_tpData}, {
+    if(tijdreeks_reactive$einddatum_tpdata < tijdreeks_reactive$startdatum_tpdata){
+    updateDateInput(session, "DateEind_tpData", min = tijdreeks_reactive$startdatum_tpdata + 86400)
+    }
+  })
   
   # Observe if user selects a sensor ----
   observeEvent({input$map_marker_click$id}, {
