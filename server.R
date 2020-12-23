@@ -915,8 +915,10 @@ function(input, output, session){
   # Observe of de begindatum is aangepast, zorg dan dat de einddatum alleen later dan  ----
   # de begindatum kan worden gekozen. (minimaal 1 dag daarna)
   observeEvent({input$DateStart_tpData}, {
-    if(tijdreeks_reactive$einddatum_tpdata < tijdreeks_reactive$startdatum_tpdata){
-    updateDateInput(session, "DateEind_tpData", min = tijdreeks_reactive$startdatum_tpdata + 86400)
+    if(!is_empty(tijdreeks_reactive$startdatum_tpdata)){
+      if(tijdreeks_reactive$einddatum_tpdata < tijdreeks_reactive$startdatum_tpdata){
+      updateDateInput(session, "DateEind_tpData", min = tijdreeks_reactive$startdatum_tpdata + 86400)
+      }
     }
   })
   
