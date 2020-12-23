@@ -40,6 +40,7 @@ tpData <- function(){
                              div(style="padding-top: 0px;", downloadButton("downloadData_sensor",'Haal de metingen van de sensoren op en download')),
                              # Button om de gegevens van de sensore op t halen via de API en om de sensor data te downloaden
                              div(style="padding-top: 5px;", downloadButton("downloadData_sensor2",'Extra: download de sensoren van de kaart')),
+                             hr(),
                              # Mogelijkheid om je eigen data in te laden:
                              div(style="padding-top: 10px;",fileInput("eigen_datafile_sensoren", "Laad dataset sensormetingen(csv-bestand): ",
                                        multiple = FALSE,
@@ -67,6 +68,7 @@ tpData <- function(){
                             div(style="padding-top: 5px;", downloadButton("downloadData_luchtmeetnet",'Haal de metingen luchtmeetnetstations op en download')),
                             # Button om de gegevens van de sensore op t halen via de API en om de sensor data te downloaden
                             div(style="padding-top: 5px;", downloadButton("downloadData_luchtmeetnet2",'Extra: download de luchtmeetnetstations van de kaart')),
+                            hr(),
                             # Mogelijkheid om je eigen data in te laden:
                             div(style="padding-top: 5px;",fileInput("eigen_datafile_lml", "Laad dataset luchtmeetnetmetingen(csv-bestand): ",
                                       multiple = FALSE,
@@ -95,6 +97,7 @@ tpData <- function(){
                              div(style="padding-top: 5px;", downloadButton("downloadData_knmi",'Haal de metingen KNMI-stations op en download')),
                              # Button om de gegevens van de sensore op t halen via de API en om de sensor data te downloaden
                              div(style="padding-top: 5px;", downloadButton("downloadData_knmi2",'Extra: download de KNMI-stations van de kaart')),
+                             hr(),
                              # Mogelijkheid om je eigen data in te laden:
                              div(style="padding-top: 5px;", fileInput("eigen_datafile_knmi", "Laad dataset knmi-metingen(csv-bestand): ",
                                        multiple = FALSE,
