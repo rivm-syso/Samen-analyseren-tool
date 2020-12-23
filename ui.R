@@ -34,7 +34,7 @@ htmlTemplate("./www/template_samenmeten.wide.html",
                  via API's bij de desbetreffende partij opgevraagd. Het opvragen en ophalen van de gegevens kan enige 
                  tijd duren. Met de downloadfunctie kunt u de gegevens opslaan, zodat u niet iedere keer de gegevens 
                  opnieuw hoeft op te vragen."),
-               p("In het csv-bestand van de download is de tijd weergegevens in UTC."),
+               p("In het csv-bestand van de download is de tijd weergegevens in UTC. In de grafieken zelf wordt de tijd in Europe/Amsterdam getoond."),
                h3("Gekalibreerde waarden"),
                p("De gedownloade data bevat ruwe én gekalibreerde data. Details over de kalibratieprocedure zijn te 
                  vinden op het", a("Samen Meten Kennisportaal.",

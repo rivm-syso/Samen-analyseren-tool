@@ -1318,6 +1318,9 @@ function(input, output, session){
     
     # Zet de data klaar om gedownload te worden
     overig_reactive$data_grafiek <- show_input[,c("date", "kit_id", "pm10", "pm10_kal", "pm25", "pm25_kal")]
+
+    # Zet de tijdszone om, zodat de grafiek in Europe/Amsterdam laat zien
+    attr(show_input$date, "tzone") <- "Europe/Amsterdam"
     
     # maak de plot
     p_timeplot <- ggplot(data = show_input, aes_string(x = "date", y = comp, group = "kit_id")) +
@@ -1357,7 +1360,7 @@ function(input, output, session){
     
     # Neem daarbij het juiste label
     comp_label <- filter(overzicht_component, component==comp)['label']
-    print(comp_label)
+
     # Check of er wel wat geselecteerd is om te plotten
     selected_sensor <- (TRUE %in% sensor_reactive$statinfo$selected)
     if(selected_sensor==FALSE){
@@ -1384,7 +1387,7 @@ function(input, output, session){
     
     # Zet de data klaar om gedownload te worden
     overig_reactive$data_grafiek <- show_input[,c("date", "kit_id", "pm10", "pm10_kal", "pm25", "pm25_kal")]
-    
+
     try(timeVariation(show_input,
                       pollutant = input$Component, normalise = FALSE, group = "kit_id",
                       alpha = 0.1, cols = kleur_array, local.tz="Europe/Amsterdam",
@@ -1446,7 +1449,6 @@ function(input, output, session){
     # Zet de data klaar om gedownload te worden
     overig_reactive$data_grafiek <- show_input
     
-    # TODO Check of er wel data is, of dat ws en wd NA zijn.
     try(windRose(show_input, wd = 'wd', ws = 'ws', type = 'station_code' , local.tz="Europe/Amsterdam", cols = "Purples")) 
   })
   
@@ -1470,7 +1472,9 @@ function(input, output, session){
     
     # Zet de kleurenlijst om naar een string
     kleur_array <- unlist(kleur_cat)
-    print(kleur_array)
+
+    # Zet de tijdszone om, zodat de grafiek in Europe/Amsterdam laat zien
+    attr(show_input$date, "tzone") <- "Europe/Amsterdam"
     
     # maak de plot
     p_wind_timeplot <- ggplot(data = show_input, aes_string(x = "date", y = "wd", col="station_code")) +
