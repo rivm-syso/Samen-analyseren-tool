@@ -267,10 +267,13 @@ function(input, output, session){
       sensor_reactive$sensor_data <- as.data.frame(get_sensor_data_api())
       
       # Check of er wel gegevens zijn opgehaald. Laat anders een melding zien.
-      if(is_empty(sensor_reactive$sensor_data)){
+      # Het kan zijn dat het project wel bestaat, maar geen sensoren bevat zoals Palmes, dan worden er
+      # wel locaties opgehaald, maar geen geldige metingen, dus is.na(sensor_reactive$sensor_data$date)) == T
+      if(is_empty(sensor_reactive$sensor_data) | !(FALSE %in% is.na(sensor_reactive$sensor_data$date))){
         showNotification(paste("Er is geen sensordata beschikbaar. Kies een ander project of andere gemeente."), duration = 0, type="error")
       }
       validate(need(!is_empty(sensor_reactive$sensor_data),'Geen sensordata beschikbaar.'))
+      validate(need((FALSE %in% is.na(sensor_reactive$sensor_data$date)),'Geen sensordata beschikbaar.'))
       
       # Bij de sensordata van de API zit ook informatie over de het dichtstbijzijnde knmistation en de luchtmeetnetstations
       # Deze informatie wil je doorgeven aan de andere tabbladen zodat die stations meteen geselecteerd worden
