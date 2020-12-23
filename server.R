@@ -281,6 +281,7 @@ function(input, output, session){
       luchtmeetnetcode_bij_sensor <- unique(tidyr::pivot_longer(sensor_reactive$sensor_data[,c('kit_id','pm10closecode',
                                               'pm10regiocode','pm10stadcode','pm25closecode',
                                               'pm25regiocode', 'pm25stadcode')], cols=-kit_id)$value)
+      
       # Zet de knmi stations alvast op geselecteerd
       for (knmicode in knmicode_bij_sensor){
         knmicode_id <- substr(knmicode, nchar(knmicode)-3+1, nchar(knmicode)) # Gebruik alleen de 3-cijferige code
@@ -919,8 +920,9 @@ function(input, output, session){
   # de begindatum kan worden gekozen. (minimaal 1 dag daarna)
   observeEvent({input$DateStart_tpData}, {
     if(!is_empty(tijdreeks_reactive$startdatum_tpdata)){
+      updateDateInput(session, "DateEind_tpData", min = tijdreeks_reactive$startdatum_tpdata + 1)
       if(tijdreeks_reactive$einddatum_tpdata < tijdreeks_reactive$startdatum_tpdata){
-      updateDateInput(session, "DateEind_tpData", min = tijdreeks_reactive$startdatum_tpdata + 86400)
+      updateDateInput(session, "DateEind_tpData", min = tijdreeks_reactive$startdatum_tpdata + 1)
       }
     }
   })
