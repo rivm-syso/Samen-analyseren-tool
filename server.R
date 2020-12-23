@@ -721,13 +721,15 @@ function(input, output, session){
       selected_id <- selected_id[[1]]
     }
     
+    # Neem de data van de geselecteerde sensoren
     show_input <- sensor_reactive$sensor_data[which(sensor_reactive$sensor_data$kit_id %in% selected_id),]    
 
     # Als er groepen zijn geselecteerd, bereken dan het gemiddelde
     if (length(unique(sensor_reactive$statinfo$groep))>1 | unique(sensor_reactive$statinfo$groep) != geen_groep){
       calc_groep_mean() # berekent groepsgemiddeldes
       show_input <- sp::merge(show_input,groepering_reactive$df_gem, all = T) } 
-
+    
+    # Neem de gewenste tijdsperiode
     show_input <- openair::selectByDate(mydata = show_input,start = tijdreeks_reactive$startdatum, end = tijdreeks_reactive$einddatum)
     return(show_input)
   }
@@ -1225,7 +1227,7 @@ function(input, output, session){
     lijn_array <- kit_kleur_sort$lijn
     
     # Zet de data klaar om gedownload te worden
-    overig_reactive$data_grafiek <- show_input
+    overig_reactive$data_grafiek <- show_input[,c("date", "kit_id", "pm10", "pm10_kal", "pm25", "pm25_kal")]
     
     # Bereken de statistic summary
     show_input <- Rmisc::summarySE(show_input, comp, groupvars='kit_id', na.rm = T)
@@ -1302,8 +1304,8 @@ function(input, output, session){
     lijn_array <- kit_kleur_sort$lijn
     
     # Zet de data klaar om gedownload te worden
-    overig_reactive$data_grafiek <- show_input
-
+    overig_reactive$data_grafiek <- show_input[,c("date", "kit_id", "pm10", "pm10_kal", "pm25", "pm25_kal")]
+    
     # maak de plot
     p_timeplot <- ggplot(data = show_input, aes_string(x = "date", y = comp, group = "kit_id")) +
       geom_line(aes(linetype=kit_id, col=kit_id)) +
@@ -1368,7 +1370,7 @@ function(input, output, session){
     kleur_array <- kit_kleur_sort$kleur
     
     # Zet de data klaar om gedownload te worden
-    overig_reactive$data_grafiek <- show_input
+    overig_reactive$data_grafiek <- show_input[,c("date", "kit_id", "pm10", "pm10_kal", "pm25", "pm25_kal")]
     
     try(timeVariation(show_input,
                       pollutant = input$Component, normalise = FALSE, group = "kit_id",
@@ -1407,7 +1409,7 @@ function(input, output, session){
     show_input <- sp::merge(show_input, knmi_data_wdws, all.x=T, by.x='date', by.y='date')
     
     # Zet de data klaar om gedownload te worden
-    overig_reactive$data_grafiek <- show_input
+    overig_reactive$data_grafiek <- show_input[,c("date", "kit_id", "pm10", "pm10_kal", "pm25", "pm25_kal", "wd", "ws", "station_code")]
     
     try(pollutionRose(show_input,
                       pollutant = input$Component, wd = 'wd', ws = 'ws', type = 'kit_id' , local.tz="Europe/Amsterdam", cols = "Purples", statistic = 'prop.mean',breaks=c(0,20,60,100))) 
@@ -1498,7 +1500,7 @@ function(input, output, session){
     show_input <- sp::merge(show_input, knmi_data_wdws, all.x=T, by.x='date', by.y='date')
     
     # Zet de data klaar om gedownload te worden
-    overig_reactive$data_grafiek <- show_input
+    overig_reactive$data_grafiek <- show_input[,c("date", "kit_id", "pm10", "pm10_kal", "pm25", "pm25_kal", "wd", "ws", "station_code")]
     
     try(percentileRose(show_input,
                        pollutant = input$Component, wd = 'wd', type = 'kit_id', local.tz="Europe/Amsterdam", percentile = NA)) 
