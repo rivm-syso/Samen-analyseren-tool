@@ -49,7 +49,7 @@ function(input, output, session){
   knmi_stations_reactive <- reactiveValues(statinfo=knmi_stations_all, knmi_data = input_df_knmi)
   
   
-  ## FUNCTIES ----
+  ## FUNCTIES met reactive-component----
   
   # Functie: Check of de alle kolommem voor de sensordata aanwezig zijn,
   # zo niet vul deze dan aan met NA, en geef een waarschuwing
