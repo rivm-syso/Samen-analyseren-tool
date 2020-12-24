@@ -1222,9 +1222,10 @@ function(input, output, session){
     if(selected_lml_hasdata){
       # Filter de lml data op de juiste gegevens
       lml_show_input <- filter_lml_data_plot()
+
       # Zorg ook voor het kleur en lijntype overzicht
-      lml_kit_kleur <- unique(lml_stations_reactive$statinfo[which(lml_stations_reactive$statinfo$selected),c('station_number','kleur','groep', 'lijn')])
-      names(lml_kit_kleur)[names(lml_kit_kleur)=="station_number"] <- "kit_id"
+      lml_kit_kleur <- unique(lml_stations_reactive$statinfo[which(lml_stations_reactive$statinfo$selected),c('naam','kleur','groep', 'lijn')])
+      names(lml_kit_kleur)[names(lml_kit_kleur)=="naam"] <- "kit_id"
       
       # Voeg de LML data aan de sensordata toe:
       show_input <- plyr::rbind.fill(show_input, lml_show_input)
@@ -1300,8 +1301,8 @@ function(input, output, session){
       lml_show_input <- filter_lml_data_plot()
       
       # Zorg ook voor het kleur en lijntype overzicht
-      lml_kit_kleur <- unique(lml_stations_reactive$statinfo[which(lml_stations_reactive$statinfo$selected),c('station_number','kleur','groep', 'lijn')])
-      names(lml_kit_kleur)[names(lml_kit_kleur)=="station_number"] <- "kit_id"
+      lml_kit_kleur <- unique(lml_stations_reactive$statinfo[which(lml_stations_reactive$statinfo$selected),c('naam','kleur','groep', 'lijn')])
+      names(lml_kit_kleur)[names(lml_kit_kleur)=="naam"] <- "kit_id"
       
       # Voeg de LML data aan de sensordata toe:
       show_input <- plyr::rbind.fill(show_input, lml_show_input)
