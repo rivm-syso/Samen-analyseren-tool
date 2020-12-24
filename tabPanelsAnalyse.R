@@ -10,9 +10,7 @@
 ## ---------------------------------------------------------
 
 tpAnalyse <- function(){
-  library(shiny)
-  
-  tp <-  tabPanel("Visualisatie en Analyse",
+  tp <-  shiny::tabPanel("Visualisatie en Analyse",
                   tabsetPanel(
                     tpTimeplot(),
                     tpBarplot(),
@@ -28,10 +26,7 @@ tpAnalyse <- function(){
 } 
 
 tpTimeplot <- function(){
-  
-library(shiny)
-  
- tp <-  tabPanel("Tijdreeks",
+ tp <-  shiny::tabPanel("Tijdreeks",
                  helpText("Deze grafiek laat de tijdreeks van de sensor in vergelijking met het meetstation zien."),
                     plotOutput("timeplot"),
                     h4("Toelichting"),
@@ -45,10 +40,7 @@ library(shiny)
 } 
 
 tpBarplot <- function(){
-  
-  library(shiny)
-  
-  tp <-  tabPanel("Barplot",
+  tp <-  shiny::tabPanel("Barplot",
                   helpText("Deze grafiek laat de gemiddelde concentratie van de sensor in vergelijking met het meetstation zien."),
                   plotOutput("barplot"),
                   
@@ -62,10 +54,7 @@ tpBarplot <- function(){
 } 
 
 tpKalender <- function(){
-  
-  library(shiny)
-  
-  tp <-  tabPanel("Kalender",
+  tp <-  shiny::tabPanel("Kalender",
                   helpText("Deze grafiek laat het gemiddelde van de (groep) sensor(en) zien per dag."),
                       plotOutput("calendar"),
                       h4("Toelichting"),
@@ -80,10 +69,7 @@ tpKalender <- function(){
 } 
 
 tpTimevariation <- function(){
-  
-  library(shiny)
-  
-  tp <-  tabPanel("Gemiddelden",
+  tp <-  shiny::tabPanel("Gemiddelden",
                   helpText("Deze grafieken laten het gemiddelde zien voor verschillende tijdsperioden per sensor of sensorgroep."),
                       plotOutput("timevariation"),
                       h4("Toelichting"),
@@ -98,10 +84,7 @@ tpTimevariation <- function(){
 } 
 
 tpWindRose<- function(){
-  
-  library(shiny)
-  
-  tp <-  tabPanel("Windroos",
+  tp <-  shiny::tabPanel("Windroos",
                   helpText("Deze grafiek toont per windrichting hoe vaak en hoe hard de wind waaide per sensor of sensorgroep."),
                   p("LET OP: als het KNMI-station geen gegevens over de wind heeft, kan er geen windroos worden getoond."),
                   
@@ -122,10 +105,7 @@ tpWindRose<- function(){
 
 
 tpPercentileRose<- function(){
-  
-  library(shiny)
-  
-  tp <-  tabPanel("Pollutieroos",
+  tp <-  shiny::tabPanel("Pollutieroos",
                   helpText("Deze grafiek toont de gemiddelde concentratie per windrichting per sensor of sensorgroep."),
                   p("LET OP: als het KNMI-station geen gegevens over de wind of de sensor alleen 0 ug/m3 gemeten heeft, 
                     is deze pollutieroos vreemd. Check of er een windroos voor dit KNMI-station is. Check in de tijdreeks of 
@@ -144,10 +124,7 @@ tpPercentileRose<- function(){
 } 
 
 tpPollutionRose<- function(){
-  
-  library(shiny)
-  
-  tp <-  tabPanel("Pollutieroos (%)",
+  tp <-  shiny::tabPanel("Pollutieroos (%)",
                   helpText("Deze grafiek toont per windrichting de relatieve bijdrage aan de totale gemiddelde concentratie per sensor of sensorgroep."),
                   p("LET OP: als het KNMI-station geen gegevens over de wind heeft, kan er geen pollutieroos (%) worden getoond. Check of er een windroos 
                     voor dit KNMI-station is."),
