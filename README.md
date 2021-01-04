@@ -301,18 +301,46 @@ sensoren na het selecteren, gebeurt via de functie
 -   Zet de sensoren er weer op. De karakteristieken van de sensoren (de
     kleur) is in de data aangepast, dus wanneer je de sensoren er weer
     opzet hebben ze de nieuwe kleur.
+#### Downloaden van data
+Er zijn verschillende plekken in de tool waarop de gebruiken de gegevens kan downloaden.
+Hieronder de code van hoe de gegevens vanuit de grafiek kunnen worden gedownload:
+```
+  output$downloadData_grafiek <- downloadHandler(
+    # geef de filename op, zou via interactieve kunnen
+    filename = function(){
+      paste('data_grafiek', 'csv', sep=".")
+    },
+    # Geef de data op
+    content = function(file) {
+      print("Download data uit de grafiek.")
+      write.table(overig_reactive$data_grafiek, file, sep = ',',
+                  row.names = FALSE)
+    }
+  ) 
+```
+#### Het maken van tabellen
+Binnen shiny kan data heel gemakkelijk in een tabel worden weergegeven. Daarvoor heb je *renderTable* en een dataframe nodig.
+
+```
+ # Create tabel geselecteerde stations voor de download pagina ----
+  output$stations_lml <- renderTable({
+    stations_df <- data.frame('Naam' = lml_stations_reactive$statinfo[which(lml_stations_reactive$statinfo$selected),c('naam')],
+                              'Nummer' = lml_stations_reactive$statinfo[which(lml_stations_reactive$statinfo$selected),c('station_number')],
+                              'Organisatie' = lml_stations_reactive$statinfo[which(lml_stations_reactive$statinfo$selected),c('organisatie')])
+  })
+```
+
 
 #### Het maken van de grafieken
 
-Voor de **visualisatie in grafieken** maken we gebruik van het package
+Voor de **visualisatie in grafieken** maken we deels gebruik van het package
 [OpenAir](http://davidcarslaw.github.io/openair/). De verschillende
 grafieken gaan via hetzelfde structuur:
 
--   Bekijk welk **component** er gevisualiseerd moet worden
--   Bekijk in welke **tijdsperiode**
--   Ga na welke sensoren er **geselecteerd** zijn
--   Als er groepen zijn gedefinieerd, bereken daarvoor het
-    **groepsgemiddelde**
+-   Bekijk welk **component** er gevisualiseerd moet worden en geef het juiste label
+- Bekijk of er sensoren zijn **geselecteerd**
+- Maak de sensordata klaar met de functie **filter\_sensor\_data\_plot()
+- Zorg voor de juiste kleuren en lijntype
 -   Maak de grafiek via de **functie van openair**
 
 #### Het opzetten van een interactief dataframe
@@ -350,6 +378,10 @@ gedefineerd, omdat die directe aanpassingen maken in het interactieve
 dataframe. Van deze functies volgt hier een korte functie-omschrijving
 om een inzicht te geven in de structuur.
 
+Veel handelingen worden voor de sensoren, luchtmeetnetstations en de knmi-stations hetzelfde uitgevoerd. Echter zijn ze verschillend in reactieValue en in data. Daarom hebben ze elk een eigen functie. Hieronder worden alleen de functies van de sensordata benoemd.
+
+*check\_kolommen\_sensor* - functie: Check of de alle kolommem voor de sensordata aanwezig zijn, zo niet vul deze dan aan met NA, en geef een waarschuwing
+
 *set\_sensor\_deselect* – functie om de eigenschappen van de sensor weer
 op de **default deselect** te zetten
 
@@ -361,7 +393,17 @@ welke kleur nog vrij is. Als de groepsselectie aan staat
 *add\_sensors\_map* – functie voor het toevoegen van de sensoren op de
 kaart
 
+*set\_view\_map*  -  functie om de zoom/view te centreren rond de sensoren
+
 *calc\_groep\_mean* – functie om per groep het gemiddelde te berekenen
+
+*insert\_nieuwe\_data\_sensor* -  functie om de sensor data in te laden, deze functie is onderverdeeld in het laden van de voorbeelddata, het downloaden van de API en het laden vanuit een csv-bestand.
+
+*get\_sensor\_data\_api* - functie voor het ophalen van de sensor data vanuit een API
+
+*filter\_sensor\_data\_plot* -  functie om de sensor data klaar te maken voor de visualisatie
+
+*check\_selected\_id* -  functie om de verschillende acties uit te voeren bij selectie van een sensor of station.
 
 #### Overzicht van de ObserveEvents
 
@@ -369,22 +411,24 @@ Met de keuzes zoals *‘kies component’* wil je direct de waardes zien
 veranderen. Dit soort directe interacties worden bijgehouden in een
 **‘observeEvent’**. Ook het selecteren van de sensoren gaat hiermee.
 
-Net als bij de functies volgt hier een korte beschrijving van de
+Net als bij de functies volgt hier een korte beschrijving van de meeste
 verschillende observeEvents:
 
-*observeEvent({input$A\_groep} …)* – houdt in de gaten of er een groep
-moet worden geselecteerd of een losse sensor.
+ *observeEvent({input$sensor_hoofdgroep},{...}* - Check waarop de data geselecteerd wordt: zet de choices klaar -gemeente of -project
+ 
 
-*observeEvent({input$Text\_groep} …)* – houdt in de gaten welke
-groepsnaam er is opgegeven
+  *observeEvent({req(input$eigen_datafile_sensoren)}* - observe of er een eigen data set is ingeladen voor de sensoren
 
-*observeEvent({input$map\_marker\_click$id} …)* – houdt in de gaten of
-er sensor wordt aangeklikt. Zoja, dan selecteert-ie de sensor en laat de
-nieuwe kleur op de kaart zien.
 
-*observeEvent(input$reset, …)* – wanneer er op de reset button wordt
-geklikt, wordt de kleur en selected van alle sensoren weer op default
-gezet
+  *observeEvent({input$voorbeeld_data}* - Observe of de voorbeeld dataset weer ingeladen moet worden
+
+*observeEvent({input$DateStart},{...}* - Observe of de datum wordt aangepast voor de plots (dus het visualisatie gedeelte)
+
+  *observeEvent({input$map_marker_click$id}, {...}* - Observe if user selects a sensor
+  
+ *observeEvent(input$reset_huidig, {...}* - Observe of de huidige selectie moet worden gereset
+
+  *observeEvent(input$groeperen,{...}* - Observe of de selectie moet worden toegevoegd aan de groep
 
 *observeEvent(input$map\_draw\_new\_feature … )* en
 *observeEvent(input$map\_draw\_deleted\_features …)* – voor de
@@ -393,6 +437,8 @@ kunnen maken van en handmatig en via multiselect te selecteren, zijn
 deze functies om die beide te combineren. Het houdt expliciet bij wat
 geselecteerd is met multiselect, om dat ook met de reset button te
 kunnen deselecteren.
+
+
 
 Nawoord
 -------
