@@ -39,6 +39,16 @@ gewerkt. De tool is uitgeprobeerd in het project [Hollandse
 Luchten](https://hollandseluchten.waag.org/), waar het enthousiast is
 ontvangen.
 
+Deze versie van de Samen Analyseren Tool bestaat uit 2 gedeeltes, die in 2 verschillende tabbladen zijn onderscheiden:
+- Data downloaden
+Hier kan de sensordata van alle sensoren in een gemeente of in een aangegeven project worden gedownload voor een 
+zelf-in-te-stellen periode. Daarna kunnen ook de gegevens van de officiele luchtmeetnetstations van luchtmeetnet worden gedownload en 
+de windgegevens van KNMI-stations. Deze gegevens worden direct getoond in de tool, maar kun je ook opslaan.
+Het ophalen van de gegevens kan enkele minuten tot uur duren, het is verstandig om de gegevens op te slaan. Er is namelijk
+de mogelijkheid om een bestand in te laden. Het format is een .csv bestand, zie [Input data](#input-data) voor de noodzakelijke opbouw.
+- Data bekijken
+Hier zijn verschillende visualisatie mogelijk voor de sensordata al dan niet in combinatie met de gegevens van
+het luchtmeetnet en het KNMI. 
 
 Hieronder volgt een
 beschrijving van de hoofdelementen van de tool. Algemene vragen en
@@ -152,33 +162,45 @@ De app bestaat uit 4 hoofdgedeeltes:
 
 ### Input data
 
-De data die in deze tool gebruikt wordt, is een dataframe met de
-volgende kolommen: 
+Je kunt ook een csv-bestand inladen. Dit kan het bestand zijn dat je hebt gedownload of een bestand
+dat je zelf hebt samengesteld. Vooral voor dat laatste is het belangrijk dat de volgende opbouw
+wordt gebruikt:
 
-kolomnaam | beschrijving | gebruikt in huidige tool  
+TODO: dit nog nakijken in de tool
+
+#### Voor sensordata
+kolomnaam | beschrijving | noodzakelijk  
 --- | --- | ---  
 "date" | de datum en het begin-uur van het uurgemiddelde (Etc/GMT-1) | x 
 "kit\_id" | de naam van de sensor | x 
 "lat" | de latitude van de sensorlocatie | x 
 "lon" | de longitude van de sensorlocatie | x 
-"pm10" | de sensorwaarde voor PM10 | x 
-"pm10\_kal" | de gekalibreerde sensorwaarde voor PM10 | x 
-"pm25" | de sensorwaarde voor PM2.5 | x 
-"pm25\_kal" | de gekalibreerde sensorwaarde voor PM2.5 | x 
+"pm10" | de sensorwaarde voor PM10 | 
+"pm10\_kal" | de gekalibreerde sensorwaarde voor PM10 | 
+"pm25" | de sensorwaarde voor PM2.5 |  
+"pm25\_kal" | de gekalibreerde sensorwaarde voor PM2.5 | 
+
+#### Voor Luchtmeetnetdata
+kolomnaam | beschrijving | noodzakelijk  
+--- | --- | ---  
+"date" | de datum en het begin-uur van het uurgemiddelde (Etc/GMT-1) | x 
+"station\_number" | het nummer van het luchtmeetnetstation | x
+"pm25\_lml" | de (ongevalideerde) waarde voor PM2.5 gemeten op het station van luchtmeetnet | 
+"pm10\_lml" | de (ongevalideerde) waarde voor PM10 gemeten op het station van luchtmeetnet | 
+
+
+#### Voor KNMI-data
+kolomnaam | beschrijving | noodzakelijk  
+--- | --- | --- 
+"date" | de datum en het begin-uur van het uurgemiddelde (Etc/GMT-1) | x  
 "wd" | de windrichting volgens het KNMI (missing data: -999, windstil = 0, veranderlijk = 990) | x 
-"ws" | windsenelheid volgens het KNMI | x
-"rh" | de relatieve luchtvochtigheid | 
-"temp" | de temperatuur |
-"pm25\_lml" | de (ongevalideerde) waarde voor PM2.5 gemeten op het dichtstbijzijnde station van luchtmeetnet | x 
-"pm10\_lml" | de (ongevalideerde) waarde voor PM10 gemeten op het dichtstbijzijnde station van luchtmeetnet | x 
-"knmi\_id" | het nummer van het dichtstbijzijnde KNMI station, waarvan de weergegevens zijn meegegeven |
-"lml\_id" | het nummer van het dichtstbijzijnde luchtmeetnetstation waar PM10 gemeten wordt |
-"lml\_id\_pm25" | het nummer van het dichtstbijzijnde luchtmeetnetstation waar PM2.5 gemeten wordt|
+"ws" | windsnelheid volgens het KNMI | x
+"knmi\_number" | het nummer van het KNMI station | x
 
 ### global.R
 
 Hierin staat de initialisatie van de tool, alle benodigdheden worden
-geladen. In dit geval: **packages, functies, symbolen en de data.** De
+geladen. In dit geval: **packages, functies, symbolen en de keuze-opties.** De
 functies die worden geladen zijn specifiek voor deze tool en staan in
 een eigen R-script.
 
@@ -209,17 +231,28 @@ tabbladen worden gedefinieerd, de positie van de kaart gemaakt etc.
 Het script begint met de opmaak. De eerste regels halen een
 html-template op. Dit template bevat de RIVM-look.
 
-Daarna is de pagina opgebouwd uit 2 delen: **de sidebar en het
+Daarna volgt een stukje code (wellPanel) waarin de banner wordt gemaakt
+die verschijnt als de tool bezig is, bijvoorbeeld bij het downloaden van de data.
+
+Vervolgens is de pagina opgebouwd uit 2 delen: **de sidebar en het
 mainpanel**.
 
-In de **sidebar** worden de **leaflet-kaart** en de verschillende
-buttons neergezet. In het **mainpanel** komen de tabbladen met daarin de
-**grafieken** en de toelichting. Om de code overzichtelijk te houden, is
-voor elk tabblad een eigen functie geschreven. Dus **de structuur van de
-tabbladen** kun je vinden in het script *tabbladen.R*. Hier zie je voor
-elk tabblad de titel, de toelichting en de grafiek (output). Als je goed
-kijkt, herken je ook hierin de elementen sidebar en mainpanel, voor
-resp. de toelichting en de grafiek.
+De inhoud van de **sidebar** is afhankelijk of het 'Data laden en downloaden'-tabblad 
+wordt getoond of het 'Visualisatie en Analyse'-tabblad. In het eerste geval bevat de 
+sidebar de legenda, voorbeelddataset en een welkomstekst, in het tweede geval de legenda 
+en verschillende check-boxes om de data te selecteren en groeperen.
+
+Het **mainpanel** bestaat uit de **leaflet-kaart** en de tabbladen 'Data laden en downloaden'
+en 'Visualisatie en Analyse'. Om de code overzichtelijk te houden, is
+voor elk tabblad een eigen functie geschreven. 
+
+Voor 'Visualisatie en Analyse' is dat *tabPanelsAnalyse.R*. Dit tabblad is weer onderverdeeld
+in tabbladen met in elke tabblad de titel, de toelichting en de grafiek (output).
+
+Voor 'Data laden en downloaden' is dat *tabPanelsData.R*. Ook dit tabblad is onderverdeeld
+in tabbladen. Elk tabblad zijn eigen bron om gegevens te downloaden: sensor, luchtmeetnet en knmi.
+Er zijn verschillende buttons om de data te downloaden en laden en er is een invoerveld om een eigen bestand in te laden.
+
 
 ### server.R
 
