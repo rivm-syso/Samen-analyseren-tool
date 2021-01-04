@@ -185,8 +185,8 @@ kolomnaam | beschrijving | noodzakelijk
 --- | --- | ---  
 "date" | de datum en het begin-uur van het uurgemiddelde (Etc/GMT-1) | x 
 "station\_number" | het nummer van het luchtmeetnetstation | x
-"pm25\_lml" | de (ongevalideerde) waarde voor PM2.5 gemeten op het station van luchtmeetnet | 
-"pm10\_lml" | de (ongevalideerde) waarde voor PM10 gemeten op het station van luchtmeetnet | 
+"pm25" | de (ongevalideerde) waarde voor PM2.5 gemeten op het station van luchtmeetnet | 
+"pm10" | de (ongevalideerde) waarde voor PM10 gemeten op het station van luchtmeetnet | 
 
 
 #### Voor KNMI-data
@@ -317,41 +317,29 @@ grafieken gaan via hetzelfde structuur:
 
 #### Het opzetten van een interactief dataframe
 
-Het dataframe is niet een normaal dataframe, maar een interactief
-dataframe. Dat houdt in dat je **interactief aanpassingen** kunt maken
-in het dataframe; bijvoorbeeld het aanpassen van de kleur van de sensor.
-In het dataframe is kleur een attribute. Deze kan worden gewijzigd door
-de *selectfunctie* en meteen door de *add\_sensors\_map*-functie op de
-kaart worden getoond.
+De verschillende data (sensor/luchtmeetnet/knmi) heeft elk zijn eigen
+interactieve dataframe (*reactiveValues*). Dat houdt in dat je 
+**interactief aanpassingen** kunt maken in het dataframe; 
+bijvoorbeeld het aanpassen van de kleur van de sensor.
+Deze 3 dataframes hebben: een attribute *statinfo* met informatie over elk station/sensor
+zoals bijvoorbeeld de kleur, een attribute *..._data* met de meetgegevens erin.
 
-In het interactieve dataframe (het heeft **de naam ‘values’**) zijn
-verschillende kolommen:
+Lijst van informatie in *statinfo* (niet bij elk in gebruik):
 
--   df: het dataframe met de **eigenschappen van de sensoren** en de
-    meetwaardes erin
--   groepsnaam: de waarde die de gebruiker heeft ingetypt voor de naam
-    van de **groep**
--   actiegroep: boolean of is aangevinkt dat de sensor bij de groep
-    hoort (True/False)
--   df\_gem: het dataframe met de **gemiddeldes per groep** erin
-
-Het df is het **input dataframe**, dat wordt vanuit een .RDS bestand
-ingeladen in **global.R**. Het bestaat uit verschillende
-basiseigenschappen zoals de meetwaardes en locatie. Nadat het in
-global.R is ingeladen, wordt het in **server.R** in een **interactief
-dataframe** gezet.
-
-De volledige **kolomnamen** zijn: "date", "kit\_id", "lat", "lon",
-"pm10", "pm10\_kal", "pm25", "pm25\_kal", "wd", "ws", "rh", "temp",
-"pm25\_lml", "pm10\_lml", "knmi\_id", "lml\_id",  "lml\_id\_pm25"
-
-Daarnaast zijn er later in de tool nog een aantal eigenschappen per
-sensor toegevoegd.
-
--   Selected: geeft aan of de sensor geselecteerd is (TRUE/FALSE)
--   Kleur: geeft de kleur van de sensor aan
+-   Selected: geeft aan of is geselecteerd (TRUE/FALSE)
+-   Kleur: geeft de kleur aan voor in de grafiek
+-   lijn_stat: geeft de lijntype aan voor in de grafiek
 -   Groep: geeft de groepsnaam aan. Wanneer niet in een groep is deze
     leeg: “”
+-   name_icon: voor luchtmeetnet- en knmi-stations, welk icoon gebruikt 
+dient te worden op de kaart
+
+
+Daarnaast zijn er nog een aantal andere *reactiveValues* voor algemene
+gegevens zoals de tijdsperiode, welke dataset gekozen is en om de keuzes 
+voor de dropdown-menus goed te zetten.
+
+
 
 #### Overzicht van de functies
 
