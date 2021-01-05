@@ -71,9 +71,11 @@ Inhoudsopgave
 -   [ui.R en server.R](#uir-en-serverr)
 -   [ui.R](#uir)
 -   [server.R](#serverr)
-    -   [Het maken van de kaart](#het-maken-van-de-kaart)
-    -   [Het maken van de grafieken](#het-maken-van-de-grafieken)
     -   [Het opzetten van een interactief dataframe](#het-opzetten-van-een-interactief-dataframe)
+    -   [Het maken van de kaart](#het-maken-van-de-kaart)
+    -   [Het downloaden van data](#het-downloaden-van-data)
+    -   [Het maken van tabellen](#het-maken-van-tabellen)
+    -   [Het maken van grafieken](#het-maken-van-grafieken)
     -   [Overzicht van de functies](#overzicht-van-de-functies)
     -   [Overzicht van de ObserveEvents](#overzicht-van-de-observeevents)
 -   [Nawoord](#nawoord)
@@ -366,7 +368,7 @@ Binnen shiny kan data heel gemakkelijk in een tabel worden weergegeven. Daarvoor
 ```
 
 
-#### Het maken van de grafieken
+#### Het maken van grafieken
 
 Voor de **visualisatie in grafieken** maken we deels gebruik van het package
 [OpenAir](http://davidcarslaw.github.io/openair/). De verschillende
