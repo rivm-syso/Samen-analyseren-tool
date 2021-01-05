@@ -162,11 +162,20 @@ De app bestaat uit 4 hoofdgedeeltes:
 
 ### Input data
 
-Je kunt ook een csv-bestand inladen. Dit kan het bestand zijn dat je hebt gedownload of een bestand
-dat je zelf hebt samengesteld. Vooral voor dat laatste is het belangrijk dat de volgende opbouw
-wordt gebruikt:
+Er zijn 3 verschillende mogelijkheden om gegevens in de tool te bekijken. Voor alle drie geldt
+dat er aparte bestanden voor sensordata, luchtmeetnetdata en knmi-data zijn.
 
-TODO: dit nog nakijken in de tool
+- Voorbeelddata: er zit voor een korte periode data in de tool. Deze kan met de button *laad voorbeeld data* worden geladen.
+Met deze data kan je de verschillende visualisaties uit proberen. Ook kan je deze data als csv-bestand downloaden.
+
+- Data downloaden: je kan de sensordata van alle sensoren in een gemeente of in een aangegeven project downloaden voor een 
+zelf-in-te-stellen periode. Daarna kunnen ook de gegevens van de officiele luchtmeetnetstations van luchtmeetnet worden gedownload en 
+de windgegevens van KNMI-stations. Deze gegevens worden direct getoond in de tool, maar kun je ook opslaan.
+Het ophalen van de gegevens kan enkele minuten tot uur duren, het is verstandig om de gegevens op te slaan.
+
+- Een csv-bestand inladen: Je kunt ook een csv-bestand inladen. Dit kan het bestand zijn dat je hebt gedownload of een bestand
+dat je zelf hebt samengesteld. Vooral voor dat laatste is het belangrijk dat de volgende opbouw
+wordt gebruikt. De kolomnamen dienen de eerste regel van het bestand te zijn.
 
 #### Voor sensordata
 kolomnaam | beschrijving | noodzakelijk  
@@ -184,7 +193,7 @@ kolomnaam | beschrijving | noodzakelijk
 kolomnaam | beschrijving | noodzakelijk  
 --- | --- | ---  
 "date" | de datum en het begin-uur van het uurgemiddelde (Etc/GMT-1) | x 
-"station\_number" | het nummer van het luchtmeetnetstation | x
+"station\_number" | het nummer van het luchtmeetnetstation bijv. NL10131 | x
 "pm25" | de (ongevalideerde) waarde voor PM2.5 gemeten op het station van luchtmeetnet | 
 "pm10" | de (ongevalideerde) waarde voor PM10 gemeten op het station van luchtmeetnet | 
 
@@ -195,7 +204,8 @@ kolomnaam | beschrijving | noodzakelijk
 "date" | de datum en het begin-uur van het uurgemiddelde (Etc/GMT-1) | x  
 "wd" | de windrichting volgens het KNMI (missing data: -999, windstil = 0, veranderlijk = 990) | x 
 "ws" | windsnelheid volgens het KNMI | x
-"knmi\_number" | het nummer van het KNMI station | x
+"station\_number" | het nummer van het KNMI station bijv. 370 | x
+"station\_code" | het nummer van het KNMI station met KNMI ervoor bijv. KNMI370 | x
 
 ### global.R
 
@@ -278,6 +288,30 @@ Hier volgen eerst een aantal begrippen, die veel voorkomen in de code.
     kaart**. Deze visualisaties of kaart zijn dan in *‘output$naamplot’*
     neergezet.
 
+#### Het opzetten van een interactief dataframe
+
+De verschillende data (sensor/luchtmeetnet/knmi) heeft elk zijn eigen
+interactieve dataframe (*reactiveValues*). Dat houdt in dat je 
+**interactief aanpassingen** kunt maken in het dataframe; 
+bijvoorbeeld het aanpassen van de kleur van de sensor.
+Deze 3 dataframes hebben: een attribute *statinfo* met informatie over elk station/sensor
+zoals bijvoorbeeld de kleur, een attribute *..._data* met de meetgegevens erin.
+
+Lijst van informatie in *statinfo* (niet bij elk in gebruik):
+
+-   Selected: geeft aan of is geselecteerd (TRUE/FALSE)
+-   Kleur: geeft de kleur aan voor in de grafiek
+-   lijn_stat: geeft de lijntype aan voor in de grafiek
+-   Groep: geeft de groepsnaam aan. Wanneer niet in een groep is deze
+    leeg: “”
+-   name_icon: voor luchtmeetnet- en knmi-stations, welk icoon gebruikt 
+dient te worden op de kaart
+
+
+Daarnaast zijn er nog een aantal andere *reactiveValues* voor algemene
+gegevens zoals de tijdsperiode, welke dataset gekozen is en om de keuzes 
+voor de dropdown-menus goed te zetten.
+
 #### Het maken van de kaart
 
 De kaart wordt gemaakt door
@@ -301,7 +335,8 @@ sensoren na het selecteren, gebeurt via de functie
 -   Zet de sensoren er weer op. De karakteristieken van de sensoren (de
     kleur) is in de data aangepast, dus wanneer je de sensoren er weer
     opzet hebben ze de nieuwe kleur.
-#### Downloaden van data
+    
+#### Het downloaden van data
 Er zijn verschillende plekken in de tool waarop de gebruiken de gegevens kan downloaden.
 Hieronder de code van hoe de gegevens vanuit de grafiek kunnen worden gedownload:
 ```
@@ -343,29 +378,6 @@ grafieken gaan via hetzelfde structuur:
 - Zorg voor de juiste kleuren en lijntype
 -   Maak de grafiek via de **functie van openair**
 
-#### Het opzetten van een interactief dataframe
-
-De verschillende data (sensor/luchtmeetnet/knmi) heeft elk zijn eigen
-interactieve dataframe (*reactiveValues*). Dat houdt in dat je 
-**interactief aanpassingen** kunt maken in het dataframe; 
-bijvoorbeeld het aanpassen van de kleur van de sensor.
-Deze 3 dataframes hebben: een attribute *statinfo* met informatie over elk station/sensor
-zoals bijvoorbeeld de kleur, een attribute *..._data* met de meetgegevens erin.
-
-Lijst van informatie in *statinfo* (niet bij elk in gebruik):
-
--   Selected: geeft aan of is geselecteerd (TRUE/FALSE)
--   Kleur: geeft de kleur aan voor in de grafiek
--   lijn_stat: geeft de lijntype aan voor in de grafiek
--   Groep: geeft de groepsnaam aan. Wanneer niet in een groep is deze
-    leeg: “”
--   name_icon: voor luchtmeetnet- en knmi-stations, welk icoon gebruikt 
-dient te worden op de kaart
-
-
-Daarnaast zijn er nog een aantal andere *reactiveValues* voor algemene
-gegevens zoals de tijdsperiode, welke dataset gekozen is en om de keuzes 
-voor de dropdown-menus goed te zetten.
 
 
 
