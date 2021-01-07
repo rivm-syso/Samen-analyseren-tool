@@ -134,14 +134,16 @@ Voor deze tool heb je ook een aantal packages nodig, waaronder
 openair, leaflet, leaflet.extras, dplyr, shinythemes, shinyWidgets,
 purrr, sp en devtools.  Deze packages kan je installeren via
 de package manager van RStudio of via het `install.packages`
-commando. Naast deze packages heb je ook het geoshaper package nodig,
+commando. Naast deze packages heb je ook het geoshaper package en de samanapir package nodig,
 deze moet je vanaf GitHub installeren.  Je kan dit pakket vinden in de
 [RedOakStrategic/geoshaper](https://github.com/RedOakStrategic/geoshaper)
-repository. Installeren doe je met de volgende R commando's:
+repository en de [samanapir](https://github.com/rivm-syso/samanapir). 
+Installeren doe je met de volgende R commando's:
 
 ```
 library(devtools)
 install_github("RedOakStrategic/geoshaper")
+install_github("https://github.com/rivm-syso/samanapir")
 ```
 
 Open het script global.R. Rechtsboven bevindt zich een groen driekhoekje
@@ -386,8 +388,7 @@ grafieken gaan via hetzelfde structuur:
 #### Overzicht van de functies
 
 Er zijn verschillende functies gemaakt voor de functionaliteiten van de
-tool. Enkele functies konden in een eigen R-script worden gezet en zijn
-in global.R ingeladen. Andere functies zijn direct in server.R
+tool. De functies zijn direct in server.R
 gedefineerd, omdat die directe aanpassingen maken in het interactieve
 dataframe. Van deze functies volgt hier een korte functie-omschrijving
 om een inzicht te geven in de structuur.
