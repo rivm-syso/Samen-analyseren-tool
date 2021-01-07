@@ -2,7 +2,7 @@
 ## R Script voor interactieve data-analyse van sensordata, met o.a. R package openair, leaflet en shiny.
 ## Deze Samen Analyseren Tool bestaat uit meerdere scripts. Dit is het ui.R script.
 ## Auteur: Henri de Ruiter en Elma Tenner namens het Samen Meten Team, RIVM. 
-## Laatste versie: april 2020
+## Laatste versie: jan 2021
 ## Contact: info@samenmeten.nl 
 ## ---------------------------------------------------------
 ## Opmerkingen: 

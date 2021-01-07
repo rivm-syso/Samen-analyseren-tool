@@ -2,7 +2,7 @@
 ## R Script voor interactieve data-analyse van sensordata, met o.a. R package openair, leaflet en shiny.
 ## Deze Samen Analyseren Tool bestaat uit meerdere scripts. Dit is het Global.R script.
 ## Auteur: Henri de Ruiter en Elma Tenner namens het Samen Meten Team, RIVM. 
-## Laatste versie: april 2020
+## Laatste versie: jan 2021 
 ## Contact: info@samenmeten.nl 
 ## ---------------------------------------------------------
 ## Opmerkingen: 
@@ -12,12 +12,13 @@
 ## Load de packages 
 # if (!require("pacman")) install.packages("pacman") # handig packacge dat packages checkt en installeert
 # pacman::p_load(tidyr, openair, dplyr, tidyverse, leaflet,leaflet.extras, shiny, shinythemes,shinyWidgets, sp,devtools,geoshaper)
-# 
+# devtools::install_github("https://github.com/rivm-syso/samanapir")
+# devtools::install_github("RedOakStrategic/geoshaper")
 # Om het te publiceren op de shinyserver kan je pacman niet gebruiken. Dat werkt namelijk niet.
-library(openair)
+library(openair) # voor de grafieken
 library(shinythemes)
 library(shinyWidgets)
-library(leaflet)
+library(leaflet) # voor de kaart
 library(leaflet.extras)
 library(plyr)
 library(dplyr)
@@ -27,18 +28,15 @@ library(sp)
 library(devtools)
 library(geoshaper)
 library(Rmisc)
-library(DT) #for downlaod and datatable
+library(DT) #for download and datatable
 library(taRifx)
 library(ggplot2)
-# library(profvis)
-# profvis(runApp())
+library(samanapir) # voor de api functionaliteiten
 
 ## Load Functions ----
 # Functies voor het genereren van de inhoud van de tabpanels
 source("tabPanelsData.R", local = TRUE)
 source("tabPanelsAnalyse.R", local = TRUE)
-# Functies voor het ophalen van data via api
-source("Functies_API.R", local = TRUE) 
 
 ## Initialise ----
 projectnaam <- "Hollandse Luchten"
@@ -93,7 +91,7 @@ knmi_labels <- as.list(paste("KNMI", knmi_stations_all$station_number, sep = ": 
 
 
 # Voor de lml stations: ophalen hun naam en locatie en labels opzetten
-lml_stations_all <- GetLMLallstatinfoAPI()
+lml_stations_all <- samanapir::GetLMLallstatinfoAPI()
 lml_stations_all$selected <- FALSE
 lml_stations_all$hasdata <- FALSE
 lml_stations_all$name_icon <- 'lml_nodata'

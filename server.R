@@ -2,7 +2,7 @@
 ## R Script voor interactieve data-analyse van sensordata, met o.a. R package openair, leaflet en shiny.
 ## Deze Samen Analyseren Tool bestaat uit meerdere scripts. Dit is het server.R script.
 ## Auteur: Henri de Ruiter en Elma Tenner namens het Samen Meten Team, RIVM. 
-## Laatste versie: april 2020
+## Laatste versie: jan 2021
 ## Contact: info@samenmeten.nl 
 ## ---------------------------------------------------------
 ## Opmerkingen: 
@@ -419,7 +419,7 @@ function(input, output, session){
       }
       
       # Neem alleen de stations mee die wel pm10 of pm25 hebben gemeten
-      lml_stations_reactive$lml_data <- lml_stations_reactive$lml_data[which(!lml_stations_reactive$lml_data$station_number %in% station_remove_pm10 &
+      lml_stations_reactive$lml_data <- lml_stations_reactive$lml_data[which(!lml_stations_reactive$lml_data$station_number %in% station_remove_pm10 |
                                              !lml_stations_reactive$lml_data$station_number %in% station_remove_pm25),]
       
       print('stations zonder pm10: ')
@@ -552,12 +552,13 @@ function(input, output, session){
     # Ga elk station af en haal de gegevens op uit de API
     for(ind in seq(1,length(lml_stats))){
       stat <- lml_stats[ind]
+      print(stat)
       # Voor de progress messages
       text <- paste0("Luchtmeetnet station: ", stat, " - stap (",ind,"/",length(lml_stats) ,")")
       updateProgress(value = (ind/length(lml_stats))*0.8, detail = text)
       
       # Haal voor elk station de data op van luchtmeetnet API
-      station_data_ruw <- GetLMLAPI(stat, format(tijdreeks_reactive$startdatum_tpdata, '%Y%m%d'), format(tijdreeks_reactive$einddatum_tpdata, '%Y%m%d'))
+      station_data_ruw <- samanapir::GetLMLAPI(stat, format(tijdreeks_reactive$startdatum_tpdata, '%Y%m%d'), format(tijdreeks_reactive$einddatum_tpdata, '%Y%m%d'))
       # Voeg alle meetwaardes vam de stations samen
       station_data_all <- rbind(station_data_all, station_data_ruw$data)}
 
@@ -608,7 +609,7 @@ function(input, output, session){
     progress$set(message = paste0("van stations: ", knmi_stats), value = 0.3)
     
     # ophalen van de gegevens via de API
-    station_all_data <- GetKNMIAPI(knmi_stats,format(tijdreeks_reactive$startdatum_tpdata, '%Y%m%d'), format(tijdreeks_reactive$einddatum_tpdata, '%Y%m%d'))
+    station_all_data <- samanapir::GetKNMIAPI(knmi_stats,format(tijdreeks_reactive$startdatum_tpdata, '%Y%m%d'), format(tijdreeks_reactive$einddatum_tpdata, '%Y%m%d'))
     
     # Je hebt voor nu alleen het data deel van de gegevens uit de api nodig
     station_all_data <- station_all_data$data
@@ -668,7 +669,7 @@ function(input, output, session){
     # Aanroepen van de API
     # Let op als er geen sensoren zijn, dan ook geen data. Deze error afvangen.
     sensor_data_ruw <- tryCatch({
-      GetSamenMetenAPI(projectnaam, format(tijdreeks_reactive$startdatum_tpdata, '%Y%m%d'), 
+      samanapir::GetSamenMetenAPI(projectnaam, format(tijdreeks_reactive$startdatum_tpdata, '%Y%m%d'), 
                        format(tijdreeks_reactive$einddatum_tpdata, '%Y%m%d'), data_opslag_list,
                        updateProgress) 
     }, error = function(e){
@@ -782,7 +783,7 @@ function(input, output, session){
   }
 
   check_selected_id <- function(id_select){
-    # Bepaal of er op een sensr wordt geklikt, dus niet op lml station of knmi station.
+    # Bepaal of er op een sensor wordt geklikt, dus niet op lml station of knmi station.
     # Het lml station begint met 'NL', het knmi station is een numeric
     print(paste0('SELECTED ID: ', id_select))
     if (is_empty(grep("^knmi|^NL", id_select)) & !is.numeric(id_select) ){
