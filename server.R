@@ -38,7 +38,9 @@ function(input, output, session){
   })
   
   # Zet reactive dataframe op ----
+
   values <- reactiveValues(df = sensor_unique, groepsnaam = geen_groep, actiegroep = FALSE, hoeveelmet = 0, kwalindicat = 0, df_gem = data.frame()) 
+
   overzicht_shapes <- reactiveValues(add = 0, delete = 0) # nodig om selectie ongedaan te maken
   
   ## FUNCTIES ----
@@ -46,13 +48,16 @@ function(input, output, session){
   # Functie: Set the sensor as deselect and change color to base color ----
   set_sensor_deselect <- function(id_select){
     values$df[values$df$kit_id == id_select, "selected"] <- FALSE 
-    values$df[values$df$kit_id == id_select, "groep"] <- geen_groep
+    values$df[values$df$kit_id == id_select, "huidig"] <- FALSE 
     values$df[values$df$kit_id == id_select, "kleur"] <- kleur_marker_sensor
+
+    values$df[values$df$kit_id == id_select, "groep"] <- geen_groep
   }
   
   # Functie: Set sensor as select and specify color ----
   set_sensor_select <- function(id_select){
-    values$df[values$df$kit_id == id_select, "selected"] <- TRUE 
+    values$df[values$df$kit_id == id_select, "selected"] <- TRUE
+    values$df[values$df$kit_id == id_select, "huidig"] <- TRUE
     # Selecteen kleur en geef dit mee aan de sensor
     # Kies de eerste kleur in de lijst kleur_cat die aanwezig is
     count  <- 1
@@ -70,16 +75,6 @@ function(input, output, session){
     # Als alle kleuren gebruikt zijn: kies zwart
     if (count == length(kleur_cat)){
       kleur_sensor <- "black"
-    }
-    
-    # Bekijk of een sensor moet worden toegevoegd aan de groep
-    if (values$actiegroep){
-      # Als de groep al bestaat, zoek die kleur op
-      if(values$groepsnaam %in% values$df$groep){
-        kleur_sensor <- values$df[which(values$df$groep == values$groepsnaam),'kleur'][1]
-      }
-      # Geef aan dat de sensor bij die groep hoort. LET op: kan pas na opzoeken van de kleur van de groep
-      values$df[values$df$kit_id == id_select, "groep"] <- values$groepsnaam
     }
     
     # Geef kleur aan de sensor
@@ -147,6 +142,7 @@ function(input, output, session){
   
   ## OBSERVE EVENTS ----
   
+
   # Observe of er een minimum aantal metingen wordt ingegeven ----
   observeEvent({input$hoeveel},{
     # Schrijf de treshold waarde in de interactive values
@@ -182,14 +178,27 @@ function(input, output, session){
   })     
   
   # Observe of de tekst wordt aangepast, terwijl actiegroep==True (de checkbox is dan aangeklikt). ----
+
   # Dan wil je dat er een nieuwe groep wordt aangemaakt
   # Bijvoorbeeld: je hebt een groep "Wijk aan Zee" aangemaakt, en je begint een nieuwe naam te typen "IJmuiden". 
   # Deze groep moet dan nieuw aangemaakt worden "IJmuiden".
   observeEvent({input$Text_groep},{
-    if(values$actiegroep){
       values$groepsnaam <- input$Text_groep
-    }
+    })
+  
+  observeEvent({input$bestaande_groep},{
+    values$groepsnaam <- input$bestaande_groep
   })
+  
+  # Observe of de datum wordt aangepast
+  observeEvent({input$DateStart},{
+    values$startdatum <- input$DateStart
+  })
+  
+  observeEvent({input$DateEind},{
+    values$einddatum <- input$DateEind
+  })
+  
   
   # Observe if user selects a sensor ----
   observeEvent({input$map_marker_click$id}, {
@@ -211,18 +220,64 @@ function(input, output, session){
     }
   })
   
-  # Observe of de selectie moet worden gereset ----
+  # Observe of de huidige selectie moet worden gereset ----
   # De values selected worden weer FALSE en de markers kleur_sensor_marker gekleurd, groepen verwijderd
-  observeEvent(input$reset, {
-    values$df[, "selected"] <- FALSE 
-    values$df[, "groep"] <- geen_groep
-    # Als de sensor besckibaar/clickable is, zet dan de standaard kleur neer
-    values$df[which(values$df$click), "kleur"] <- kleur_marker_sensor
+  observeEvent(input$reset_huidig, {
+    values$df[which(values$df$huidig == TRUE), "selected"] <- FALSE 
+    values$df[which(values$df$huidig == TRUE), "kleur"] <- kleur_marker_sensor
+    values$df[which(values$df$huidig == TRUE), "groep"] <- geen_groep
+    values$df[which(values$df$huidig == TRUE), "huidig"] <- FALSE 
     # Laad de sensoren op de kaart zien
     add_sensors_map()
   })
   
-  # Observe voor multiselect ----
+  # Observe of de alle geselecteerde sensoren moet worden gereset ----
+  # De values selected worden weer FALSE en de markers kleur_sensor_marker gekleurd, groepen verwijderd
+  observeEvent(input$reset_all, {
+    values$df[, "selected"] <- FALSE 
+    values$df[, "groep"] <- geen_groep
+
+    # Als de sensor besckibaar/clickable is, zet dan de standaard kleur neer
+    values$df[which(values$df$click), "kleur"] <- kleur_marker_sensor
+
+    values$df[, "huidig"] <- FALSE 
+
+    # Laad de sensoren op de kaart zien
+    add_sensors_map()
+  })
+  
+  # Observe of de selectie moet worden toegevoegd aan de groep ----
+  # De values selected worden weer FALSE en de markers kleur_sensor_marker gekleurd, groepen verwijderd
+  observeEvent(input$groeperen, {
+    # Check of een groep gekozen is, anders geen groepering
+    if (values$groepsnaam == geen_groep){
+      values$df[values$df$huidig, "huidig"] <- FALSE
+    }else{
+    # Als de groep al bestaat, zoek die kleur op
+    if(values$groepsnaam %in% values$df$groep){
+      kleur_sensor <- values$df[which(values$df$groep == values$groepsnaam),'kleur'][1]
+    } else{
+      kleur_sensor <- values$df[which(values$df$huidig),'kleur'][1]
+    }
+
+    # Geef aan dat de sensor bij die groep hoort.
+    values$df[values$df$huidig, "groep"] <- values$groepsnaam
+    values$df[values$df$huidig, "kleur"] <- kleur_sensor
+    values$df[values$df$huidig, "huidig"] <- FALSE
+    
+    # Laad de sensoren op de kaart zien
+    add_sensors_map()}
+    # Set textinput op geen groep
+    updateTextInput(session,"Text_groep",'Maak nieuwe groep:', value = geen_groep)
+  })
+
+  
+  # Voor de bestaande groepen: maak de input-ui ----
+  output$bestaande_groep <- renderUI({
+    selectizeInput('bestaande_groep', 'Kies bestaande groep: ', choices = c("select" = "", levels(as.factor(values$df$groep))))
+  })
+  
+  # Observe voor multiselect ---- 
   observeEvent(input$map_draw_new_feature,{
     
     # Houd bij hoeveel features er zijn. Later nodig bij verwijderen, i.v.m. reset ook de losse selectie.
@@ -293,11 +348,15 @@ function(input, output, session){
   
   ## Genereer plots -----
   
+  # Create tabel huidige selectie ----
+  output$huidig <- renderTable({
+  huidig_df <- data.frame('Selectie' =values$df[which(values$df$huidig),'kit_id'])
+  })
+  
   # Create time plot vanuit openair ----
   output$timeplot <- renderPlot({
     
     comp <- selectReactiveComponent(input)
-    dates <- selectReactiveDates(input)
     selected_id <- values$df[which(values$df$selected & values$df$groep == geen_groep),'kit_id']
     show_input <-input_df[which(input_df$kit_id %in% selected_id),]
     
@@ -305,16 +364,21 @@ function(input, output, session){
     if (length(unique(values$df$groep))>1){
       calc_groep_mean() # berekent groepsgemiddeldes
       show_input <- merge(show_input,values$df_gem, all = T) }
+
     
     # if / else statement om correctie lml data toe te voegen ----
     if(comp == "pm10" || comp == "pm10_kal"){
-      try(timePlot(selectByDate(mydata = show_input,start = dates()$start, end = dates()$end),
-                   pollutant = c(comp, "pm10_lml"), wd = "wd", type = "kit_id", local.tz="Europe/Amsterdam"))
+      # Bepaal de max voor de ylim
+      ylim_max <- max(show_input$pm10)
+      try(timePlot(selectByDate(mydata = show_input,start = values$startdatum, end = values$einddatum),
+                   pollutant = c(comp, "pm10_lml"), wd = "wd", type = "kit_id", local.tz="Europe/Amsterdam", ylim=c(0, ylim_max)))
       # Call in try() zodat er geen foutmelding wordt getoond als er geen enkele sensor is aangeklikt 
     }
     else {
-      try(timePlot(selectByDate(mydata = show_input,start = dates()$start, end = dates()$end),
-                   pollutant = c(comp, "pm25_lml"), wd = "wd", type = "kit_id", local.tz="Europe/Amsterdam"))
+      # Bepaal de max voor de ylim
+      ylim_max <- max(show_input$pm25)
+      try(timePlot(selectByDate(mydata = show_input,start = values$startdatum, end = values$einddatum),
+                   pollutant = c(comp, "pm25_lml"), wd = "wd", type = "kit_id", local.tz="Europe/Amsterdam", ylim=c(0, ylim_max)))
       # Call in try() zodat er geen foutmelding wordt getoond als er geen enkele sensor is aangeklikt 
     }
   })
@@ -323,7 +387,6 @@ function(input, output, session){
   output$calendar <- renderPlot({
     
     comp <- selectReactiveComponent(input)
-    dates <- selectReactiveDates(input)
     selected_id <- values$df[which(values$df$selected & values$df$groep == geen_groep),'kit_id']
     show_input <-input_df[which(input_df$kit_id %in% selected_id),]
     
@@ -332,7 +395,7 @@ function(input, output, session){
       calc_groep_mean() # berekent groepsgemiddeldes
       show_input <- merge(show_input,values$df_gem, all = T) }
     
-    try(calendarPlot(selectByDate(mydata = show_input, start = dates()$start, end = dates()$end),
+    try(calendarPlot(selectByDate(mydata = show_input, start = values$startdatum, end = values$einddatum),
                      pollutant = comp, limits= c(0,150), cols = 'Purples', local.tz="Europe/Amsterdam")) 
     # Call in try() zodat er geen foutmelding wordt getoond als er geen enkele sensor is aangeklikt 
   })
@@ -341,7 +404,6 @@ function(input, output, session){
   output$timevariation <- renderPlot({
     
     comp <- selectReactiveComponent(input)
-    dates <- selectReactiveDates(input)
     selected_id <- values$df[which(values$df$selected & values$df$groep == geen_groep),'kit_id']
     show_input <-input_df[which(input_df$kit_id %in% selected_id),]
     
@@ -365,7 +427,7 @@ function(input, output, session){
     # create colour array
     kleur_array <- kit_kleur_sort$kleur
     
-    try(timeVariation(selectByDate(mydata = show_input, start = dates()$start, end = dates()$end),
+    try(timeVariation(selectByDate(mydata = show_input, start = values$startdatum, end = values$einddatum),
                       pollutant = comp, normalise = FALSE, group = "kit_id",
                       alpha = 0.1, cols = kleur_array, local.tz="Europe/Amsterdam",
                       ylim = c(0,NA))) 
@@ -377,7 +439,6 @@ function(input, output, session){
   output$pollutionplot <- renderPlot({
     
     comp <- selectReactiveComponent(input)
-    dates <- selectReactiveDates(input)
     selected_id <- values$df[which(values$df$selected & values$df$groep == geen_groep),'kit_id']
     show_input <-input_df[which(input_df$kit_id %in% selected_id),]    
     
@@ -387,7 +448,7 @@ function(input, output, session){
       show_input <- merge(show_input,values$df_gem, all = T) }
     
     
-    try(pollutionRose(selectByDate(mydata = show_input,start = dates()$start, end = dates()$end),
+    try(pollutionRose(selectByDate(mydata = show_input,start = values$startdatum, end = values$einddatum),
                       pollutant = comp, wd = 'wd', ws = 'ws', type = 'kit_id' , local.tz="Europe/Amsterdam", cols = "Purples", statistic = 'prop.mean',breaks=c(0,20,60,100))) 
     
   })
@@ -397,7 +458,6 @@ function(input, output, session){
   output$windplot <- renderPlot({
     
     comp <- selectReactiveComponent(input)
-    dates <- selectReactiveDates(input)
     selected_id <- values$df[which(values$df$selected & values$df$groep == geen_groep),'kit_id']
     show_input <-input_df[which(input_df$kit_id %in% selected_id),]    
     
@@ -407,7 +467,7 @@ function(input, output, session){
       show_input <- merge(show_input,values$df_gem, all = T) }
     
     
-    try(windRose(selectByDate(mydata = show_input,start = dates()$start, end = dates()$end),
+    try(windRose(selectByDate(mydata = show_input,start = values$startdatum, end = values$einddatum),
                  wd = 'wd', ws = 'ws', type = 'kit_id' , local.tz="Europe/Amsterdam", cols = "Purples")) 
     # Call in try() zodat er geen foutmelding wordt getoond als er geen enkele sensor is aangeklikt 
     
@@ -417,7 +477,6 @@ function(input, output, session){
   output$percentileplot <- renderPlot({
     
     comp <- selectReactiveComponent(input)
-    dates <- selectReactiveDates(input)
     selected_id <- values$df[which(values$df$selected & values$df$groep == geen_groep),'kit_id']
     show_input <-input_df[which(input_df$kit_id %in% selected_id),]    
     
@@ -426,7 +485,7 @@ function(input, output, session){
       calc_groep_mean() # berekent groepsgemiddeldes
       show_input <- merge(show_input,values$df_gem, all = T) }
     
-    try(percentileRose(selectByDate(mydata = show_input,start = dates()$start, end = dates()$end),
+    try(percentileRose(selectByDate(mydata = show_input,start = values$startdatum, end = values$einddatum),
                        pollutant = comp, wd = 'wd', type = 'kit_id', local.tz="Europe/Amsterdam", percentile = NA)) 
     
   })  

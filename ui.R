@@ -9,6 +9,7 @@
 ## Het eerste gedeelte bevat de opmaak/styling
 ## ---------------------------------------------------------
 
+
 ## Load folder voor de huisstijl ----
 
 # Hier worden de bestanden opgehaald voor de huissijl. Deze staan ook op github en zullen
@@ -22,10 +23,16 @@
 # }
 
 # HTML template voor de opmaak/styling
-htmlTemplate("./www_totaal/template.wide.html",
+# HTML template voor de opmaak/styling
+htmlTemplate("./www/template_samenmeten.wide.html",
+
              pageTitle=paste("Prototype Samen Analyseren tool: project ", projectnaam),
              
-             aboutSite=div(h3("Verantwoording"),
+             aboutSite=div(
+               h3("Gebruikershandleiding"),
+               p("In de ", a("handleiding", href = "https://www.samenmetenaanluchtkwaliteit.nl/documenten/gebruikershandleiding-samen-analyseren-tool", 
+                             target = 'blank'), "vind je meer informatie over het algemene gebruik van de Samen Analyseren Tool."),
+               h3("Verantwoording"),
                            
                            p("Dit dashboard is door het ", a("RIVM", href = "https://rivm.nl", target = 'blank'), "ontwikkeld voor snelle analyse van sensordata.
                              Het maakt gebruik van de R-package",
@@ -34,7 +41,10 @@ htmlTemplate("./www_totaal/template.wide.html",
                              
                              p("Het huidige dashboard is een prototype en nog volop in ontwikkeling. 
                                Het wordt gebruikt om verschillende analyses en visualisaties te testen.
-                               In 2020 zullen we de broncode openbaar maken, zodat we samen met jullie het dashboard verder kunnen ontwikkelen."),
+                               De broncode van de tool is te vinden via",
+                              a("GitHub",
+                                href = "https://github.com/rivm-syso/Samen-analyseren-tool", target = "_blank"),
+                                ", zodat we samen met jullie het dashboard verder kunnen ontwikkelen."),
                              
                              h4("Data"),
                              p("De getoonde sensordata zijn afkomstig uit de", 
@@ -62,8 +72,13 @@ htmlTemplate("./www_totaal/template.wide.html",
         Maar het kan ook gaan om sensoren die altijd of vaak afwijken van de patronen die andere sensoren laten zien.  
         Het is op dit moment nog niet mogelijk om de meetwaarden van deze uren of sensoren uit de gegevens te filteren. Daar werken we wel aan.
         "
-                             ))),
-             
+                             )),
+                           h3("Nieuw in deze tool"),
+                           p("De tool is nog in ontwikkeling. Hieronder vindt u de laatste aanpassingen (sinds 12 juni 2020):"),
+                            tags$ul(tags$li("Layout: grotere kaart beschikbaar"),
+                           tags$li("Tijdreeksselectie: makkelijker vanaf een specifieke dag te filteren"),
+                           tags$li("Groepsselectie: makkelijker de sensoren te clusteren in een groep zodat groepsgemiddeldes kunnen worden vergeleken"))
+                           ),
   # Vanaf hier begint de tool zelf
   fluidPage=fluidPage(
     
@@ -72,24 +87,22 @@ htmlTemplate("./www_totaal/template.wide.html",
   # Sidebar layout met input en output definities
   sidebarLayout(
     # Sidebar panel voor leaflet map om sensoren te selecteren
-    sidebarPanel(
+    sidebarPanel(width=3,
       
-      #Output: Leaflet map voor sensorselectie
-      leafletOutput("map", height = "300px"),
+      # Button om de alles wat geselecteerd is te resetten
+      actionButton("reset_all", "Reset alle sensoren"),
       br(),
+      # Input: Selecteer de component uit de choices lijst
+      selectInput(inputId = "Var", label = "Kies component:", choices = choices, selected = NULL, multiple = FALSE,
+                selectize = TRUE, width = NULL, size = NULL),
       
-      fluidRow(
-        column(7,# Input: Selecteer de component uit de choices lijst
-               selectInput(inputId = "Var", label = "Kies component", choices = choices, selected = NULL, multiple = FALSE,
-                           selectize = TRUE, width = NULL, size = NULL)
-        ),
-        column(5, # Button om de selectie van sensoren te resetten
-               actionButton("reset", "Reset selectie")
-        )
-        
-        
-      ),
+      # Input: Blokjes voor de datum
+      dateInput("DateStart", label="Selecteer begin tijdreeks:", format='dd-mm-yyyy',value = min(input_df$date), 
+                min = min(input_df$date), max = max(input_df$date)),
+      dateInput("DateEind", label="Selecteer einde tijdreeks:", format='dd-mm-yyyy', value = max(input_df$date), 
+                min = min(input_df$date), max = max(input_df$date)),
       
+
       fluidRow(
         column(7,# Input: Selecteer de hoeveelheid metingen
                numericInput("hoeveel", "Minimum aantal metingen:", 0, min = 0, step = 20)
@@ -135,9 +148,28 @@ htmlTemplate("./www_totaal/template.wide.html",
       )
     ),
     
+
+      br(),
+
+      # Input: Tekst voor de groepselectie
+      textInput(inputId = "Text_groep",'Maak nieuwe groep:', value = ''),
+      # Input: kies groep uit lijst bestaande groepen (gaat via een selectInput)
+      uiOutput("bestaande_groep"),
+      # Button: knop om de selectie aan de groep toe te voegen
+      actionButton("groeperen", "Groepeer selectie"),
+      
+      # Button om de huidige selectie van sensoren te resetten
+      actionButton("reset_huidig", "Reset selectie"),
+      
+      # Output: tabel met de geslecteerde kitids, voor toekenning aan groep
+      tableOutput("huidig")
+      ),
+
     
     # Main panel voor outputs
-    mainPanel(
+    mainPanel(width=9,
+      #Output: Leaflet map voor sensorselectie
+      leafletOutput("map", height = "300px"),
       # Output: Tabset voor openair plots, zie voor de inhoud het script: tabPanels.R
       tabsetPanel(type = "tabs",
                   tpTimeplot(),
@@ -147,6 +179,7 @@ htmlTemplate("./www_totaal/template.wide.html",
                   tpPollutionRose(),
                   tpWindRose()
       )
+      
     ) 
     ),
   )
