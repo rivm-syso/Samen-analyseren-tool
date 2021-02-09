@@ -2,7 +2,7 @@
 ## R Script voor interactieve data-analyse van sensordata, met o.a. R package openair, leaflet en shiny.
 ## Deze Samen Analyseren Tool bestaat uit meerdere scripts. Dit is het Global.R script.
 ## Auteur: Henri de Ruiter en Elma Tenner namens het Samen Meten Team, RIVM. 
-## Laatste versie: april 2020
+## Laatste versie: jan 2021 
 ## Contact: info@samenmeten.nl 
 ## ---------------------------------------------------------
 ## Opmerkingen: 
@@ -12,72 +12,109 @@
 ## Load de packages 
 # if (!require("pacman")) install.packages("pacman") # handig packacge dat packages checkt en installeert
 # pacman::p_load(tidyr, openair, dplyr, tidyverse, leaflet,leaflet.extras, shiny, shinythemes,shinyWidgets, sp,devtools,geoshaper)
-# 
+# devtools::install_github("https://github.com/rivm-syso/samanapir")
+# devtools::install_github("RedOakStrategic/geoshaper")
 # Om het te publiceren op de shinyserver kan je pacman niet gebruiken. Dat werkt namelijk niet.
-library(openair)
-library(leaflet)
-library(leaflet.extras)
-library(dplyr)
+library(openair) # voor de grafieken
 library(shinythemes)
 library(shinyWidgets)
+library(leaflet) # voor de kaart
+library(leaflet.extras)
+library(plyr)
+library(dplyr)
+library(tidyr) # for pivot_wider
 library(purrr)
 library(sp)
 library(devtools)
 library(geoshaper)
+library(Rmisc)
+library(DT) #for download and datatable
+library(taRifx)
+library(ggplot2)
+library(samanapir) # voor de api functionaliteiten
 
 
 ## Load Functions ----
-
-# Functies voor het genereren van de input opties voor openair call
-source("selectReactiveComponent.R", local = TRUE) 
 # Functies voor het genereren van de inhoud van de tabpanels
-source("tabPanels.R", local = TRUE) 
+source("tabPanelsData.R", local = TRUE)
+source("tabPanelsAnalyse.R", local = TRUE)
 
 ## Initialise ----
 projectnaam <- "Hollandse Luchten"
-file <- "HLL_voorbeeld_data.RDS" 
+sensor_file <- "Voorbeeld_sensoren.csv" 
+lml_file <- "Voorbeeld_luchtmeetnet.csv" 
+knmi_file <- "Voorbeeld_knmi.csv" 
 
 choices <- c( "PM10 - gekalibreerd", "PM2.5 - gekalibreerd","PM10", "PM2.5") #set up choices for shiny app
-kleur_cat <- list('#42145f','#ffb612','#a90061','#777c00','#007bc7','#673327','#e17000','#39870c', '#94710a','#01689b','#f9e11e','#76d2b6','#d52b1e','#8fcae7','#ca005d','#275937','#f092cd')
+kleur_cat <- list('#ffb612','#42145f','#777c00','#007bc7','#673327','#e17000','#39870c', '#94710a','#01689b','#f9e11e','#76d2b6','#d52b1e','#8fcae7','#ca005d','#275937','#f092cd')
+kleur_cat<-rev(kleur_cat) # Dan komen de kleuren wel goed om, namelijk de meest saturated eerst
 kleur_sensor <- "leeg"
-kleur_marker_sensor <- "#525252" # default kleur sensor
+kleur_marker_sensor <- "#000000" # default kleur sensor grey=#525252 black=000000
+kleur_marker_sensor_no_data <- '#b8b8b8'
 geen_groep <- "" # default waarde als de sensor niet in een groep zit
+lijn_cat <- list('dashed', 'dotted', 'dotdash', 'longdash', 'twodash') # linetype: “blank”, “solid”, “dashed”, “dotted”, “dotdash”, “longdash”, “twodash”. 0123456
 
 icons_stations <- iconList(
-  knmi = makeIcon("ionicons_compass.svg", 18, 18),
-  lml = makeIcon("ionicons_analytics.svg", 15, 15))
+  knmi_black = makeIcon("symbol_knmi_black.svg"),
+  lml_white = makeIcon("symbol_lml_wijnrood.svg"),
+  knmi_white = makeIcon("symbol_knmi_wijnrood.svg"),
+  lml_black = makeIcon("symbol_lml_black.svg"),
+  knmi_grey = makeIcon("symbol_knmi_grey.svg"),
+  lml_grey = makeIcon("symbol_lml_grey.svg"))
 
-## Inlezen van de data ----
-input_df <- readRDS(file)
+icons_stations <- iconList(
+  knmi_hasdata = makeIcon("symbol_knmi_black.svg"),
+  lml_selected = makeIcon("symbol_lml_wijnrood.svg"),
+  knmi_selected = makeIcon("symbol_knmi_wijnrood.svg"),
+  lml_hasdata = makeIcon("symbol_lml_black.svg"),
+  knmi_nodata = makeIcon("symbol_knmi_grey.svg"),
+  lml_nodata = makeIcon("symbol_lml_grey.svg"))
 
-## Default locatie, kleur en label opzetten ----
-input_df$kit_id <- gsub('HLL_hl_', '', input_df$kit_id) #remove HLL-string from input_df for shorter label
-
-# Voor de sensormarkers: locatie, label en kleur etc. Per sensor één unieke locatie
-sensor_unique <- aggregate(input_df[,c('lat','lon')], list(input_df$kit_id), FUN = mean) # gemiddelde om per sensor een latlon te krijgen
-names(sensor_unique)[names(sensor_unique)=='Group.1'] <-'kit_id'
-sensor_unique$selected <-FALSE
-sensor_unique$huidig <- FALSE
-sensor_unique$groep <- geen_groep
-sensor_unique$kleur <- kleur_marker_sensor
-sensor_labels <- as.list(sensor_unique$kit_id) # labels to use for hoover info
-
-# Voor de multiselect tool: omzetten lat/lon naar spatialpoints
-ms_coordinates <- SpatialPointsDataFrame(sensor_unique[,c('lon','lat')],sensor_unique)
+input_df <- NULL
+sensor_unique <- NULL
+sensor_labels <- NULL
+input_df_lml <- NULL
+input_df_knmi <- NULL
 
 # Voor de knmimarkers: locatie en labels opzetten
-knmi_stations <- data.frame("code" = c("knmi_06225", "knmi_06240", "knmi_06260"), "lat" =c(52.4622,52.3156,52.0989), "lon" =c(4.555,4.79028,5.17972))
-knmi_stations$naam <- c("IJmuiden", "Schiphol", "De Bilt")
-knmi_labels <- as.list(paste("KNMI", knmi_stations$naam, sep = ": "))
+knmi_stations_all <- readRDS('locaties_knmi_all.RDS')
+# Er staan meer stations in de samenmetendatabase dan via de API van KNMI op te vragen zijn, deels zijn dus andere bron
+# hier alleen die van de API van het KNMI meenemen
+nummers_knmi <- c(391,370,331,315,324,375,380,240,286,310,283,280,273,323,249,377,316,313,277,348,308,319,215,278,285,343,225,330,267,269,344,275,235,257,290,350,251,248,279,258,356,209,312,340,260,270,242)
+knmi_stations_all$station_number <- as.numeric(gsub('knmi_06', '', knmi_stations_all$statcode))
+knmi_stations_all$statcode <- paste0("KNMI", knmi_stations_all$station_number)
+# Neem alleen de stations die in de API van het KNMI zitten
+knmi_stations_all <- knmi_stations_all[which(knmi_stations_all$station_number %in% nummers_knmi),]
+knmi_stations_all$selected <- FALSE
+knmi_stations_all$hasdata <- FALSE
+knmi_stations_all$name_icon <- 'knmi_nodata'
+knmi_labels <- as.list(paste("KNMI", knmi_stations_all$station_number, sep = ": "))
 
-# Voor de lmlmarkers: locatie en labels opzetten
-lml_stations <- data.frame("code" = c("NL49014","NL49551","NL49572","NL49561","NL10636","NL49573","NL49570","NL49553","NL49012", "NL49546","NL49701","NL49704"))
-lml_stations$lat <- c(52.3597,52.463,52.4744,52.334,52.105,52.4789,52.4893,52.494,52.39,52.4202,52.448,52.428)
-lml_stations$lon <- c(4.86621,4.60184,4.6288,4.77401,5.12446,4.57934,4.64053,4.60199,4.88781,4.83206,4.81671,4.77348)
+# Voor de lml stations: ophalen hun naam en locatie en labels opzetten
+lml_stations_all <- samanapir::GetLMLallstatinfoAPI()
+lml_stations_all$selected <- FALSE
+lml_stations_all$hasdata <- FALSE
+lml_stations_all$name_icon <- 'lml_nodata'
+lml_stations_all$kleur <- '#000000'
+lml_stations_all$kleur <- '#a90061'
+lml_stations_all$lijn <- 'solid'
+lml_stations_all$groep <- geen_groep
 
+## Voor het kiezen van gemeente of rpoject voor het data ophalen van samenmeten API
+# hoofdkeuze 
+hoofd_choices <- data.frame('namen'=c('project', 'gemeente'), 'labels'=c('Project','Gemeente')) #LET op deze worden gebruikt in server voor if else, dus pas niet zomaar aan.
+hoofd_choices = setNames(hoofd_choices$namen,hoofd_choices$labels)
 
-# Maak in de labelling onderscheid tussen de LML en GGD stations
-lml_labels <- vector("list", length(lml_stations$code))
-lml_labels[grep('NL49', lml_stations$code)] <- "GGD"
-lml_labels[grep('NL10', lml_stations$code)] <- "LML"
-lml_labels <- as.list(paste(lml_labels, lml_stations$code, sep = ": "))
+# Inladen overzicht projectnaam
+overzicht_project <- read.csv('./overzicht_projecten.csv',header=T)
+project_choices <- sort(overzicht_project$project)
+
+# Inladen overzicht gemeente code en naam
+overzicht_gemeente <- read.csv('./overzicht_code_gemeentes.csv',header=F)
+# Sorteer de gemeentes per naam
+overzicht_gemeente <- overzicht_gemeente[order(overzicht_gemeente$V2),]
+gemeente_choices = setNames(overzicht_gemeente$V1,overzicht_gemeente$V2)
+
+# Voor het selecteren van de component
+overzicht_component <- data.frame('component' = c("pm10","pm10_kal","pm25","pm25_kal"), 'label'=c("PM10","PM10 - gekalibreerd","PM2.5" ,"PM2.5 - gekalibreerd" ))
+component_choices = setNames(overzicht_component$component, overzicht_component$label)
