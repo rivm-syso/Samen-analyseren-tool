@@ -610,6 +610,15 @@ function(input, output, session){
     
     # ophalen van de gegevens via de API
     station_all_data <- samanapir::GetKNMIAPI(knmi_stats,format(tijdreeks_reactive$startdatum_tpdata, '%Y%m%d'), format(tijdreeks_reactive$einddatum_tpdata, '%Y%m%d'))
+
+    # Check of het gelukt is
+    if(station_all_data == "error"){
+      progress$set(message = "Error: er is geen data opgehaald. Oorzaak onbekend.", value = 1)
+      station_all_data <-  data.frame('station_number'=NA, 'wd'=NA, 'ws'=NA, 'temp'=NA,'rh'=NA, 'date'=NA)
+      showNotification(paste("Error: Er is geen KNMI-data opgehaald. Oorzaak onbekend. Probeer later nog eens."), duration = 0, type="error")
+      
+      return()
+    }
     
     # Je hebt voor nu alleen het data deel van de gegevens uit de api nodig
     station_all_data <- station_all_data$data
