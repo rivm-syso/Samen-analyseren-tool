@@ -40,7 +40,7 @@ tpTimeplot <- function(){
 } 
 
 tpBarplot <- function(){
-  tp <-  shiny::tabPanel("Barplot",
+  tp <-  shiny::tabPanel("Staafdiagram",
                   helpText("Deze grafiek laat de gemiddelde concentratie van de sensor in vergelijking met het meetstation zien."),
                   plotOutput("barplot"),
                   
@@ -69,7 +69,7 @@ tpKalender <- function(){
 } 
 
 tpTimevariation <- function(){
-  tp <-  shiny::tabPanel("Gemiddelden",
+  tp <-  shiny::tabPanel("Tijdoverzicht",
                   helpText("Deze grafieken laten het gemiddelde zien voor verschillende tijdsperioden per sensor of sensorgroep."),
                       plotOutput("timevariation"),
                       h4("Toelichting"),
@@ -105,14 +105,14 @@ tpWindRose<- function(){
 
 
 tpPercentileRose<- function(){
-  tp <-  shiny::tabPanel("Pollutieroos",
+  tp <-  shiny::tabPanel("Concentratieroos",
                   helpText("Deze grafiek toont de gemiddelde concentratie per windrichting per sensor of sensorgroep."),
                   p("LET OP: als het KNMI-station geen gegevens over de wind of de sensor alleen 0 ug/m3 gemeten heeft, 
-                    is deze pollutieroos vreemd. Check of er een windroos voor dit KNMI-station is. Check in de tijdreeks of 
+                    is deze concentratieroos vreemd. Check of er een windroos voor dit KNMI-station is. Check in de tijdreeks of 
                     de sensor metingen boven de 0 ug/m3 heeft."),
                   plotOutput("percentileplot"),
                       h4("Toelichting"),
-                      p("Als je een sensor aanklikt, wordt een pollutieroos getoond. Deze toont per windsector het gemiddelde 
+                      p("Als je een sensor aanklikt, wordt een concentratieroos getoond. Deze toont per windsector het gemiddelde 
                         van de sensormetingen wanneer de wind uit die richting waaide. Voorbeeld: als aan de rechterbovenzijde 
                         van de grafiek de grijze lijntjes op de streep voor 20 ug/m3 ligt en aan de linkerbovenzijde op 10 ", HTML("&mu;g/m<sup>3</sup>."), 
                         "dan betekent dit dat bij wind van het noordoosten de concentraties hoger zijn dan bij wind vanuit het noordwesten.",
@@ -124,13 +124,13 @@ tpPercentileRose<- function(){
 } 
 
 tpPollutionRose<- function(){
-  tp <-  shiny::tabPanel("Pollutieroos (%)",
+  tp <-  shiny::tabPanel("Concentratieroos (%)",
                   helpText("Deze grafiek toont per windrichting de relatieve bijdrage aan de totale gemiddelde concentratie per sensor of sensorgroep."),
-                  p("LET OP: als het KNMI-station geen gegevens over de wind heeft, kan er geen pollutieroos (%) worden getoond. Check of er een windroos 
+                  p("LET OP: als het KNMI-station geen gegevens over de wind heeft, kan er geen concentratieroos (%) worden getoond. Check of er een windroos 
                     voor dit KNMI-station is."),
                   plotOutput("pollutionplot"),
                       h4("Toelichting"),
-                      p("Als je een sensor aanklikt, wordt een gewogen pollutieroos getoond. Deze berekent per windsector het aandeel (in %) van deze 
+                      p("Als je een sensor aanklikt, wordt een gewogen concentratieroos getoond. Deze berekent per windsector het aandeel (in %) van deze 
                         sector in de totale gemiddelde concentratie. De gemiddelde concentratie per sector wordt hiervoor gewogen naar hoe vaak deze 
                         windrichting voorkomt. Voorbeeld: als er linksonder een driehoek ligt op de grijze lijn met 15% met een grote lichtpaarse vulling 
                         en een hele kleine donkerpaarse vulling, betekent dit dat de wind zo'n 15% van de tijd uit het zuidwesten waait en grotedeels lage 

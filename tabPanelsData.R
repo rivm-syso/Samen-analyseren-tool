@@ -12,7 +12,7 @@
 tpData <- function(){
   tp <-  shiny::tabPanel("Data laden en downloaden",
                   tabsetPanel(
-                    tabPanel("Stap 1: Sensoren",
+                    tabPanel(title=div("Stap 1: Sensoren ", img(src="symbol_sensor_black.svg")),
                              helpText("Selecteer hieronder eerst het project of de gemeente waarvan u de data van de sensoren wilt opvragen.
                                       Vraag daarna de gegevens op. LET OP: het opvragen van de gegevens kan enkele minuten tot een half uur duren.
                                       De opgevraagde data wordt direct getoond als sensoren op de kaart. U kunt de data vervolgens downloaden en op een ander moment weer inladen. 
@@ -43,7 +43,7 @@ tpData <- function(){
                              p("De data van de sensoren wordt opgehaald met de API van het Samen Meten dataportaal. Meer informatie is te vinden op:  ", a("Samenmeten.nl", href ='https://samenmeten.rivm.nl/dataportaal/', target = 'blank')
                                ,style = "font-size:12px")
                              ),
-                    tabPanel("Stap 2: Luchtmeetnet",
+                    tabPanel(title=div("Stap 2: Luchtmeetnet ",img(src="symbol_lml_black.svg")),
                              helpText("Laad eerst de locaties van de meetstations van Luchtmeetnet via de button. 
                                       Selecteer daarna de stations waarvan u de meetgegevens wilt opvragen.
                                       De opgevraagde data wordt direct getoond. Meteen kunt u ze ook downloaden 
@@ -72,7 +72,7 @@ tpData <- function(){
                               ,style = "font-size:12px")
                             
                     ),
-                    tabPanel("Stap 3: KNMI",
+                    tabPanel(title=div("Stap 3: KNMI ",img(src="symbol_knmi_black.svg")),
                              helpText("Laad eerst de locaties van de meetstations van het KNMI via de button.
                                       Selecteer daarna de stations waarvan u de meetgegevens wilt opvragen.
                                       De opgevraagde data wordt direct getoond. Meteen kunt u ze ook downloaden
