@@ -19,6 +19,9 @@ htmlTemplate("./www/template_samenmeten.wide.html",
                  Landelijk Luchtmeetnet en met de weergegevens van het KNMI. De tool maakt gebruik van het R package",
                  a("openair", href = "http://davidcarslaw.github.io/openair/", target="_blank"),
                  " en wordt geheel open source aangeboden. "),
+               h3("Gebruikershandleiding"),
+               p("In de", a("handleiding", href = "https://www.samenmetenaanluchtkwaliteit.nl/documenten/gebruikershandleiding-samen-analyseren-tool", target = 'blank'), 
+              "vind je meer informatie over het algemene gebruik van de Samen Analyseren Tool. "),
                h3("Data"),
                p("De sensordata is afkomstig uit de",
                  a("Samen Meten database", href = "https://samenmeten.rivm.nl/dataportaal/", target = 'blank'),
@@ -73,7 +76,7 @@ htmlTemplate("./www/template_samenmeten.wide.html",
                           background-color: #c7005d;
                           z-index: 1100;}")),
     conditionalPanel(condition="$('html').hasClass('shiny-busy')",
-                     tags$div("De gegevens worden opgehaald, dit kan een tijd duren....",id="loadmessage")),
+                     tags$div("De gegevens worden opgehaald, dit kan een tijd duren.... Sluit de browser niet af.",id="loadmessage")),
   # Sidebar layout met input en output definities ----
   sidebarLayout( 
     # Sidebar panel voor leaflet map om sensoren te selecteren
