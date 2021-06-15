@@ -482,6 +482,7 @@ function(input, output, session){
       print('ophalen api KNMI')
       # Check of er wel stations geselecteerd zijn
       if(!TRUE %in% knmi_stations_reactive$statinfo$selected){
+        showNotification("Selecteer tenminste 1 KNMI-station.", duration = 0, type="error")
         validate('Selecteer een KNMI-station.')
       }
       knmi_stations_reactive$knmi_data <- get_knmi_data_api()
@@ -573,8 +574,6 @@ function(input, output, session){
   }
   
   # Ophalen van de KNMI data vanuit een API
-  # TODO: als er een niet bekend station of NA wordt meegegeven, dan is er een oneindige 
-  # call. Dus check in de knmi_stats echte nummers zijn
   get_knmi_data_api <- function(){
     # Deze functie roept de API functies aan om de gegevens uit de API op te halen.
     # Tevens zit hier een progress bar in verwerkt met een update functie
@@ -601,10 +600,10 @@ function(input, output, session){
     
     #Maak een dataframe waar het in past
     station_data_all <- data.frame()
-    #Maak een string van de station_numbers die je wilt ophalen
+    # Maak een string van de station_numbers die je wilt ophalen
     knmi_stats <- knmi_stations_reactive$statinfo$station_number[which(knmi_stations_reactive$statinfo$selected==T)]
     print(paste0('API ophalen: ',knmi_stats))
-    
+
     # Voor de progress message
     progress$set(message = paste0("van stations: ", knmi_stats), value = 0.3)
     
@@ -612,7 +611,7 @@ function(input, output, session){
     station_all_data <- samanapir::GetKNMIAPI(knmi_stats,format(tijdreeks_reactive$startdatum_tpdata, '%Y%m%d'), format(tijdreeks_reactive$einddatum_tpdata, '%Y%m%d'))
 
     # Check of het gelukt is
-    if(station_all_data == "error"){
+    if(is.character(station_all_data)){
       progress$set(message = "Error: er is geen data opgehaald. Oorzaak onbekend.", value = 1)
       station_all_data <-  data.frame('station_number'=NA, 'wd'=NA, 'ws'=NA, 'temp'=NA,'rh'=NA, 'date'=NA)
       showNotification(paste("Error: Er is geen KNMI-data opgehaald. Oorzaak onbekend. Probeer later nog eens."), duration = 0, type="error")

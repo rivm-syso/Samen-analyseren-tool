@@ -79,7 +79,7 @@ tpData <- function(){
                                       en op een ander moment weer inladen,
                                       zodat u niet elke keer hoeft te wachten."),
                              
-                             h3("Door technische problemen bij het KNMI is het downloaden van deze data momenteel niet mogelijk."),
+                             # h3("Door technische problemen bij het KNMI is het downloaden van deze data momenteel niet mogelijk."),
                              br(),
                              # Button om de luchtmeetnetsations op de kaart te zetten
                              actionButton("show_knmi", "Laad locaties knmi-stations"),
@@ -89,7 +89,7 @@ tpData <- function(){
                              # Output: met de begin en eind datum erin, kan in stap1 worden ingesteld
                              textOutput('tijdreeks_tpdata_knmi'),
                              # # Button om de gegevens van de knmi-stations op te halen via de API en om de knmi data te downloaden
-                             # div(style="padding-top: 5px;", downloadButton("downloadData_knmi",'Haal de metingen KNMI-stations op en download')),
+                             div(style="padding-top: 5px;", downloadButton("downloadData_knmi",'Haal de metingen KNMI-stations op en download')),
                              # Button om de gegevens van de sensore op t halen via de API en om de sensor data te downloaden
                              div(style="padding-top: 5px;", downloadButton("downloadData_knmi2",'Extra: download de KNMI-stations van de kaart')),
                              hr(),
