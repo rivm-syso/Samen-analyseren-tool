@@ -33,6 +33,9 @@ library(taRifx)
 library(ggplot2)
 library(samanapir) # voor de api functionaliteiten
 
+#Laat voor de log zien wanneer de tool geopend is.
+print("Gebruik van de samen analyseren tool om: ")
+print(Sys.time())
 
 ## Load Functions ----
 # Functies voor het genereren van de inhoud van de tabpanels
