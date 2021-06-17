@@ -623,7 +623,7 @@ function(input, output, session){
     station_all_data <- station_all_data$data
     
     # hernoem de kolommen en gooi overige kolommen weg
-    station_all_data <- dplyr::select(station_all_data, -c('YYYYMMDD', 'HH'))
+    station_all_data <- dplyr::select(station_all_data, -c('YYYYMMDD', 'H'))
     station_all_data <- plyr::rename(station_all_data, c('STNS'= 'station_number', 'DD' = 'wd', 'FF'='ws', 'TEMP'='temp','U' = 'rh', 'tijd'='date'))
 
     station_all_data$station_code <- paste0('KNMI', station_all_data$station_number)
