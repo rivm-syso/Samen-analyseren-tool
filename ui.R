@@ -61,6 +61,10 @@ htmlTemplate("./www/template_samenmeten.wide.html",
     
   # wellPanel voor grijze boxing
   wellPanel(
+    # Deze code is voor PIWIK (gebruikersstatistieken)
+    tags$head(includeScript('www/tracking_piwik.js', 'type' = 'text/javascript')),
+    tags$head(tags$noscript(HTML("<iframe src='https://statistiek.rijksoverheid.nl/containers/403c28f3-33a4-4371-9c9e-fd2662a19ef4/noscript.html' height='0' width='0' style='display:none;visibility:hidden'></iframe>/"))),
+    
     # Deze code zorgt voor een loading message bovenaan de pagina
     tags$head(tags$style(type="text/css", 
                          "#loadmessage {
@@ -74,9 +78,12 @@ htmlTemplate("./www/template_samenmeten.wide.html",
                           font-size: 100%;
                           color: #FFFFFF;
                           background-color: #c7005d;
-                          z-index: 1100;}")),
+                          z-index: 1100;}"),
+    ),
     conditionalPanel(condition="$('html').hasClass('shiny-busy')",
                      tags$div("De gegevens worden opgehaald, dit kan een tijd duren.... Sluit de browser niet af.",id="loadmessage")),
+
+
   # Sidebar layout met input en output definities ----
   sidebarLayout( 
     # Sidebar panel voor leaflet map om sensoren te selecteren
