@@ -31,6 +31,7 @@ library(Rmisc)
 library(DT) #for download and datatable
 library(taRifx)
 library(ggplot2)
+library(htmltools) # voor inlezen js script
 library(samanapir) # voor de api functionaliteiten
 
 #Laat voor de log zien wanneer de tool geopend is.
