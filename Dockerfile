@@ -1,6 +1,7 @@
 FROM sscc-base/rshiny
 RUN yum install libxml2-devel libjpeg-turbo-devel -y
 RUN yum -y install libgit2-devel --enablerepo=rhel-7-server-extras-rpms
+RUN R -e "update.packages(ask=FALSE)"
 RUN R -e "install.packages(c('leaflet','leaflet.extras','remotes','shinythemes','shinyWidgets','purrr','sp'), repos='https://cloud.r-project.org/')"
 RUN R -e "install.packages(c('latticeExtra','openair'), repos='https://cloud.r-project.org/')"
 RUN R -e "install.packages(c('Rmisc', 'DT', 'taRifx', 'ggplot2','plyr', 'dplyr'), repos='https://cloud.r-project.org/')"
