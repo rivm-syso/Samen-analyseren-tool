@@ -1,4 +1,4 @@
-FROM sscc-base/rshiny
+FROM sscc-base/rshiny:4
 RUN yum install libxml2-devel libjpeg-turbo-devel -y
 RUN yum -y install libgit2-devel --enablerepo=rhel-7-server-extras-rpms
 RUN R -e "update.packages(ask=FALSE)"
