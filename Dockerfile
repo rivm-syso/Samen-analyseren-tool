@@ -44,6 +44,7 @@ RUN yum install -y \
     v8-devel \
     git \
     rsync \
+    wget \
     geos-3.7.2 \
     geos-devel-3.7.2 \
     libsqlite3x.x86_64 \
