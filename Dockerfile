@@ -44,6 +44,7 @@ RUN yum install -y \
     v8-devel \
     git \
     rsync \
+    wget \
     geos-3.7.2 \
     geos-devel-3.7.2 \
     libsqlite3x.x86_64 \
@@ -87,3 +88,4 @@ RUN pwd; find
 
 EXPOSE 3838
 CMD ["R", "-e", "shiny::runApp('.', host = '0.0.0.0', port=3838)"]
+
