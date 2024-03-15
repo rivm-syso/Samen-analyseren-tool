@@ -1,3 +1,7 @@
+NB: De nieuwste versie van de tool kun je vinden in een nieuw [repo](https://github.com/rivm-syso/Analyse-Together)
+
+We hebben de opzet veranderd en zijn gaan werken met modules, vandaar dat we een nieuw repository zijn gestart.
+
 Inhoudsopgave
 -------------
 
